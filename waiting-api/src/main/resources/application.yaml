@@ -1,0 +1,42 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: waiting-api
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+
+waiting:
+  queue:
+    redis-key-prefix: waiting:screening
+    valid-screening-ids:
+      - "1"
+    status:
+      waiting-poll-after-millis: 1000
+      active-poll-after-millis: 100
+      not-found-poll-after-millis: 3000
+    admission:
+      scheduler-interval: 5000
+      batch-size: 10
+      active-ttl: 5m
+      max-active-users: 100
+      lock-ttl: 10s
+      screening-ids:
+        - "1"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics

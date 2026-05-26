@@ -1,0 +1,12 @@
+.git/
+.gradle/
+build/
+**/build/
+*.log*
+.env*
+coverage/
+.DS_Store
+Thumbs.db
+node_modules/
+Dockerfile*
+.dockerignore

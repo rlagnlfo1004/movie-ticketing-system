@@ -1,0 +1,46 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: reservation-api
+  datasource:
+    url: jdbc:mysql://localhost:3306/movie_kim?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: movie
+    password: movie
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+
+reservation:
+  active-admission:
+    redis-key-prefix: waiting:screening
+  idempotency:
+    ttl: 10m
+  queue-token-pattern: "^[A-Za-z0-9._:-]{8,256}$"
+  idempotency-key-pattern: "^[A-Za-z0-9._:-]{8,128}$"
+  persistence-pending:
+    retry-limit: 3
+  default-screening:
+    id: "1"
+    movie-title: "Movie Kim Demo Screening"
+    starts-at: "2026-05-12T10:00:00Z"
+    total-ticket-count: 100
+
+ticket:
+  inventory:
+    key-prefix: "ticket"
+    issued-token-ttl: 30m

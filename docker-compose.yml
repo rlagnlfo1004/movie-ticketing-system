@@ -1,0 +1,179 @@
+services:
+  redis:
+    image: redis:7.2-alpine
+    command: >
+      redis-server
+      --maxclients 10000
+      --tcp-backlog 511
+      --hz 20
+      --save ""
+    ports:
+      - "6379:6379"
+
+  mysql:
+    image: mysql:8.4
+    command: >
+      --max-connections=500
+      --innodb-buffer-pool-size=3G
+      --innodb-log-file-size=512M
+      --innodb-flush-log-at-trx-commit=2
+    environment:
+      MYSQL_DATABASE: movie_kim
+      MYSQL_USER: movie
+      MYSQL_PASSWORD: movie
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD-SHELL", "mysql -h localhost -umovie -pmovie -e 'SELECT 1' movie_kim"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  waiting-api-1:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ./waiting-api/build/libs:/app
+    command: ["java", "-jar", "/app/waiting-api-0.0.1-SNAPSHOT.jar"]
+    environment:
+      SPRING_DATA_REDIS_HOST: redis
+      SERVER_PORT: 8080
+      SPRING_THREADS_VIRTUAL_ENABLED: "true"
+      SPRING_DATA_REDIS_LETTUCE_POOL_ENABLED: "true"
+      SPRING_DATA_REDIS_LETTUCE_POOL_MAX_ACTIVE: 200
+      SPRING_DATA_REDIS_LETTUCE_POOL_MAX_IDLE: 100
+      SPRING_DATA_REDIS_LETTUCE_POOL_MIN_IDLE: 50
+      WAITING_QUEUE_ADMISSION_SCHEDULER_INTERVAL: 1000
+      WAITING_QUEUE_ADMISSION_BATCH_SIZE: 300
+      WAITING_QUEUE_ADMISSION_MAX_ACTIVE_USERS: 1000
+      WAITING_QUEUE_ADMISSION_LOCK_TTL: 5s
+      JAVA_TOOL_OPTIONS: "-Xms512m -Xmx2g -XX:+UseG1GC -XX:MaxGCPauseMillis=50"
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  waiting-api-2:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ./waiting-api/build/libs:/app
+    command: ["java", "-jar", "/app/waiting-api-0.0.1-SNAPSHOT.jar"]
+    environment:
+      SPRING_DATA_REDIS_HOST: redis
+      SERVER_PORT: 8080
+      SPRING_THREADS_VIRTUAL_ENABLED: "true"
+      SPRING_DATA_REDIS_LETTUCE_POOL_ENABLED: "true"
+      SPRING_DATA_REDIS_LETTUCE_POOL_MAX_ACTIVE: 200
+      SPRING_DATA_REDIS_LETTUCE_POOL_MAX_IDLE: 100
+      SPRING_DATA_REDIS_LETTUCE_POOL_MIN_IDLE: 50
+      WAITING_QUEUE_ADMISSION_SCHEDULER_INTERVAL: 1000
+      WAITING_QUEUE_ADMISSION_BATCH_SIZE: 300
+      WAITING_QUEUE_ADMISSION_MAX_ACTIVE_USERS: 1000
+      WAITING_QUEUE_ADMISSION_LOCK_TTL: 5s
+      JAVA_TOOL_OPTIONS: "-Xms512m -Xmx2g -XX:+UseG1GC -XX:MaxGCPauseMillis=50"
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  waiting-api-3:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ./waiting-api/build/libs:/app
+    command: ["java", "-jar", "/app/waiting-api-0.0.1-SNAPSHOT.jar"]
+    environment:
+      SPRING_DATA_REDIS_HOST: redis
+      SERVER_PORT: 8080
+      SPRING_THREADS_VIRTUAL_ENABLED: "true"
+      SPRING_DATA_REDIS_LETTUCE_POOL_ENABLED: "true"
+      SPRING_DATA_REDIS_LETTUCE_POOL_MAX_ACTIVE: 200
+      SPRING_DATA_REDIS_LETTUCE_POOL_MAX_IDLE: 100
+      SPRING_DATA_REDIS_LETTUCE_POOL_MIN_IDLE: 50
+      WAITING_QUEUE_ADMISSION_SCHEDULER_INTERVAL: 1000
+      WAITING_QUEUE_ADMISSION_BATCH_SIZE: 300
+      WAITING_QUEUE_ADMISSION_MAX_ACTIVE_USERS: 1000
+      WAITING_QUEUE_ADMISSION_LOCK_TTL: 5s
+      JAVA_TOOL_OPTIONS: "-Xms512m -Xmx2g -XX:+UseG1GC -XX:MaxGCPauseMillis=50"
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  reservation-api:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ./reservation-api/build/libs:/app
+    command: ["java", "-jar", "/app/reservation-api-0.0.1-SNAPSHOT.jar"]
+    environment:
+      SERVER_PORT: 8081
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/movie_kim?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: movie
+      SPRING_DATASOURCE_PASSWORD: movie
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 100
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 20
+      SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT: 3000
+      SPRING_THREADS_VIRTUAL_ENABLED: "true"
+      JAVA_TOOL_OPTIONS: "-Xms512m -Xmx2g -XX:+UseG1GC -XX:MaxGCPauseMillis=50"
+    depends_on:
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/8081 2>/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  storage:
+    image: alpine:3.20
+    command: ["sh", "-c", "sleep infinity"]
+
+  nginx:
+    image: nginx:1.27-alpine
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      waiting-api-1:
+        condition: service_healthy
+      waiting-api-2:
+        condition: service_healthy
+      waiting-api-3:
+        condition: service_healthy
+      reservation-api:
+        condition: service_healthy
+    ports:
+      - "8000:80"
+
+  k6:
+    image: grafana/k6
+    profiles: ["load-test"]
+    volumes:
+      - ./load-test:/load-test
+    environment:
+      BASE_URL: http://nginx
+      SCREENING_ID: ${SCREENING_ID:-1}
+    depends_on:
+      - nginx
+    networks:
+      - default
