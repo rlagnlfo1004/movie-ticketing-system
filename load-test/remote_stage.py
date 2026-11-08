@@ -100,9 +100,21 @@ def reset(hosts, key):
     remote(hosts, key, "mysql", "sudo", "find", "/mnt/movie-mysql", "-mindepth", "1",
            "-maxdepth", "1", "-exec", "rm", "-rf", "{}", "+")
     for role in ORDER:
-        compose(hosts, key, role, "up", "-d", "--build", "--no-deps")
-        if role == "mysql":
+        if role == "app-reservation":
+            compose(hosts, key, role, "up", "-d", "--build", "--no-deps", "mock-pg")
+            wait_healthy(hosts, key, role, "mock-pg")
+            services = compose(hosts, key, role, "config", "--services", capture=True).stdout.decode().splitlines()
+            if "reservation-worker" in services:
+                compose(hosts, key, role, "up", "-d", "--no-deps", "reservation-worker")
+                wait_healthy(hosts, key, role, "reservation-worker")
+            compose(hosts, key, role, "up", "-d", "--no-deps", "reservation-api")
+            wait_url("http://127.0.0.1:18081/actuator/health/readiness")
+        elif role == "mysql":
+            compose(hosts, key, role, "up", "-d", "--no-deps", "mysql")
             wait_healthy(hosts, key, role, "mysql")
+            compose(hosts, key, role, "up", "-d", "--no-deps", "mysqld-exporter")
+        else:
+            compose(hosts, key, role, "up", "-d", "--build", "--no-deps")
         if role == "redis":
             for _ in range(30):
                 flushed = compose(hosts, key, "redis", "exec", "-T", "redis", "redis-cli", "FLUSHALL",
@@ -112,7 +124,6 @@ def reset(hosts, key):
                 time.sleep(1)
             else:
                 raise RuntimeError("Remote Redis FLUSHALL failed")
-    wait_url("http://127.0.0.1:18081/actuator/health/readiness")
     wait_url("http://127.0.0.1:13000/api/health")
     wait_url("http://127.0.0.1:19090/-/ready")
 
