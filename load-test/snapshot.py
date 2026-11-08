@@ -6,6 +6,7 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 from urllib.request import urlopen
+from urllib.parse import urlencode
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -44,11 +45,31 @@ def main(stage, moment):
         FROM payments p LEFT JOIN reservations r ON r.payment_id=p.payment_id
         WHERE r.reservation_id IS NULL
     """
+    recent_sql = """
+        SELECT JSON_OBJECT('paymentId',payment_id,'status',status,'amount',amount)
+        FROM payments ORDER BY updated_at DESC LIMIT 30
+    """
+    innodb_counters_sql = """
+        SELECT JSON_OBJECT('name',name,'count',count)
+        FROM information_schema.innodb_metrics WHERE name LIKE 'lock_row_lock_%'
+    """
     innodb = mysql("SHOW ENGINE INNODB STATUS\\G")
     marker = "LATEST DETECTED DEADLOCK"
     deadlock = innodb.split(marker, 1)[1].split("TRANSACTIONS", 1)[0].strip("-\n ") if marker in innodb else ""
     with urlopen("http://localhost:8082/test/payments", timeout=5) as response:
         pg = json.load(response)["payments"]
+    deadlock_count = int(mysql("SELECT count FROM information_schema.innodb_metrics WHERE name='lock_deadlocks'").strip())
+    try:
+        query = urlencode({"query": "hikaricp_connections_pending"})
+        with urlopen(f"http://localhost:9090/api/v1/query?{query}", timeout=5) as response:
+            hikari_pending = json.load(response).get("data", {}).get("result", [])
+    except Exception:
+        hikari_pending = []
+    try:
+        with urlopen("http://localhost:8081/actuator/metrics/hikaricp.connections.pending", timeout=5) as response:
+            hikari_pending_live = json.load(response)
+    except Exception:
+        hikari_pending_live = {}
     local_unconfirmed = rows(local_sql)
     local_by_id = {item["paymentId"]: item for item in local_unconfirmed}
     pg_missing = [
@@ -60,8 +81,15 @@ def main(stage, moment):
         "capturedAt": datetime.now(timezone.utc).isoformat(), "moment": moment,
         "queries": {"locks": locks_sql.strip(), "waits": waits_sql.strip(),
                     "paidWithoutReservation": missing_sql.strip(), "unconfirmedLocal": local_sql.strip(),
-                    "deadlock": "SHOW ENGINE INNODB STATUS\\G", "pg": "GET /test/payments"},
+                    "deadlock": "SHOW ENGINE INNODB STATUS\\G", "pg": "GET /test/payments",
+                    "deadlockCount": "SELECT count FROM information_schema.innodb_metrics WHERE name='lock_deadlocks'",
+                    "innodbCounters": innodb_counters_sql.strip(), "hikariPending": "hikaricp_connections_pending",
+                    "hikariPendingLive": "GET /actuator/metrics/hikaricp.connections.pending",
+                    "recentPayments": recent_sql.strip()},
         "locks": rows(locks_sql), "waits": rows(waits_sql), "latestDeadlock": deadlock,
+        "deadlockCount": deadlock_count, "innodbCounters": rows(innodb_counters_sql),
+        "hikariPending": hikari_pending, "hikariPendingLive": hikari_pending_live,
+        "recentPayments": rows(recent_sql),
         "paidWithoutReservation": rows(missing_sql), "pgPaidWithoutReservation": pg_missing,
     }
     directory = ROOT / "docs/evidence" / stage
@@ -72,17 +100,27 @@ def main(stage, moment):
         "deadlock-row": "요청 좌석 순서 역전으로 발생한 deadlock을 확인한다.",
         "deadlock-fk": "상영 FK S-lock 뒤 X-lock 전환 경로의 deadlock을 확인한다.",
         "app-closed": "V1에서 PG는 PAID이나 로컬 결제는 READY이며 예매가 없는 건을 확인한다.",
+        "v2-baseline": "V2 동시 요청 전의 deadlock 누적값과 결제 상태를 기록한다.",
+        "v2-after-locks": "V2 동시 요청 뒤 deadlock 누적값과 상영 행 대기를 비교한다.",
+        "throughput-ceiling": "상영 행 직렬화 중의 DB 락 대기와 Hikari 대기를 확인한다.",
+        "late-payment-before-cancel": "만료된 선점의 결제 전 상태를 기록한다.",
+        "late-payment-after-cancel": "좌석이 재선점된 뒤 도착한 결제가 취소됐는지 기록한다.",
     }.get(moment, "상태 스냅샷을 확인한다.")
     markdown = f"""# {stage}: {moment}
 
 - 시각: {data['capturedAt']}
 - 실행한 쿼리·명령: 같은 이름의 JSON 파일 `queries`에 원문을 보존했다.
+- InnoDB의 최근 deadlock 절은 이전 단계 기록도 유지된다. 이번 단계의 신규 건수는 전후 누적값 차이로 판정한다.
 
 | 항목 | 결과 |
 | --- | ---: |
 | 좌석·상영 락 | {len(data['locks'])}건 |
 | 락 대기 관계 | {len(data['waits'])}건 |
 | 최근 deadlock 기록 | {'있음' if deadlock else '없음'} |
+| deadlock 누적값 | {deadlock_count}건 |
+| InnoDB row lock 계측 | {len(data['innodbCounters'])}개 |
+| Hikari pending 시계열 | {len(hikari_pending)}개 |
+| Hikari pending 즉시값 | {hikari_pending_live.get('measurements', [{}])[0].get('value', '없음')} |
 | DB PAID·예매 없음 | {len(data['paidWithoutReservation'])}건 |
 | PG PAID·로컬 예매 없음 | {len(pg_missing)}건 |
 

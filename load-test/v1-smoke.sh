@@ -5,7 +5,6 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SCREENING_ID="${SCREENING_ID:-1}"
 TOKEN="smoke-$(date +%s)-$$"
 KEY="hold-$(date +%s)-$$"
-SEAT="A-$((10 + (RANDOM % 20)))"
 BASE="http://localhost:8000/api/v1"
 
 for attempt in {1..30}; do
@@ -13,6 +12,8 @@ for attempt in {1..30}; do
   if [[ "$attempt" -eq 30 ]]; then echo "reservation-api did not become healthy" >&2; exit 1; fi
   sleep 1
 done
+SEAT="$(curl -fsS "$BASE/screenings/$SCREENING_ID/seats" | jq -r '[.seats[] | select(.status=="AVAILABLE") | .seatNo][0]')"
+test "$SEAT" != null
 
 docker compose -f "$ROOT/docker-compose.yml" exec -T redis redis-cli \
   SET "waiting:screening:$SCREENING_ID:active:$TOKEN" "$TOKEN" EX 600 >/dev/null
