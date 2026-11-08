@@ -28,18 +28,22 @@ if [[ "$SCENARIO" != A && "$SCENARIO" != B ]]; then
   exit 2
 fi
 mkdir -p "$RESULT_DIR"
-docker compose -f "$ROOT/docker-compose.yml" stop \
-  waiting-api-1 waiting-api-2 waiting-api-3 reservation-api reservation-worker >/dev/null
-"$ROOT/gradlew" :waiting-api:bootJar :reservation-api:bootJar :reservation-worker:bootJar
-docker compose -f "$ROOT/docker-compose.yml" up -d --build \
-  redis mysql mock-pg waiting-api-1 waiting-api-2 waiting-api-3 reservation-api reservation-worker nginx \
-  prometheus grafana renderer node-exporter mysqld-exporter redis-exporter nginx-exporter
-for attempt in {1..60}; do
-  if curl -fsS -o /dev/null http://localhost:8081/actuator/health/readiness 2>/dev/null; then break; fi
-  if [[ "$attempt" -eq 60 ]]; then echo "reservation-api did not become ready" >&2; exit 1; fi
-  sleep 1
-done
-docker compose -f "$ROOT/docker-compose.yml" exec -T nginx nginx -s reload
+if [[ "${SKIP_SETUP:-0}" != 1 ]]; then
+  docker compose -f "$ROOT/docker-compose.yml" stop \
+    waiting-api-1 waiting-api-2 waiting-api-3 reservation-api reservation-worker >/dev/null
+  if [[ "${SKIP_BUILD:-0}" != 1 ]]; then
+    "$ROOT/gradlew" :waiting-api:bootJar :reservation-api:bootJar :reservation-worker:bootJar
+  fi
+  docker compose -f "$ROOT/docker-compose.yml" up -d --build \
+    redis mysql mock-pg waiting-api-1 waiting-api-2 waiting-api-3 reservation-api reservation-worker nginx \
+    prometheus grafana renderer node-exporter mysqld-exporter redis-exporter nginx-exporter
+  for attempt in {1..60}; do
+    if curl -fsS -o /dev/null http://localhost:8081/actuator/health/readiness 2>/dev/null; then break; fi
+    if [[ "$attempt" -eq 60 ]]; then echo "reservation-api did not become ready" >&2; exit 1; fi
+    sleep 1
+  done
+  docker compose -f "$ROOT/docker-compose.yml" exec -T nginx nginx -s reload
+fi
 
 if [[ "$SCENARIO" == B ]]; then
   SCREENING_ID="$SCREENING_ID" STAGE_SECONDS="$STAGE_SECONDS" \
@@ -49,8 +53,22 @@ fi
 
 START_SECONDS="$(date +%s)"
 python3 "$ROOT/load-test/capture.py" snapshot "$STAGE" "$RUN_ID" before
+FAULT_PID=""
+SNAPSHOT_PID=""
+if [[ -n "${SNAPSHOT_MOMENT:-}" ]]; then
+  (
+    sleep "${SNAPSHOT_DELAY_SECONDS:-2}"
+    "$ROOT/load-test/snapshot.sh" "$STAGE" "$RUN_ID-$SNAPSHOT_MOMENT"
+  ) &
+  SNAPSHOT_PID="$!"
+fi
+if [[ -n "${FAULT_KIND:-}" ]]; then
+  python3 "$ROOT/load-test/fault.py" "$STAGE" "$RUN_ID" "$FAULT_KIND" \
+    "${FAULT_DELAY_SECONDS:-5}" "${FAULT_OUTAGE_SECONDS:-30}" &
+  FAULT_PID="$!"
+fi
 set +e
-docker compose -f "$ROOT/docker-compose.yml" --profile load-test run --rm \
+docker compose -f "$ROOT/docker-compose.yml" --profile load-test run --rm --no-deps \
   -v "$RESULT_DIR:/results" k6 run -o experimental-prometheus-rw \
   -e "SCENARIO=$SCENARIO" -e "SCREENING_ID=$SCREENING_ID" \
   -e "STAGE_SECONDS=$STAGE_SECONDS" -e "SMOKE=$SMOKE" \
@@ -58,6 +76,12 @@ docker compose -f "$ROOT/docker-compose.yml" --profile load-test run --rm \
   --summary-export=/results/summary.json /load-test/load-test.js
 K6_STATUS=$?
 set -e
+if [[ -n "$FAULT_PID" ]]; then
+  wait "$FAULT_PID" || K6_STATUS=1
+fi
+if [[ -n "$SNAPSHOT_PID" ]]; then
+  wait "$SNAPSHOT_PID" || K6_STATUS=1
+fi
 sleep 5
 END_SECONDS="$(date +%s)"
 "$ROOT/load-test/capture.sh" "$STAGE" "$RUN_ID" "$START_SECONDS" "$END_SECONDS"
