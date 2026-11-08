@@ -44,3 +44,9 @@ ticket:
   inventory:
     key-prefix: "ticket"
     issued-token-ttl: 30m
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
