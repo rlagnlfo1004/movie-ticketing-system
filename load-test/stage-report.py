@@ -38,15 +38,17 @@ def run_summary(tag, suffix=""):
     return load(location / "summary.json"), location
 
 
-def panel_peak(directory, title):
+def panel_peak(directory, title, start=None, end=None):
     panel = next((item for item in DASHBOARD["panels"] if item["title"] == title), None)
     if panel is None or directory is None:
         return "—"
     raw = load(directory / "prometheus" / f"{panel['id']:02d}.json") or {}
     values = []
     for series in raw.get("data", {}).get("result", []):
-        for _, value in series.get("values", []):
+        for timestamp, value in series.get("values", []):
             try:
+                if start is not None and not start <= float(timestamp) <= end:
+                    continue
                 number = float(value)
                 if math.isfinite(number):
                     values.append(number)
@@ -55,12 +57,91 @@ def panel_peak(directory, title):
     return f"{max(values):.2f}" if values else "—"
 
 
+def mysql_outage_metrics():
+    tag = "v4-streams"
+    directory = RESULTS / tag
+    manifest = load(directory / "batch.json") or {}
+    batch = manifest.get("batch")
+    if not batch:
+        return ["- MySQL 중단 실행 원본이 아직 없다."]
+    events = load(directory / "events.json") or []
+    stopped = next((item for item in events if item["event"] == "MySQL stopped"), None)
+    started = next((item for item in events if item["event"] == "MySQL started"), None)
+    run_id = f"{batch}-mysql-stop"
+    if not stopped or not started:
+        return [f"- [장애 실행 원본]({tag}/{run_id}/README.md): 중단 창의 시작·종료 시각이 아직 없다."]
+    begin = datetime.fromisoformat(stopped["at"]).timestamp()
+    finish = datetime.fromisoformat(started["at"]).timestamp()
+    if finish - begin < 10:
+        return [f"- [장애 실행 원본]({tag}/{run_id}/README.md): 로컬 짧은 중단 창은 "
+                "Prometheus 5초 수집 간격으로 지연을 분리하기 어려워 수치를 내지 않는다."]
+    run = directory / run_id
+    state = load(ROOT / "docs/evidence" / tag / f"{run_id}-mysql-recovered.json") or {}
+    approved = len(state.get("approvedPgPayments") or [])
+    confirmed = len(state.get("confirmedPgPayments") or [])
+    confirmation = f"{confirmed}/{approved} ({confirmed / approved * 100:.2f}%)" if approved else "—"
+    return [f"- [MySQL 중단 실행]({tag}/{run_id}/README.md): {stopped['at']} ~ {started['at']}. "
+            f"복구 뒤 결제 승인 대비 확정 {confirmation}, 중단 창의 웹훅 p95 최대 "
+            f"{panel_peak(run, 'Webhook response p95', begin, finish)}초, Stream lag 최대 "
+            f"{panel_peak(run, 'Redis stream lag', begin, finish)}건. "
+            "분자·분모는 [복구 스냅샷](../../docs/evidence/" + tag + f"/{run_id}-mysql-recovered.json)에서 확인한다."]
+
+
 def pinning(tag, state):
     manifest = load(RESULTS / tag / "batch.json")
     if not manifest:
         return "—"
     path = ROOT / "docs/evidence" / tag / f"{manifest['batch']}-vt-{state}-pinning.txt"
     return str(path.read_text().count("jdk.VirtualThreadPinned {")) if path.exists() else "—"
+
+
+def counter_delta(raw, name, run_id, start, end, hold_only=False):
+    amount = 0
+    seen = False
+    for series in raw.get(name, {}).get("data", {}).get("result", []):
+        labels = series.get("metric", {})
+        if labels.get("testid") != run_id or hold_only and labels.get("operation") != "hold":
+            continue
+        values = [(float(ts), float(value)) for ts, value in series.get("values", [])]
+        before = [value for ts, value in values if ts <= start]
+        after = [value for ts, value in values if ts <= end]
+        if not after:
+            continue
+        amount += max(0, after[-1] - (before[-1] if before else 0))
+        seen = True
+    return amount if seen else None
+
+
+def hold_success_during_waiting_stop():
+    tag = "v5-lua-active"
+    directory = RESULTS / tag
+    manifest = load(directory / "batch.json") or {}
+    batch = manifest.get("batch")
+    if not batch:
+        return ["- waiting-api 중단 실행 원본이 아직 없다."]
+    run_id = f"{batch}-waiting-stop"
+    events = load(directory / "events.json") or []
+    stopped = next((item for item in events if item["event"] == "all waiting-api stopped"), None)
+    started = next((item for item in events if item["event"] == "all waiting-api started"), None)
+    if not stopped:
+        return ["- waiting-api 중단 시각이 아직 없다."]
+    source = directory / run_id / "prometheus/k6-holds.json"
+    if not started or not source.exists():
+        return [f"- [장애 실행 원본]({tag}/{run_id}/README.md): 중단 창의 계측 자료가 아직 없다."]
+    start = datetime.fromisoformat(stopped["at"]).timestamp()
+    end = datetime.fromisoformat(started["at"]).timestamp()
+    if end - start < 10:
+        return [f"- [장애 실행 원본]({tag}/{run_id}/README.md): 로컬 짧은 중단 창은 "
+                "Prometheus 5초 수집 간격으로 성공률을 분리하기 어려워 수치를 내지 않는다."]
+    raw = load(source) or {}
+    success = counter_delta(raw, "k6_seat_holds_created_total", run_id, start, end)
+    attempts = counter_delta(raw, "k6_http_reqs_total", run_id, start, end, hold_only=True)
+    if success is None or not attempts:
+        return [f"- [장애 실행 원본]({tag}/{run_id}/README.md): 중단 창의 선점 계측 표본이 없다."]
+    return [f"- [waiting-api 중단 실행]({tag}/{run_id}/README.md): {stopped['at']} ~ {started['at']} "
+            f"사이에 active 토큰 선점 성공 {success:.0f}건 / 시도 {attempts:.0f}건 "
+            f"({success / attempts * 100:.2f}%). 좌석 경합으로 인한 실패도 분모에 포함한다. "
+            f"[계측 원본]({tag}/{run_id}/prometheus/k6-holds.json)"]
 
 
 def comparison(tag, hypothesis):
@@ -183,6 +264,12 @@ def main():
              "실측값이 아닌 가정이다.", "", "## 단계별 원본", ""]
     for tag in TAGS:
         rows.extend(stage_section(tag))
+    rows += ["## MySQL 중단 뒤 확정 상태", ""]
+    rows.extend(mysql_outage_metrics())
+    rows.append("")
+    rows += ["## waiting-api 중단 중 active 선점", ""]
+    rows.extend(hold_success_during_waiting_stop())
+    rows.append("")
     rows += ["## 가상 스레드 켬 vs 끔", "",
              "값의 순서는 켬 / 끔이다. CPU는 reservation-api 프로세스 사용률이다.", "",
              "| 단계 | 가설 | 켬 선점 TPS | 끔 선점 TPS | p95·p99(ms) | Tomcat/JVM 스레드 | Hikari active/pending | pinning 건수 | CPU |",
