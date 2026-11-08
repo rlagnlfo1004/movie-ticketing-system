@@ -19,9 +19,26 @@ public class PaymentCompletionService {
 
     public CompletionResponse complete(String paymentId) {
         Payment payment = pg.find(paymentId);
-        if (!paymentId.equals(payment.id()) || !"PAID".equals(payment.status())) {
+        if (!paymentId.equals(payment.id())) {
             throw new ReservationApiException(ReservationErrorCode.PAYMENT_NOT_PAID, null, null);
         }
-        return writer.confirm(paymentId, payment);
+        if ("CANCELLED".equals(payment.status())) {
+            writer.cancel(paymentId);
+            return new CompletionResponse(null, "CANCELLED");
+        }
+        if (!"PAID".equals(payment.status())) {
+            throw new ReservationApiException(ReservationErrorCode.PAYMENT_NOT_PAID, null, null);
+        }
+        try {
+            return writer.confirm(paymentId, payment);
+        } catch (ReservationApiException exception) {
+            if (exception.getErrorCode() != ReservationErrorCode.SEAT_TAKEN
+                    && exception.getErrorCode() != ReservationErrorCode.HOLD_EXPIRED) {
+                throw exception;
+            }
+            pg.cancel(paymentId, "Seat hold expired or seats unavailable");
+            writer.cancel(paymentId);
+            return new CompletionResponse(null, "CANCELLED");
+        }
     }
 }

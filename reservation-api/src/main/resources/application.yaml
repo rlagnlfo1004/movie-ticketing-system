@@ -28,6 +28,7 @@ reservation:
   hold-duration: 30s
   mock-pg-base-url: http://localhost:8082
   mock-pg-api-secret: mock-api-secret
+  webhook-secret: whsec_bW9jay13ZWJob29rLXNlY3JldA==
   active-admission:
     base-url: http://localhost:8080
   idempotency:
