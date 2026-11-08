@@ -44,6 +44,7 @@ def main(hosts_path, profile, destination):
         "app-waiting": {**common, "SPRING_DATA_REDIS_HOST": hosts["REDIS_PRIVATE_IP"]},
         "app-reservation": {**common, "SPRING_DATA_REDIS_HOST": hosts["REDIS_PRIVATE_IP"],
                             "SPRING_DATASOURCE_URL": db_url,
+                            "RESERVATION_ACTIVE_ADMISSION_BASE_URL": f"http://{hosts['APP_WAITING_PRIVATE_IP']}:8080",
                             "SPRING_DATASOURCE_USERNAME": local["SEAT_DB_USER"],
                             "SPRING_DATASOURCE_PASSWORD": local["SEAT_DB_PASSWORD"],
                             "RESERVATION_MOCK_PG_BASE_URL": "http://127.0.0.1:8082",

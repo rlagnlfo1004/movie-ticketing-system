@@ -10,7 +10,7 @@ HOSTS_FILE="$1"
 PROFILE="$2"
 OUTPUT_DIR="$3"
 SSH_KEY="$4"
-SSH_USER="${SSH_USER:-ubuntu}"
+SSH_USER="${SSH_USER:-ec2-user}"
 if [[ ! "$SSH_USER" =~ ^[A-Za-z0-9_-]+$ ]]; then
   echo "Invalid SSH_USER" >&2
   exit 2
