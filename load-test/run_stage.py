@@ -283,6 +283,9 @@ def main():
         verify_run(stage, run_id)
         verify_seat_uniqueness()
         details = json.loads((directory / run_id / "fault-events.json").read_text())
+        status = json.loads((directory / run_id / "fault-status.json").read_text())
+        if not status["completed"]:
+            raise RuntimeError(f"Fault injection did not recover: {fault}")
         events.extend(details)
         if fault == "redis-kill":
             with urlopen("http://localhost:8081/admin/reconcile", timeout=30) as response:

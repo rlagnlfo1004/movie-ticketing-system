@@ -41,6 +41,23 @@ def wait_healthy(service):
     raise RuntimeError(f"{service} did not recover")
 
 
+def wait_stream_drain(stage, run_id, moment, events):
+    name = f"{run_id}-{moment}"
+    path = ROOT / "docs/evidence" / stage / f"{name}.json"
+    for _ in range(90):
+        run(str(ROOT / "load-test/snapshot.sh"), stage, name)
+        state = json.loads(path.read_text())
+        groups = state.get("streamGroups") or []
+        lag = groups[0].get("lag") if groups else None
+        pending = (state.get("streamPending") or [None])[0]
+        if state.get("mysqlAvailable") and not state.get("missingMysqlSeats") and lag == 0 and pending == 0:
+            record(events, moment)
+            events[-1]["snapshot"] = f"../../../docs/evidence/{stage}/{name}.json"
+            return
+        time.sleep(1)
+    raise RuntimeError(f"Stream did not drain after {moment}")
+
+
 def main(stage, run_id, kind, delay, outage):
     if kind not in ("worker-kill", "mysql-stop", "waiting-stop", "redis-kill"):
         raise SystemExit(f"Unknown fault: {kind}")
@@ -54,6 +71,7 @@ def main(stage, run_id, kind, delay, outage):
     }[kind]
     directory = ROOT / "load-test/results" / stage / run_id
     directory.mkdir(parents=True, exist_ok=True)
+    completed = False
     try:
         time.sleep(float(delay))
         snapshot(stage, run_id, moments[0], events)
@@ -62,6 +80,7 @@ def main(stage, run_id, kind, delay, outage):
             record(events, "reservation-worker SIGKILL")
             snapshot(stage, run_id, moments[1], events)
             run(*COMPOSE, "up", "-d", "--no-deps", "reservation-worker")
+            wait_healthy("reservation-worker")
         elif kind == "mysql-stop":
             run(*COMPOSE, "stop", "mysql")
             record(events, "MySQL stopped")
@@ -75,6 +94,8 @@ def main(stage, run_id, kind, delay, outage):
             snapshot(stage, run_id, moments[1], events)
             time.sleep(float(outage))
             run(*COMPOSE, "start", "waiting-api-1", "waiting-api-2", "waiting-api-3")
+            for service in ("waiting-api-1", "waiting-api-2", "waiting-api-3"):
+                wait_healthy(service)
         else:
             subprocess.run([*COMPOSE, "exec", "-T", "redis", "sh", "-c", "kill -9 1"],
                            cwd=ROOT, check=False)
@@ -90,9 +111,14 @@ def main(stage, run_id, kind, delay, outage):
             with urlopen("http://localhost:8081/admin/reconcile", timeout=30) as response:
                 response.read()
             record(events, "reconciliation called")
-        snapshot(stage, run_id, moments[2], events)
+        if kind == "mysql-stop" or kind == "worker-kill" and stage.startswith("v4"):
+            wait_stream_drain(stage, run_id, moments[2], events)
+        else:
+            snapshot(stage, run_id, moments[2], events)
+        completed = True
     finally:
         (directory / "fault-events.json").write_text(json.dumps(events, ensure_ascii=False, indent=2) + "\n")
+        (directory / "fault-status.json").write_text(json.dumps({"completed": completed}) + "\n")
 
 
 if __name__ == "__main__":

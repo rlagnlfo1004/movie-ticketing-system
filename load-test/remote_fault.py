@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Inject a single remote fault while k6 is running."""
 from datetime import datetime, timezone
+import json
 import os
 import subprocess
 import time
@@ -23,6 +24,20 @@ def snapshot(env, stage, run_id, name, mysql_down=False):
     return event(name, stage, run_id)
 
 
+def wait_stream_drain(env, stage, run_id, moment):
+    for _ in range(30):
+        recorded = snapshot(env, stage, run_id, moment)
+        path = ROOT / "docs/evidence" / stage / f"{run_id}-{moment}.json"
+        state = json.loads(path.read_text())
+        groups = state.get("streamGroups") or []
+        lag = groups[0].get("lag") if groups else None
+        pending = (state.get("streamPending") or [None])[0]
+        if state.get("mysqlAvailable") and not state.get("missingMysqlSeats") and lag == 0 and pending == 0:
+            return recorded
+        time.sleep(2)
+    raise RuntimeError(f"Remote Stream did not drain after {moment}")
+
+
 def inject(hosts, key, env, stage, run_id, kind, smoke):
     from remote_stage import compose
     if kind not in ("worker-kill", "mysql-stop", "waiting-stop", "redis-kill"):
@@ -42,6 +57,8 @@ def inject(hosts, key, env, stage, run_id, kind, smoke):
         events.append(event("reservation-worker SIGKILL"))
         events.append(snapshot(env, stage, run_id, moments[1]))
         compose(hosts, key, "app-reservation", "up", "-d", "--no-deps", "reservation-worker")
+        from remote_stage import wait_healthy
+        wait_healthy(hosts, key, "app-reservation", "reservation-worker")
     elif kind == "mysql-stop":
         compose(hosts, key, "mysql", "stop", "mysql")
         events.append(event("MySQL stopped"))
@@ -56,6 +73,9 @@ def inject(hosts, key, env, stage, run_id, kind, smoke):
         events.append(snapshot(env, stage, run_id, moments[1]))
         time.sleep(1 if smoke else 30)
         compose(hosts, key, "app-waiting", "start", "waiting-api-1", "waiting-api-2", "waiting-api-3")
+        from remote_stage import wait_healthy
+        for service in ("waiting-api-1", "waiting-api-2", "waiting-api-3"):
+            wait_healthy(hosts, key, "app-waiting", service)
     else:
         from remote_stage import remote
         remote(hosts, key, "redis", "docker", "compose", "-f", "/home/ec2-user/movie-ticketing/compose.json",
@@ -74,5 +94,8 @@ def inject(hosts, key, env, stage, run_id, kind, smoke):
         with urlopen(env["RESERVATION_API_URL"] + "/admin/reconcile", timeout=30) as response:
             response.read()
         events.append(event("reconciliation called"))
-    events.append(snapshot(env, stage, run_id, moments[2]))
+    if kind == "mysql-stop" or kind == "worker-kill" and stage.startswith("v4"):
+        events.append(wait_stream_drain(env, stage, run_id, moments[2]))
+    else:
+        events.append(snapshot(env, stage, run_id, moments[2]))
     return events
