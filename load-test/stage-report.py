@@ -77,7 +77,8 @@ def comparison(tag, hypothesis):
         return f"{max(rates):.2f}" if rates else metric(summary, "seat_holds_created", "rate")
     def pair(title):
         return f"{panel_peak(on_path, title)} / {panel_peak(off_path, title)}"
-    return (f"| [{tag}]({tag}/{on_path.name}/README.md) | {hypothesis} | {peak_tps(on)} | "
+    return (f"| [{tag} 켬]({on_path.relative_to(RESULTS)}/README.md) / "
+            f"[끔]({off_path.relative_to(RESULTS)}/README.md) | {hypothesis} | {peak_tps(on)} | "
             f"{peak_tps(off)} | {metric(on, 'seat_hold_duration', 'p(95)')} / "
             f"{metric(off, 'seat_hold_duration', 'p(95)')} · "
             f"{metric(on, 'seat_hold_duration', 'p(99)')} / {metric(off, 'seat_hold_duration', 'p(99)')} | "
