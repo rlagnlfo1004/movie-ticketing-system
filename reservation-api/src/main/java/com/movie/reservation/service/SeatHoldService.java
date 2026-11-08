@@ -3,36 +3,30 @@ package com.movie.reservation.service;
 import com.movie.reservation.client.ActiveAdmissionClient;
 import com.movie.reservation.exception.ReservationApiException;
 import com.movie.reservation.exception.ReservationErrorCode;
-import java.sql.Timestamp;
+import com.movie.reservation.repository.RedisSeatStateRepository;
+import com.movie.reservation.repository.RedisSeatStateRepository.HoldData;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class SeatHoldService {
 
     private static final Pattern SEAT = Pattern.compile("^[A-Y]-([1-9]|[1-3][0-9]|40)$");
-    private static final int PRICE = 15_000;
 
-    private final JdbcTemplate jdbc;
+    private final RedisSeatStateRepository repository;
     private final ActiveAdmissionClient admission;
 
     @Value("${reservation.hold-duration:30s}")
     private Duration holdDuration;
-
-    @Value("${reservation.v1-lock-pause:0ms}")
-    private Duration lockPause;
 
     public record HoldResponse(String holdId, String paymentId, int amount, Instant heldUntil) {
     }
@@ -46,7 +40,6 @@ public class SeatHoldService {
     public record MineResponse(String status, String holdId, String paymentId, String reservationId) {
     }
 
-    @Transactional
     public HoldResponse hold(String screeningId, String queueToken, String key, List<String> seats) {
         if (queueToken == null || !Pattern.matches("^[A-Za-z0-9._:-]{8,256}$", queueToken)) {
             throw error(ReservationErrorCode.QUEUE_TOKEN_INVALID, screeningId, key);
@@ -54,124 +47,59 @@ public class SeatHoldService {
         if (key == null || !Pattern.matches("^[A-Za-z0-9._:-]{8,128}$", key)) {
             throw error(ReservationErrorCode.IDEMPOTENCY_KEY_INVALID, screeningId, key);
         }
-        if (seats == null || seats.isEmpty() || seats.size() > 4
-                || new HashSet<>(seats).size() != seats.size()
+        if (seats == null || seats.isEmpty() || seats.size() > 4 || new HashSet<>(seats).size() != seats.size()
                 || seats.stream().anyMatch(seat -> seat == null || !SEAT.matcher(seat).matches())) {
             throw error(ReservationErrorCode.INVALID_SEAT_SELECTION, screeningId, key);
         }
         if (!admission.validate(screeningId, queueToken).active()) {
             throw error(ReservationErrorCode.NOT_ADMITTED, screeningId, key);
         }
-        if (count("SELECT COUNT(*) FROM reservations WHERE screening_id=? AND queue_token=?", screeningId, queueToken) > 0) {
-            throw error(ReservationErrorCode.ALREADY_RESERVED, screeningId, key);
-        }
-        List<HoldResponse> replay = jdbc.query("""
-                SELECT h.hold_id,p.payment_id,p.amount,h.held_until,h.queue_token
-                FROM seat_holds h JOIN payments p ON p.hold_id=h.hold_id
-                WHERE h.screening_id=? AND h.idempotency_key=?
-                """, (rs, row) -> {
-            if (!queueToken.equals(rs.getString("queue_token"))) {
-                throw error(ReservationErrorCode.IDEMPOTENCY_KEY_CONFLICT, screeningId, key);
-            }
-            return new HoldResponse(rs.getString("hold_id"), rs.getString("payment_id"),
-                    rs.getInt("amount"), rs.getTimestamp("held_until").toInstant());
-        }, screeningId, key);
-        if (!replay.isEmpty()) {
-            HoldResponse existing = replay.getFirst();
-            List<String> heldSeats = jdbc.query("SELECT seat_no FROM seat_hold_seats WHERE hold_id=?",
-                    (rs, row) -> rs.getString(1), existing.holdId());
-            if (!new HashSet<>(heldSeats).equals(new HashSet<>(seats))) {
-                throw error(ReservationErrorCode.IDEMPOTENCY_KEY_CONFLICT, screeningId, key);
-            }
-            return existing;
-        }
-        if (count("SELECT COUNT(*) FROM seat_holds WHERE screening_id=? AND queue_token=? AND status='HELD' AND held_until>NOW(6)", screeningId, queueToken) > 0) {
-            throw error(ReservationErrorCode.ALREADY_HOLDING, screeningId, key);
-        }
-
-        // V2: 상영 행을 먼저 직렬화하고 모든 요청이 같은 좌석 잠금 순서를 따른다.
-        int decremented = jdbc.update("""
-                UPDATE screenings SET remaining_seat_count=remaining_seat_count-?
-                WHERE id=? AND remaining_seat_count>=?
-                """, seats.size(), screeningId, seats.size());
-        if (decremented == 0) {
-            throw error(ReservationErrorCode.SEAT_TAKEN, screeningId, key);
-        }
-        List<String> ordered = seats.stream()
-                .sorted(Comparator.comparing((String seat) -> seat.charAt(0))
-                        .thenComparingInt(seat -> Integer.parseInt(seat.substring(2))))
-                .toList();
-        for (int index = 0; index < ordered.size(); index++) {
-            String seat = ordered.get(index);
-            List<String> status = jdbc.query("""
-                    SELECT status FROM screening_seats WHERE screening_id=? AND seat_no=? FOR UPDATE
-                    """, (rs, row) -> rs.getString(1), screeningId, seat);
-            if (status.isEmpty() || !"AVAILABLE".equals(status.getFirst())) {
-                throw error(ReservationErrorCode.SEAT_TAKEN, screeningId, key);
-            }
-            if (index == 0 && seats.size() > 1) pause(lockPause);
-        }
         String holdId = UUID.randomUUID().toString();
         String paymentId = UUID.randomUUID().toString();
-        Instant now = Instant.now();
-        Instant until = now.plus(holdDuration);
-        try {
-            jdbc.update("INSERT INTO seat_holds (hold_id,screening_id,queue_token,idempotency_key,status,held_until,created_at) VALUES (?,?,?,?,'HELD',?,?)",
-                    holdId, screeningId, queueToken, key, Timestamp.from(until), Timestamp.from(now));
-        } catch (DuplicateKeyException duplicate) {
+        Instant heldUntil = Instant.now().plus(holdDuration);
+        int amount = seats.size() * 15_000;
+        long result = repository.hold(screeningId, queueToken, key, seats, holdId, paymentId, amount, heldUntil, holdDuration);
+        if (result == 1) return new HoldResponse(holdId, paymentId, amount, heldUntil);
+        if (result == -2) {
+            HoldData previous = repository.holdForToken(screeningId, queueToken);
+            if (previous != null && previous.key().equals(key)
+                    && new HashSet<>(previous.seats()).equals(new HashSet<>(seats))) {
+                return new HoldResponse(previous.holdId(), previous.paymentId(), previous.amount(), previous.heldUntil());
+            }
             throw error(ReservationErrorCode.ALREADY_HOLDING, screeningId, key);
         }
-        for (String seat : ordered) {
-            jdbc.update("INSERT INTO seat_hold_seats (hold_id,screening_id,seat_no) VALUES (?,?,?)",
-                    holdId, screeningId, seat);
-            jdbc.update("UPDATE screening_seats SET status='HELD',hold_id=?,held_until=? WHERE screening_id=? AND seat_no=?",
-                    holdId, Timestamp.from(until), screeningId, seat);
-        }
-        jdbc.update("INSERT INTO payments (payment_id,hold_id,screening_id,queue_token,amount,status,created_at,updated_at) VALUES (?,?,?,?,?,'READY',?,?)",
-                paymentId, holdId, screeningId, queueToken, seats.size() * PRICE, Timestamp.from(now), Timestamp.from(now));
-        return new HoldResponse(holdId, paymentId, seats.size() * PRICE, until);
+        if (result == -3) throw error(ReservationErrorCode.ALREADY_RESERVED, screeningId, key);
+        throw error(ReservationErrorCode.SEAT_TAKEN, screeningId, key);
     }
 
-    @Transactional(readOnly = true)
     public SeatsResponse seats(String screeningId) {
-        List<Seat> seats = jdbc.query("SELECT seat_no,status FROM screening_seats WHERE screening_id=? ORDER BY seat_no",
-                (rs, row) -> new Seat(rs.getString(1), rs.getString(2)), screeningId);
-        if (seats.isEmpty()) throw error(ReservationErrorCode.SCREENING_NOT_FOUND, screeningId, null);
+        if (!"1".equals(screeningId)) throw error(ReservationErrorCode.SCREENING_NOT_FOUND, screeningId, null);
+        List<String> seatNumbers = new ArrayList<>(1000);
+        for (char row = 'A'; row <= 'Y'; row++) {
+            for (int number = 1; number <= 40; number++) seatNumbers.add(row + "-" + number);
+        }
+        List<Seat> seats = repository.seats(screeningId, seatNumbers).stream()
+                .map(state -> new Seat(state.seatNo(), state.status())).toList();
         return new SeatsResponse(seats);
     }
 
-    @Transactional(readOnly = true)
     public MineResponse mine(String screeningId, String queueToken) {
         if (queueToken == null || queueToken.isBlank()) {
             throw error(ReservationErrorCode.QUEUE_TOKEN_REQUIRED, screeningId, null);
         }
-        List<MineResponse> results = jdbc.query("""
-                SELECT h.status,h.hold_id,p.payment_id,r.reservation_id
-                FROM seat_holds h JOIN payments p ON p.hold_id=h.hold_id
-                LEFT JOIN reservations r ON r.hold_id=h.hold_id
-                WHERE h.screening_id=? AND h.queue_token=?
-                ORDER BY h.created_at DESC LIMIT 1
-                """, (rs, row) -> new MineResponse(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4)),
-                screeningId, queueToken);
-        return results.isEmpty() ? new MineResponse("NOT_FOUND", null, null, null) : results.getFirst();
-    }
-
-    private int count(String sql, Object... args) {
-        Integer result = jdbc.queryForObject(sql, Integer.class, args);
-        return result == null ? 0 : result;
-    }
-
-    private ReservationApiException error(ReservationErrorCode code, String screeningId, String key) {
-        return new ReservationApiException(code, screeningId, key);
-    }
-
-    private void pause(Duration duration) {
-        if (duration.isZero()) return;
-        try {
-            Thread.sleep(duration);
-        } catch (InterruptedException interrupted) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("V1 lock pause interrupted", interrupted);
+        String reservationId = repository.reservationForToken(screeningId, queueToken);
+        if (reservationId != null) return new MineResponse("CONFIRMED", null, null, reservationId);
+        if (repository.cancelledForToken(screeningId, queueToken)) {
+            return new MineResponse("CANCELLED", null, null, null);
         }
+        HoldData active = repository.holdForToken(screeningId, queueToken);
+        if (active != null) return new MineResponse("HELD", active.holdId(), active.paymentId(), null);
+        HoldData expired = repository.lastHoldForToken(screeningId, queueToken);
+        if (expired != null) return new MineResponse("EXPIRED", expired.holdId(), expired.paymentId(), null);
+        return new MineResponse("NOT_FOUND", null, null, null);
+    }
+
+    private ReservationApiException error(ReservationErrorCode code, String sid, String key) {
+        return new ReservationApiException(code, sid, key);
     }
 }

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 public class PaymentCompletionService {
 
     private final MockPgClient pg;
-    private final ReservationConfirmationWriter writer;
+    private final RedisReservationConfirmationService writer;
 
     public record CompletionResponse(String reservationId, String status) {
     }
