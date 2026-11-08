@@ -16,3 +16,4 @@ STAGE=v6-aof-reconcile STAGE_PROFILE=v6 SMOKE=1 ./load-test/run.sh
 측정일에는 `measurement-secrets.py create`가 Grafana 비밀번호를 저장소 밖의 `~/.config/movie-ticketing/loadtest-grafana.env`에 만든다. 런북의 destroy 확인 뒤 `measurement-secrets.py delete`로 해당 파일을 없앤다. PortOne 값은 로컬 `~/.config/movie-ticketing/portone.env`에서만 읽고 AWS 호스트 env에는 넣지 않는다.
 
 Terraform의 `hosts.env`가 나오면 `build-host-env.py <hosts.env> <단계 프로필> <출력 폴더>`가 일곱 호스트의 `*.secret.env`를 만든다. 앱은 사설 IP로 Redis·MySQL에 접속하며, AWS용 파일에는 PortOne 변수를 넣지 않는다. 런북(#20)이 이 파일들을 각 서버로 전달한다.
+`upload-host-env.sh <hosts.env> <단계 프로필> <출력 폴더> <SSH 키>`는 같은 파일을 만든 뒤 각 공인 IP의 해당 호스트로 전달하고 권한을 600으로 맞춘다. 실제 서버가 없는 검증에서는 `UPLOAD_DRY_RUN=1`로 대상만 확인한다.
