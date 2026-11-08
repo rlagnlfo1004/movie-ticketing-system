@@ -1,0 +1,282 @@
+{
+  "capturedAt": "2026-11-08T10:52:48.449232+00:00",
+  "moment": "20261108T104602Z-b1-after",
+  "queries": {
+    "locks": "SELECT JSON_OBJECT('transactionId',ENGINE_TRANSACTION_ID,'table',OBJECT_NAME,\n          'index',INDEX_NAME,'type',LOCK_TYPE,'mode',LOCK_MODE,'status',LOCK_STATUS,'data',LOCK_DATA)\n        FROM performance_schema.data_locks WHERE OBJECT_SCHEMA='movie_seats'",
+    "waits": "SELECT JSON_OBJECT('requesting',REQUESTING_ENGINE_TRANSACTION_ID,\n          'blocking',BLOCKING_ENGINE_TRANSACTION_ID,'requestingLock',REQUESTING_ENGINE_LOCK_ID,\n          'blockingLock',BLOCKING_ENGINE_LOCK_ID)\n        FROM performance_schema.data_lock_waits",
+    "paidWithoutReservation": "SELECT JSON_OBJECT('paymentId',p.payment_id,'localStatus',p.status,'amount',p.amount)\n        FROM payments p LEFT JOIN reservations r ON r.payment_id=p.payment_id\n        WHERE p.status='PAID' AND r.reservation_id IS NULL",
+    "unconfirmedLocal": "SELECT JSON_OBJECT('paymentId',p.payment_id,'localStatus',p.status,'amount',p.amount)\n        FROM payments p LEFT JOIN reservations r ON r.payment_id=p.payment_id\n        WHERE r.reservation_id IS NULL",
+    "deadlock": "SHOW ENGINE INNODB STATUS\\G",
+    "pg": "GET /test/payments",
+    "deadlockCount": "SELECT count FROM information_schema.innodb_metrics WHERE name='lock_deadlocks'",
+    "innodbCounters": "SELECT JSON_OBJECT('name',name,'count',count)\n        FROM information_schema.innodb_metrics WHERE name LIKE 'lock_row_lock_%'",
+    "hikariPending": "hikaricp_connections_pending",
+    "hikariPendingLive": "GET /actuator/metrics/hikaricp.connections.pending",
+    "recentPayments": "SELECT JSON_OBJECT('paymentId',payment_id,'status',status,'amount',amount)\n        FROM payments ORDER BY updated_at DESC LIMIT 30"
+  },
+  "locks": [],
+  "waits": [],
+  "latestDeadlock": "",
+  "deadlockCount": 0,
+  "innodbCounters": [
+    {
+      "name": "lock_row_lock_current_waits",
+      "count": 0
+    },
+    {
+      "name": "lock_row_lock_time",
+      "count": 417115
+    },
+    {
+      "name": "lock_row_lock_time_max",
+      "count": 401
+    },
+    {
+      "name": "lock_row_lock_waits",
+      "count": 2437
+    },
+    {
+      "name": "lock_row_lock_time_avg",
+      "count": 171
+    }
+  ],
+  "hikariPending": [
+    {
+      "metric": {
+        "__name__": "hikaricp_connections_pending",
+        "instance": "reservation-api:8081",
+        "job": "reservation-api",
+        "pool": "HikariPool-1"
+      },
+      "value": [
+        1794135167.114,
+        "0"
+      ]
+    }
+  ],
+  "hikariPendingLive": {
+    "availableTags": [
+      {
+        "tag": "pool",
+        "values": [
+          "HikariPool-1"
+        ]
+      }
+    ],
+    "description": "Pending threads",
+    "measurements": [
+      {
+        "statistic": "VALUE",
+        "value": 0.0
+      }
+    ],
+    "name": "hikaricp.connections.pending"
+  },
+  "recentPayments": [
+    {
+      "amount": 30000,
+      "status": "READY",
+      "paymentId": "89c95c19-4616-42a7-9491-4688e0c3fa64"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "72f0c314-78c7-49b8-b6c3-a9013caf952a"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "b744386c-fed3-4c6c-8a94-612f6bf4789a"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "ebd9c471-3288-47c5-a82b-cbf7c0c8ab2d"
+    },
+    {
+      "amount": 60000,
+      "status": "READY",
+      "paymentId": "c8a97487-38da-41cc-8c18-74099c6fb229"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "d72cd540-a554-4bd9-8e9e-ff7906ede756"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "197d149f-581b-4bd0-a498-0efeadd7d238"
+    },
+    {
+      "amount": 30000,
+      "status": "READY",
+      "paymentId": "5047fed9-b655-407e-a5f3-e4e64429028c"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "fe31ad4c-d724-42b4-8f2b-ba7811d5be01"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "fb26c89f-1ec3-41fa-b0fa-dccbae030018"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "fb378afe-1f87-4de6-bdd7-06a2773b458f"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "4fc29d54-2efd-4dae-83ae-c3342dfa8ddb"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "a413bbe1-ccf2-45c5-8e5a-c42c9d2af778"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "445cfe3d-8f32-4595-ab19-c00c9be786e1"
+    },
+    {
+      "amount": 30000,
+      "status": "READY",
+      "paymentId": "adb22318-c61d-41b3-9758-6fd3f2a0ee04"
+    },
+    {
+      "amount": 30000,
+      "status": "READY",
+      "paymentId": "9f4e0218-01b2-4f4c-aad3-75303f620317"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "d785b9c6-fc23-4a83-887f-99a75a9a4e0b"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "2d6ce1f1-d91e-42e6-8e03-ff06aea1c72b"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "cc962eaa-449e-4bd1-9091-993e1a003005"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "4339e333-c3bc-4b53-9084-41054a54079e"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "82529e7c-394d-4138-8462-e44f29feece6"
+    },
+    {
+      "amount": 60000,
+      "status": "READY",
+      "paymentId": "738e0eee-2732-4cfd-8a9d-a29c703711cc"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "f4cb6bfd-54a5-4687-bfbd-bfc33f74fe36"
+    },
+    {
+      "amount": 30000,
+      "status": "READY",
+      "paymentId": "9037989b-bdb4-4a49-af47-720be0405ab0"
+    },
+    {
+      "amount": 30000,
+      "status": "READY",
+      "paymentId": "d82eb89a-b595-46e9-bc2d-4ce3faaeb630"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "bd783993-d4af-4776-aeef-a678c934808b"
+    },
+    {
+      "amount": 30000,
+      "status": "READY",
+      "paymentId": "0c05b13e-d764-489d-89b6-519f574b719e"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "f6327e1b-2ae0-479c-b7f5-453781f766b4"
+    },
+    {
+      "amount": 30000,
+      "status": "READY",
+      "paymentId": "96b05241-c754-451f-ac16-3f1c13ba8ba0"
+    },
+    {
+      "amount": 30000,
+      "status": "READY",
+      "paymentId": "b1f2b33b-d4ea-49c8-a0fa-b4f37cce7dec"
+    }
+  ],
+  "paidWithoutReservation": [],
+  "pgPaidWithoutReservation": [],
+  "redisReservedSeats": [],
+  "activeKeyCount": 7181,
+  "seatHoldKeyCount": 0,
+  "mysqlReservationSeats": [],
+  "missingMysqlSeats": [],
+  "mysqlAvailable": true,
+  "streamLength": 0,
+  "streamGroups": [],
+  "streamPending": [
+    0
+  ],
+  "deadLetterEntries": [],
+  "redisAofConfig": {
+    "appendonly": "no",
+    "appendfsync": "everysec"
+  },
+  "redisPersistence": {
+    "loading": "0",
+    "async_loading": "0",
+    "current_cow_peak": "0",
+    "current_cow_size": "0",
+    "current_cow_size_age": "0",
+    "current_fork_perc": "0.00",
+    "current_save_keys_processed": "0",
+    "current_save_keys_total": "0",
+    "rdb_changes_since_last_save": "17305",
+    "rdb_bgsave_in_progress": "0",
+    "rdb_last_save_time": "1794135065",
+    "rdb_last_bgsave_status": "ok",
+    "rdb_last_bgsave_time_sec": "-1",
+    "rdb_current_bgsave_time_sec": "-1",
+    "rdb_saves": "0",
+    "rdb_last_cow_size": "0",
+    "rdb_last_load_keys_expired": "0",
+    "rdb_last_load_keys_loaded": "0",
+    "aof_enabled": "0",
+    "aof_rewrite_in_progress": "0",
+    "aof_rewrite_scheduled": "0",
+    "aof_last_rewrite_time_sec": "-1",
+    "aof_current_rewrite_time_sec": "-1",
+    "aof_last_bgrewrite_status": "ok",
+    "aof_rewrites": "0",
+    "aof_rewrites_consecutive_failures": "0",
+    "aof_last_write_status": "ok",
+    "aof_last_cow_size": "0",
+    "module_fork_in_progress": "0",
+    "module_fork_last_cow_size": "0"
+  },
+  "reconciliationResult": null,
+  "approvedPgPayments": [],
+  "confirmedPgPayments": [],
+  "cancelledPgPayments": [],
+  "unresolvedPgPayments": []
+}
