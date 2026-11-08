@@ -100,7 +100,7 @@ export function fullFlow() {
   const hold = makeHold(token);
   if (!hold || Math.random() >= .85) return;
   const paid = http.post(`${pg}/test/payments/${encodeURIComponent(hold.paymentId)}/approve`,
-    JSON.stringify({ amount: hold.amount, webhookUrl: webhook }),
+    JSON.stringify({ amount: hold.amount, customData: hold.customData, webhookUrl: webhook }),
     { headers: { 'Content-Type': 'application/json' }, timeout: '5s', tags: { name: '/test/payments/{id}/approve' } });
   paymentErrors.add(paid.status === 200 ? 0 : 1);
   if (paid.status !== 200 || Math.random() < .1) return;

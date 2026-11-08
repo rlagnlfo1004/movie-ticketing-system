@@ -41,7 +41,8 @@ test('승인한 결제는 조회되고 서명된 웹훅이 전달된다', async 
   assert.equal(preregistered.status, 200);
   const response = await fetch(`${baseUrl}/test/payments/${paymentId}/approve`, {
     method: 'POST', headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ amount: 30000, webhookUrl: `http://127.0.0.1:${webhook.address().port}/webhook` }),
+    body: JSON.stringify({ amount: 30000, customData: { ticketingContext: 'opaque' },
+      webhookUrl: `http://127.0.0.1:${webhook.address().port}/webhook` }),
   });
   assert.equal(response.status, 200);
   const lookup = await fetch(`${baseUrl}/payments/${paymentId}`, {
@@ -51,6 +52,15 @@ test('승인한 결제는 조회되고 서명된 웹훅이 전달된다', async 
   const payment = await lookup.json();
   assert.equal(payment.status, 'PAID');
   assert.equal(payment.amount.total, 30000);
+  assert.deepEqual(JSON.parse(payment.customData), { ticketingContext: 'opaque' });
+  const listed = await fetch(`${baseUrl}/payments`, {
+    headers: { authorization: 'PortOne local-api-secret' },
+  });
+  assert.equal((await listed.json()).items[0].id, paymentId);
+  const pageOne = await fetch(`${baseUrl}/payments?requestBody=${encodeURIComponent(JSON.stringify({ page: { number: 1, size: 1 } }))}`, {
+    headers: { authorization: 'PortOne local-api-secret' },
+  });
+  assert.equal((await pageOne.json()).items.length, 0);
   for (let i = 0; i < 50 && deliveries.length === 0; i++) {
     await new Promise(resolve => setTimeout(resolve, 10));
   }

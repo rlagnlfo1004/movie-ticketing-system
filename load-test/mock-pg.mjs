@@ -63,7 +63,8 @@ export function createMockPgServer(config = {}) {
       for await (const chunk of request) raw += chunk;
       try { return raw ? JSON.parse(raw) : {}; } catch { return null; }
     };
-    const path = new URL(request.url, 'http://localhost').pathname;
+    const url = new URL(request.url, 'http://localhost');
+    const path = url.pathname;
     if (request.method === 'GET' && path === '/health') return send(200, { status: 'UP' });
     if (request.method === 'GET' && path === '/test/payments') return send(200, { payments: [...payments.values()] });
 
@@ -83,6 +84,7 @@ export function createMockPgServer(config = {}) {
       existing.status = 'PAID';
       existing.amount.paid = input.amount;
       existing.paidAt = new Date().toISOString();
+      existing.customData = input.customData == null ? null : JSON.stringify(input.customData);
       destinations.set(id, input.webhookUrl);
       void sendWebhook(existing, 'Transaction.Paid', input.webhookUrl);
       return send(200, existing);
@@ -90,6 +92,18 @@ export function createMockPgServer(config = {}) {
 
     if (request.headers.authorization !== `PortOne ${apiSecret}`) {
       return send(401, { type: 'UNAUTHORIZED' });
+    }
+    if (request.method === 'GET' && path === '/payments') {
+      let input = {};
+      try { input = JSON.parse(url.searchParams.get('requestBody') || '{}'); } catch { return send(400, { type: 'INVALID_REQUEST' }); }
+      const number = Number(input.page?.number ?? 0);
+      const size = Number(input.page?.size ?? 10);
+      if (!Number.isSafeInteger(number) || number < 0 || !Number.isSafeInteger(size) || size < 1) {
+        return send(400, { type: 'INVALID_REQUEST' });
+      }
+      const all = [...payments.values()];
+      return send(200, { items: all.slice(number * size, (number + 1) * size),
+        page: { number, size, totalCount: all.length } });
     }
     const preregister = path.match(/^\/payments\/([^/]+)\/pre-register$/);
     if (request.method === 'POST' && preregister) {
