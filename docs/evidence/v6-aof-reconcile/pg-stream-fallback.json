@@ -1,0 +1,651 @@
+{
+  "capturedAt": "2026-11-08T09:13:27.388045+00:00",
+  "moment": "pg-stream-fallback",
+  "queries": {
+    "locks": "SELECT JSON_OBJECT('transactionId',ENGINE_TRANSACTION_ID,'table',OBJECT_NAME,\n          'index',INDEX_NAME,'type',LOCK_TYPE,'mode',LOCK_MODE,'status',LOCK_STATUS,'data',LOCK_DATA)\n        FROM performance_schema.data_locks WHERE OBJECT_SCHEMA='movie_seats'",
+    "waits": "SELECT JSON_OBJECT('requesting',REQUESTING_ENGINE_TRANSACTION_ID,\n          'blocking',BLOCKING_ENGINE_TRANSACTION_ID,'requestingLock',REQUESTING_ENGINE_LOCK_ID,\n          'blockingLock',BLOCKING_ENGINE_LOCK_ID)\n        FROM performance_schema.data_lock_waits",
+    "paidWithoutReservation": "SELECT JSON_OBJECT('paymentId',p.payment_id,'localStatus',p.status,'amount',p.amount)\n        FROM payments p LEFT JOIN reservations r ON r.payment_id=p.payment_id\n        WHERE p.status='PAID' AND r.reservation_id IS NULL",
+    "unconfirmedLocal": "SELECT JSON_OBJECT('paymentId',p.payment_id,'localStatus',p.status,'amount',p.amount)\n        FROM payments p LEFT JOIN reservations r ON r.payment_id=p.payment_id\n        WHERE r.reservation_id IS NULL",
+    "deadlock": "SHOW ENGINE INNODB STATUS\\G",
+    "pg": "GET /test/payments",
+    "deadlockCount": "SELECT count FROM information_schema.innodb_metrics WHERE name='lock_deadlocks'",
+    "innodbCounters": "SELECT JSON_OBJECT('name',name,'count',count)\n        FROM information_schema.innodb_metrics WHERE name LIKE 'lock_row_lock_%'",
+    "hikariPending": "hikaricp_connections_pending",
+    "hikariPendingLive": "GET /actuator/metrics/hikaricp.connections.pending",
+    "recentPayments": "SELECT JSON_OBJECT('paymentId',payment_id,'status',status,'amount',amount)\n        FROM payments ORDER BY updated_at DESC LIMIT 30"
+  },
+  "locks": [],
+  "waits": [],
+  "latestDeadlock": "",
+  "deadlockCount": 0,
+  "innodbCounters": [
+    {
+      "name": "lock_row_lock_current_waits",
+      "count": 0
+    },
+    {
+      "name": "lock_row_lock_time",
+      "count": 0
+    },
+    {
+      "name": "lock_row_lock_time_max",
+      "count": 0
+    },
+    {
+      "name": "lock_row_lock_waits",
+      "count": 0
+    },
+    {
+      "name": "lock_row_lock_time_avg",
+      "count": 0
+    }
+  ],
+  "hikariPending": [
+    {
+      "metric": {
+        "__name__": "hikaricp_connections_pending",
+        "instance": "reservation-api:8081",
+        "job": "reservation-api",
+        "pool": "HikariPool-1"
+      },
+      "value": [
+        1794129206.359,
+        "0"
+      ]
+    },
+    {
+      "metric": {
+        "__name__": "hikaricp_connections_pending",
+        "instance": "reservation-worker:8084",
+        "job": "reservation-worker",
+        "pool": "HikariPool-1"
+      },
+      "value": [
+        1794129206.359,
+        "0"
+      ]
+    }
+  ],
+  "hikariPendingLive": {
+    "availableTags": [
+      {
+        "tag": "pool",
+        "values": [
+          "HikariPool-1"
+        ]
+      }
+    ],
+    "description": "Pending threads",
+    "measurements": [
+      {
+        "statistic": "VALUE",
+        "value": 0.0
+      }
+    ],
+    "name": "hikaricp.connections.pending"
+  },
+  "recentPayments": [
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "3959d726-5fca-40ff-86e1-953edadcd3e2"
+    },
+    {
+      "amount": 60000,
+      "status": "PAID",
+      "paymentId": "0050a181-3bb5-4896-bc00-b423ad5362c6"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "38b74b7b-882e-4326-ba89-76188db3b43a"
+    },
+    {
+      "amount": 45000,
+      "status": "PAID",
+      "paymentId": "6f2ca6ac-ff82-4e1f-abb0-d93569c2237e"
+    },
+    {
+      "amount": 60000,
+      "status": "PAID",
+      "paymentId": "1a444dd3-b122-4575-9c4e-68164ceea2fa"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "e3cfbfdf-3923-4957-9db1-9453540446af"
+    },
+    {
+      "amount": 45000,
+      "status": "PAID",
+      "paymentId": "bb8d91bf-2526-434c-80bd-637ef08aa627"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "42cd28b2-59eb-482b-9cc7-3cd9c6919762"
+    },
+    {
+      "amount": 45000,
+      "status": "PAID",
+      "paymentId": "b270fe60-a085-4eb8-82d1-6fb561a7c0e5"
+    },
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "58d581da-2190-4409-b7e2-f04e057486da"
+    },
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "c66e078f-58dc-49de-98d0-25c093cbb532"
+    },
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "3c2ca692-77ae-45f7-bcfe-5ff6d1350b80"
+    },
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "6ead40e2-5ac9-461d-b7ca-f19c5e41e7a3"
+    },
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "bf7f2601-b09c-4c9f-ae20-74b31fb94d33"
+    },
+    {
+      "amount": 45000,
+      "status": "PAID",
+      "paymentId": "6fa2d0e4-68dd-494c-8d38-9932acfba585"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "889d30de-7a14-4060-a6fb-2b6f1638116a"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "5e04e237-1364-4fac-8a5e-6d8698310fc6"
+    },
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "bf59e054-8600-49a8-a4ae-66d9ed94ab15"
+    },
+    {
+      "amount": 45000,
+      "status": "PAID",
+      "paymentId": "8a51158f-aabc-4ed3-bf23-2a87a4c8a401"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "5b6af9d9-539a-42ee-ac99-fe0429cbd4c8"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "9c19e950-2628-4d22-83b6-f0ecc97ac556"
+    },
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "82ca0262-3113-461d-830c-8a93e585ea8b"
+    },
+    {
+      "amount": 45000,
+      "status": "PAID",
+      "paymentId": "4d4b6715-c6fc-4b13-9cc8-17efe96b89f3"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "42d09e85-ef30-4cce-b3c2-7a2d1001599d"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "20115538-2496-45ab-9fbd-26451719037e"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "897435ca-e9f3-4e48-9419-1cf2ac13323c"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "a255260e-110c-499e-ac99-3589d4cf8797"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "cd0f385d-0def-4d38-a3c2-fcf355597bcc"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "298e30fe-d49e-446c-8c06-a0676f0f8a5c"
+    },
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "c5cb2aa2-d4f2-45fe-8ddb-f58d92c0f339"
+    }
+  ],
+  "paidWithoutReservation": [],
+  "pgPaidWithoutReservation": [],
+  "redisReservedSeats": [
+    "A-1",
+    "A-10",
+    "A-11",
+    "A-12",
+    "A-13",
+    "A-14",
+    "A-15",
+    "A-16",
+    "A-17",
+    "A-18",
+    "A-19",
+    "A-2",
+    "A-20",
+    "A-21",
+    "A-22",
+    "A-23",
+    "A-24",
+    "A-25",
+    "A-26",
+    "A-27",
+    "A-28",
+    "A-29",
+    "A-3",
+    "A-4",
+    "A-5",
+    "A-6",
+    "A-7",
+    "A-8",
+    "A-9",
+    "B-11",
+    "B-12",
+    "B-36",
+    "B-37",
+    "B-39",
+    "B-40",
+    "D-37",
+    "D-38",
+    "E-17",
+    "E-18",
+    "E-7",
+    "E-8",
+    "F-1",
+    "F-18",
+    "F-19",
+    "F-2",
+    "I-11",
+    "I-12",
+    "I-13",
+    "I-31",
+    "I-32",
+    "I-34",
+    "I-35",
+    "J-10",
+    "J-11",
+    "J-12",
+    "J-19",
+    "J-20",
+    "J-22",
+    "J-25",
+    "J-26",
+    "J-27",
+    "J-35",
+    "J-36",
+    "J-38",
+    "J-39",
+    "J-4",
+    "J-5",
+    "J-6",
+    "J-7",
+    "K-12",
+    "K-14",
+    "K-15",
+    "K-18",
+    "K-19",
+    "K-23",
+    "K-24",
+    "K-25",
+    "K-37",
+    "K-7",
+    "K-8",
+    "L-10",
+    "L-11",
+    "L-24",
+    "L-25",
+    "L-26",
+    "L-27",
+    "L-30",
+    "L-31",
+    "L-32",
+    "L-39",
+    "L-8",
+    "L-9",
+    "M-1",
+    "M-10",
+    "M-11",
+    "M-13",
+    "M-14",
+    "M-15",
+    "M-16",
+    "M-17",
+    "M-2",
+    "M-27",
+    "M-28",
+    "M-29",
+    "M-5",
+    "M-6",
+    "M-7",
+    "M-8",
+    "N-17",
+    "N-22",
+    "N-23",
+    "N-25",
+    "N-26",
+    "N-34",
+    "N-35",
+    "O-25",
+    "O-26",
+    "O-30",
+    "O-32",
+    "P-1",
+    "P-13",
+    "P-14",
+    "P-15",
+    "P-2",
+    "P-22",
+    "P-23",
+    "P-29",
+    "P-30",
+    "P-31",
+    "Q-1",
+    "Q-2",
+    "Q-29",
+    "Q-6",
+    "T-34",
+    "T-35",
+    "V-23",
+    "V-24",
+    "V-25",
+    "V-28",
+    "V-29",
+    "W-25",
+    "W-26",
+    "Y-12",
+    "Y-13",
+    "Y-14",
+    "Y-15"
+  ],
+  "activeKeyCount": 27,
+  "seatHoldKeyCount": 0,
+  "mysqlReservationSeats": [
+    "A-1",
+    "A-10",
+    "A-11",
+    "A-12",
+    "A-13",
+    "A-14",
+    "A-15",
+    "A-16",
+    "A-17",
+    "A-18",
+    "A-19",
+    "A-2",
+    "A-20",
+    "A-21",
+    "A-22",
+    "A-23",
+    "A-24",
+    "A-25",
+    "A-26",
+    "A-27",
+    "A-28",
+    "A-29",
+    "A-3",
+    "A-4",
+    "A-5",
+    "A-6",
+    "A-7",
+    "A-8",
+    "A-9",
+    "B-11",
+    "B-12",
+    "B-36",
+    "B-37",
+    "B-39",
+    "B-40",
+    "D-37",
+    "D-38",
+    "E-17",
+    "E-18",
+    "E-7",
+    "E-8",
+    "F-1",
+    "F-18",
+    "F-19",
+    "F-2",
+    "I-11",
+    "I-12",
+    "I-13",
+    "I-31",
+    "I-32",
+    "I-34",
+    "I-35",
+    "J-10",
+    "J-11",
+    "J-12",
+    "J-19",
+    "J-20",
+    "J-22",
+    "J-25",
+    "J-26",
+    "J-27",
+    "J-35",
+    "J-36",
+    "J-38",
+    "J-39",
+    "J-4",
+    "J-5",
+    "J-6",
+    "J-7",
+    "K-12",
+    "K-14",
+    "K-15",
+    "K-18",
+    "K-19",
+    "K-23",
+    "K-24",
+    "K-25",
+    "K-37",
+    "K-7",
+    "K-8",
+    "L-10",
+    "L-11",
+    "L-24",
+    "L-25",
+    "L-26",
+    "L-27",
+    "L-30",
+    "L-31",
+    "L-32",
+    "L-39",
+    "L-8",
+    "L-9",
+    "M-1",
+    "M-10",
+    "M-11",
+    "M-13",
+    "M-14",
+    "M-15",
+    "M-16",
+    "M-17",
+    "M-2",
+    "M-27",
+    "M-28",
+    "M-29",
+    "M-5",
+    "M-6",
+    "M-7",
+    "M-8",
+    "N-17",
+    "N-22",
+    "N-23",
+    "N-25",
+    "N-26",
+    "N-34",
+    "N-35",
+    "O-25",
+    "O-26",
+    "O-30",
+    "O-32",
+    "P-1",
+    "P-13",
+    "P-14",
+    "P-15",
+    "P-2",
+    "P-22",
+    "P-23",
+    "P-29",
+    "P-30",
+    "P-31",
+    "Q-1",
+    "Q-2",
+    "Q-29",
+    "Q-6",
+    "T-34",
+    "T-35",
+    "V-23",
+    "V-24",
+    "V-25",
+    "V-28",
+    "V-29",
+    "W-25",
+    "W-26",
+    "Y-12",
+    "Y-13",
+    "Y-14",
+    "Y-15"
+  ],
+  "missingMysqlSeats": [],
+  "mysqlAvailable": true,
+  "streamLength": 15,
+  "streamGroups": [
+    {
+      "name": "workers",
+      "consumers": 2,
+      "pending": 1,
+      "last-delivered-id": "1794129195947-0",
+      "entries-read": 15,
+      "lag": 0
+    }
+  ],
+  "streamPending": [
+    1,
+    "1794129195947-0",
+    "1794129195947-0",
+    [
+      [
+        "worker-adcf0999-9065-4c20-aefb-61fc0ffa2cd3",
+        "1"
+      ]
+    ]
+  ],
+  "deadLetterEntries": [],
+  "redisAofConfig": {
+    "appendonly": "yes",
+    "appendfsync": "everysec"
+  },
+  "redisPersistence": {
+    "loading": "0",
+    "async_loading": "0",
+    "current_cow_peak": "0",
+    "current_cow_size": "0",
+    "current_cow_size_age": "0",
+    "current_fork_perc": "0.00",
+    "current_save_keys_processed": "0",
+    "current_save_keys_total": "0",
+    "rdb_changes_since_last_save": "5421",
+    "rdb_bgsave_in_progress": "0",
+    "rdb_last_save_time": "1794129069",
+    "rdb_last_bgsave_status": "ok",
+    "rdb_last_bgsave_time_sec": "-1",
+    "rdb_current_bgsave_time_sec": "-1",
+    "rdb_saves": "0",
+    "rdb_last_cow_size": "0",
+    "rdb_last_load_keys_expired": "0",
+    "rdb_last_load_keys_loaded": "0",
+    "aof_enabled": "1",
+    "aof_rewrite_in_progress": "0",
+    "aof_rewrite_scheduled": "0",
+    "aof_last_rewrite_time_sec": "-1",
+    "aof_current_rewrite_time_sec": "-1",
+    "aof_last_bgrewrite_status": "ok",
+    "aof_rewrites": "0",
+    "aof_rewrites_consecutive_failures": "0",
+    "aof_last_write_status": "ok",
+    "aof_last_cow_size": "0",
+    "module_fork_in_progress": "0",
+    "module_fork_last_cow_size": "0",
+    "aof_current_size": "324926",
+    "aof_base_size": "89",
+    "aof_pending_rewrite": "0",
+    "aof_buffer_length": "0",
+    "aof_pending_bio_fsync": "0",
+    "aof_delayed_fsync": "0"
+  },
+  "reconciliationResult": {
+    "confirmedPayments": [
+      "3959d726-5fca-40ff-86e1-953edadcd3e2"
+    ],
+    "cancelledPayments": [],
+    "restoredDbSeats": 145,
+    "redisRunId": "3e68ee02bc2fd1523d2999c99f992ad091e6d421"
+  },
+  "approvedPgPayments": [
+    "0050a181-3bb5-4896-bc00-b423ad5362c6",
+    "1a444dd3-b122-4575-9c4e-68164ceea2fa",
+    "38b74b7b-882e-4326-ba89-76188db3b43a",
+    "3959d726-5fca-40ff-86e1-953edadcd3e2",
+    "3c2ca692-77ae-45f7-bcfe-5ff6d1350b80",
+    "42cd28b2-59eb-482b-9cc7-3cd9c6919762",
+    "58309eb8-5bb5-4b34-803f-1fea6e52fb3d",
+    "58d581da-2190-4409-b7e2-f04e057486da",
+    "6f2ca6ac-ff82-4e1f-abb0-d93569c2237e",
+    "b270fe60-a085-4eb8-82d1-6fb561a7c0e5",
+    "bb8d91bf-2526-434c-80bd-637ef08aa627",
+    "c66e078f-58dc-49de-98d0-25c093cbb532",
+    "db653897-7c38-4c87-88a7-23a6a629fb1b",
+    "dc46003a-c427-44ad-94a4-590b7292dd01",
+    "e3cfbfdf-3923-4957-9db1-9453540446af"
+  ],
+  "confirmedPgPayments": [
+    "0050a181-3bb5-4896-bc00-b423ad5362c6",
+    "1a444dd3-b122-4575-9c4e-68164ceea2fa",
+    "38b74b7b-882e-4326-ba89-76188db3b43a",
+    "3959d726-5fca-40ff-86e1-953edadcd3e2",
+    "3c2ca692-77ae-45f7-bcfe-5ff6d1350b80",
+    "42cd28b2-59eb-482b-9cc7-3cd9c6919762",
+    "58d581da-2190-4409-b7e2-f04e057486da",
+    "6f2ca6ac-ff82-4e1f-abb0-d93569c2237e",
+    "b270fe60-a085-4eb8-82d1-6fb561a7c0e5",
+    "bb8d91bf-2526-434c-80bd-637ef08aa627",
+    "c66e078f-58dc-49de-98d0-25c093cbb532",
+    "e3cfbfdf-3923-4957-9db1-9453540446af"
+  ],
+  "cancelledPgPayments": [
+    "58309eb8-5bb5-4b34-803f-1fea6e52fb3d",
+    "db653897-7c38-4c87-88a7-23a6a629fb1b",
+    "dc46003a-c427-44ad-94a4-590b7292dd01"
+  ],
+  "unresolvedPgPayments": []
+}
