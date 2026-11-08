@@ -23,8 +23,9 @@ public class IdempotencyValidator {
         switch (result) {
             case CLAIMED -> {
             }
-            case DUPLICATE_IN_PROGRESS ->
-                    throw new ReservationApiException(ReservationErrorCode.IDEMPOTENCY_REQUEST_IN_PROGRESS, screeningId, key);
+            case DUPLICATE_IN_PROGRESS -> {
+                // The DB hold transaction decides whether this is a replay or a concurrent conflict.
+            }
             case FINGERPRINT_CONFLICT ->
                     throw new ReservationApiException(ReservationErrorCode.IDEMPOTENCY_KEY_CONFLICT, screeningId, key);
             case STORE_UNAVAILABLE ->

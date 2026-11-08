@@ -20,7 +20,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @RequiredArgsConstructor
 public class IdempotencyFilter extends OncePerRequestFilter {
 
-    private static final Pattern TICKET_PATH = Pattern.compile("^/api/v1/screenings/([^/]+)/tickets/?$");
+    private static final Pattern HOLD_PATH = Pattern.compile("^/api/v1/screenings/([^/]+)/holds/?$");
 
     private final IdempotencyFingerprint fingerprint;
     private final IdempotencyValidator validator;
@@ -32,7 +32,7 @@ public class IdempotencyFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        Matcher matcher = TICKET_PATH.matcher(request.getRequestURI());
+        Matcher matcher = HOLD_PATH.matcher(request.getRequestURI());
         if (!"POST".equals(request.getMethod()) || !matcher.matches()) {
             filterChain.doFilter(request, response);
             return;
@@ -50,7 +50,7 @@ public class IdempotencyFilter extends OncePerRequestFilter {
         } catch (ReservationApiException exception) {
             writeError(response, exception);
         } catch (IllegalArgumentException exception) {
-            writeError(response, new ReservationApiException(ReservationErrorCode.INVALID_TICKET_QUANTITY, screeningId, null));
+            writeError(response, new ReservationApiException(ReservationErrorCode.INVALID_SEAT_SELECTION, screeningId, null));
         }
     }
 

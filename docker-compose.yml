@@ -25,7 +25,7 @@ services:
     volumes:
       - ./infra/tuning/mysql.cnf:/etc/mysql/conf.d/tuning.cnf:ro
     environment:
-      MYSQL_DATABASE: movie_kim
+      MYSQL_DATABASE: movie_seats
       MYSQL_USER: movie
       MYSQL_PASSWORD: movie
       MYSQL_ROOT_PASSWORD: root
@@ -135,9 +135,13 @@ services:
     environment:
       SERVER_PORT: 8081
       SPRING_DATA_REDIS_HOST: redis
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/movie_kim?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      RESERVATION_ACTIVE_ADMISSION_BASE_URL: http://waiting-api-1:8080
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/movie_seats?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: movie
       SPRING_DATASOURCE_PASSWORD: movie
+      RESERVATION_MOCK_PG_BASE_URL: http://mock-pg:8082
+      RESERVATION_V1_LOCK_PAUSE: ${V1_LOCK_PAUSE:-0ms}
+      RESERVATION_V1_SCREENING_LOCK_PAUSE: ${V1_SCREENING_LOCK_PAUSE:-0ms}
       SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 100
       SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 20
       SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT: 3000

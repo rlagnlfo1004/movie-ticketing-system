@@ -16,17 +16,17 @@ class IdempotencyFingerprintTest {
 
     @Test
     void jsonFieldOrderAndWhitespaceDoNotChangeFingerprint() {
-        HttpServletRequest request = request("/api/v1/screenings/1/tickets");
+        HttpServletRequest request = request("/api/v1/screenings/1/holds");
 
         String first = fingerprint.build(
                 request,
                 " active-token-123 ",
-                "{\"quantity\":1,\"metadata\":{\"b\":2,\"a\":1}}".getBytes(StandardCharsets.UTF_8)
+                "{\"seats\":[\"A-12\"],\"metadata\":{\"b\":2,\"a\":1}}".getBytes(StandardCharsets.UTF_8)
         );
         String second = fingerprint.build(
                 request,
                 "active-token-123",
-                "{\n  \"metadata\": {\"a\": 1, \"b\": 2}, \"quantity\": 1\n}".getBytes(StandardCharsets.UTF_8)
+                "{\n  \"metadata\": {\"a\": 1, \"b\": 2}, \"seats\": [\"A-12\"]\n}".getBytes(StandardCharsets.UTF_8)
         );
 
         assertThat(first).isEqualTo(second);
@@ -34,11 +34,11 @@ class IdempotencyFingerprintTest {
 
     @Test
     void queueTokenAndUriArePartOfFingerprint() {
-        byte[] body = "{\"quantity\":1}".getBytes(StandardCharsets.UTF_8);
+        byte[] body = "{\"seats\":[\"A-12\"]}".getBytes(StandardCharsets.UTF_8);
 
-        String first = fingerprint.build(request("/api/v1/screenings/1/tickets"), "active-token-123", body);
-        String differentToken = fingerprint.build(request("/api/v1/screenings/1/tickets"), "other-token-123", body);
-        String differentUri = fingerprint.build(request("/api/v1/screenings/2/tickets"), "active-token-123", body);
+        String first = fingerprint.build(request("/api/v1/screenings/1/holds"), "active-token-123", body);
+        String differentToken = fingerprint.build(request("/api/v1/screenings/1/holds"), "other-token-123", body);
+        String differentUri = fingerprint.build(request("/api/v1/screenings/2/holds"), "active-token-123", body);
 
         assertThat(first).isNotEqualTo(differentToken);
         assertThat(first).isNotEqualTo(differentUri);

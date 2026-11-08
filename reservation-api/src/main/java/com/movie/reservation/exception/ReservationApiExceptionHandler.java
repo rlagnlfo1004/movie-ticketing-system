@@ -25,7 +25,7 @@ public class ReservationApiExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException exception) {
-        ReservationErrorCode code = ReservationErrorCode.INVALID_TICKET_QUANTITY;
+        ReservationErrorCode code = ReservationErrorCode.INVALID_SEAT_SELECTION;
         return ResponseEntity
                 .status(code.status())
                 .body(new ErrorResponse(code.name(), code.message(), code.retryable(), null, null));
