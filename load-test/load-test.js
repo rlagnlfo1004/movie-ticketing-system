@@ -19,6 +19,7 @@ const queueErrors = new Rate('queue_register_errors');
 const paymentErrors = new Rate('payment_errors');
 
 export const options = __ENV.SCENARIO === 'B' ? {
+  summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
   systemTags: ['status', 'method', 'name', 'scenario', 'expected_response'],
   scenarios: Object.fromEntries(rates.map((rate, i) => [`rate_${rate}`, {
     executor: 'constant-arrival-rate', rate, timeUnit: '1s', duration: `${stageSeconds}s`,
@@ -28,8 +29,10 @@ export const options = __ENV.SCENARIO === 'B' ? {
   thresholds: Object.fromEntries(rates.flatMap(rate => [
     [`seat_hold_duration{scenario:rate_${rate}}`, ['p(95)<1000']],
     [`seat_hold_errors{scenario:rate_${rate}}`, ['rate<0.01']],
+    [`seat_holds_created{scenario:rate_${rate}}`, ['count>=0']],
   ])),
 } : {
+  summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
   systemTags: ['status', 'method', 'name', 'scenario', 'expected_response'],
   scenarios: { full_flow: {
     executor: 'constant-arrival-rate', rate: smoke ? 2 : 3000, timeUnit: '1s',
