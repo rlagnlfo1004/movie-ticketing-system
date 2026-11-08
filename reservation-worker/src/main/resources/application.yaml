@@ -17,3 +17,7 @@ management:
     web:
       exposure:
         include: health,metrics,prometheus
+
+worker:
+  test-write-pause: 0ms
+  reclaim-min-idle: 30s

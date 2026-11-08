@@ -125,7 +125,7 @@ public class RedisSeatStateRepository {
     }
 
     public ConfirmationResult confirm(String sid, String paymentId, int amount, String transactionId) {
-        String raw = redis.execute(stringScript("lua/confirm-v3.lua"), List.of(SeatRedisKeys.payment(sid, paymentId)),
+        String raw = redis.execute(stringScript("lua/confirm-v4.lua"), List.of(SeatRedisKeys.payment(sid, paymentId)),
                 sid, paymentId, String.valueOf(amount), transactionId, UUID.randomUUID().toString());
         return parseResult(raw);
     }
