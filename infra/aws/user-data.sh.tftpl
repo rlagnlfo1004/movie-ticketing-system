@@ -1,0 +1,79 @@
+#!/bin/bash
+set -euxo pipefail
+
+dnf install -y docker curl
+systemctl enable --now docker
+usermod -aG docker ec2-user
+mkdir -p /usr/local/lib/docker/cli-plugins
+curl -fsSL https://github.com/docker/compose/releases/download/v5.6.0/docker-compose-linux-aarch64 \
+  -o /usr/local/lib/docker/cli-plugins/docker-compose
+chmod 755 /usr/local/lib/docker/cli-plugins/docker-compose
+
+printf '%s' '${sysctl_base64}' | base64 -d > /etc/sysctl.d/99-movie-loadtest.conf
+printf '%s' '${limits_base64}' | base64 -d > /etc/security/limits.d/99-movie-loadtest.conf
+sysctl --system
+
+%{ if role == "redis" ~}
+printf '%s' '${thp_base64}' | base64 -d > /usr/local/bin/movie-disable-thp
+chmod 755 /usr/local/bin/movie-disable-thp
+cat > /etc/systemd/system/movie-disable-thp.service <<'UNIT'
+[Unit]
+Description=Disable transparent huge pages for Redis
+After=local-fs.target
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/movie-disable-thp
+RemainAfterExit=yes
+[Install]
+WantedBy=multi-user.target
+UNIT
+systemctl daemon-reload
+systemctl enable --now movie-disable-thp.service
+%{ endif ~}
+
+%{ if role == "mysql" ~}
+cat > /usr/local/bin/movie-mount-mysql-data <<'SCRIPT'
+#!/bin/bash
+set -euo pipefail
+VOLUME_ID='${mysql_volume_id}'
+VOLUME_SERIAL=$(printf '%s' "$VOLUME_ID" | tr -d '-')
+DEVICE=''
+for attempt in $(seq 1 120); do
+  DEVICE=$(lsblk -dn -o NAME,SERIAL | awk -v id="$VOLUME_SERIAL" '$2==id {print "/dev/"$1; exit}')
+  if [ -n "$DEVICE" ] && [ -b "$DEVICE" ]; then break; fi
+  sleep 2
+done
+if [ -z "$DEVICE" ] || [ ! -b "$DEVICE" ]; then
+  echo 'MySQL data volume did not attach' >&2
+  exit 1
+fi
+if ! blkid "$DEVICE" >/dev/null 2>&1; then mkfs.ext4 -F "$DEVICE"; fi
+mkdir -p /mnt/movie-mysql
+UUID=$(blkid -s UUID -o value "$DEVICE")
+if ! grep -q "$UUID" /etc/fstab; then
+  printf 'UUID=%s /mnt/movie-mysql ext4 defaults,nofail 0 2\n' "$UUID" >> /etc/fstab
+fi
+mountpoint -q /mnt/movie-mysql || mount /mnt/movie-mysql
+SCRIPT
+chmod 755 /usr/local/bin/movie-mount-mysql-data
+cat > /etc/systemd/system/movie-mysql-data.service <<'UNIT'
+[Unit]
+Description=Mount the dedicated MySQL gp3 volume
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/movie-mount-mysql-data
+RemainAfterExit=yes
+[Install]
+WantedBy=multi-user.target
+UNIT
+systemctl daemon-reload
+systemctl enable --now movie-mysql-data.service
+%{ endif ~}
+
+docker run -d --name movie-node-exporter --restart unless-stopped \
+  --network host --pid host \
+  -v /proc:/host/proc:ro -v /sys:/host/sys:ro -v /:/host/root:ro \
+  prom/node-exporter:v1.9.1 \
+  --path.procfs=/host/proc --path.sysfs=/host/sys --path.rootfs=/host/root
