@@ -29,6 +29,7 @@ queries = [
     ("k6 requests/s", 'sum(rate(k6_http_reqs_total[1m]))', "ops"),
     ("k6 request p95", 'k6_http_req_duration_p95', "ms"),
     ("k6 error rate", 'sum(rate(k6_http_reqs_total{expected_response="false"}[1m]))/clamp_min(sum(rate(k6_http_reqs_total[1m])),1)', "percentunit"),
+    ("Webhook response p95", 'histogram_quantile(0.95,sum by(le)(rate(http_server_requests_seconds_bucket{job="reservation-api",uri="/api/v1/webhooks/portone"}[1m])))', "s"),
 ]
 
 panels = []

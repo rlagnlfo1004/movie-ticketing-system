@@ -37,6 +37,10 @@ reservation:
   idempotency-key-pattern: "^[A-Za-z0-9._:-]{8,128}$"
 
 management:
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
   endpoints:
     web:
       exposure:
