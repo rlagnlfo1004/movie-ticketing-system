@@ -77,7 +77,7 @@ def fio_local(output, smoke):
 
 
 def prepare_remote(hosts_file, key):
-    from remote_stage import read_env, deploy, compose, remote, tunnel
+    from remote_stage import read_env, deploy, compose, tunnel, wait_healthy
     from run_stage import build_tag
     account = subprocess.check_output(["aws", "sts", "get-caller-identity", "--profile", "movie-loadtest",
                                        "--query", "Account", "--output", "text"], text=True).strip()
@@ -95,14 +95,7 @@ def prepare_remote(hosts_file, key):
     output.mkdir(parents=True, exist_ok=True)
     deploy(hosts_file, hosts, key, "v1", output)
     compose(hosts, key, "mysql", "up", "-d", "--no-deps", "mysql")
-    for _ in range(120):
-        result = compose(hosts, key, "mysql", "exec", "-T", "mysql", "mysqladmin", "ping", "-h", "127.0.0.1",
-                         check=False, capture=True)
-        if result.returncode == 0:
-            break
-        time.sleep(1)
-    else:
-        raise RuntimeError("Remote MySQL did not become ready")
+    wait_healthy(hosts, key, "mysql", "mysql")
     return hosts, tunnel(hosts, key, "mysql", ((13306, 3306),))
 
 
@@ -133,6 +126,9 @@ def main():
     if args.hosts_env:
         hosts, tunnel_process = prepare_remote(args.hosts_env.resolve(), args.ssh_key.expanduser().resolve())
         atexit.register(tunnel_process.terminate)
+        time.sleep(1)
+        if tunnel_process.poll() is not None:
+            raise RuntimeError("MySQL SSH port forwarding failed")
         args.mysql_host = "127.0.0.1"
         args.mysql_port = 13306
         for _ in range(30):
