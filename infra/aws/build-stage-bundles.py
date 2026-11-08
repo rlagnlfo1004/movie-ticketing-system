@@ -163,11 +163,14 @@ def main(hosts_file, profile, destination):
                               capture_output=True, text=True, check=True)
     base = json.loads(rendered.stdout)
     output = Path(destination)
+    output.mkdir(parents=True, exist_ok=True)
+    output.chmod(0o700)
     for role in ROLES:
         bundle = output / role
         if bundle.exists():
             shutil.rmtree(bundle)
         bundle.mkdir(parents=True, exist_ok=True)
+        bundle.chmod(0o700)
         prepare_shared(hosts, stage, stage["STAGE_CODE_TAG"], bundle, role)
         secrets = read_env(output / f"{role}.secret.env")
         if os.environ.get("VIRTUAL_OFF") == "1":
@@ -184,6 +187,7 @@ def main(hosts_file, profile, destination):
             for path in bundle.rglob("*"):
                 if path.is_file():
                     archive.add(path, arcname=str(path.relative_to(bundle)))
+        (output / f"{role}.tar.gz").chmod(0o600)
         print(output / f"{role}.tar.gz")
 
 
