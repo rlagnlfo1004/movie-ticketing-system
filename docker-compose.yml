@@ -160,6 +160,34 @@ services:
       retries: 12
       start_period: 30s
 
+  reservation-worker:
+    <<: *common
+    image: eclipse-temurin:21-jre
+    env_file: ./infra/tuning/jvm.env
+    working_dir: /app
+    volumes:
+      - ./reservation-worker/build/libs:/app
+    command: ["java", "-jar", "/app/reservation-worker-0.0.1-SNAPSHOT.jar"]
+    environment:
+      SERVER_PORT: 8084
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/movie_seats?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: movie
+      SPRING_DATASOURCE_PASSWORD: movie
+    depends_on:
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8084:8084"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/8084 2>/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
   storage:
     <<: *common
     image: alpine:3.20

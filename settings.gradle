@@ -1,2 +1,2 @@
 rootProject.name = 'movie-kim'
-include 'waiting-api', 'reservation-api', 'storage'
+include 'waiting-api', 'reservation-api', 'reservation-worker', 'storage'

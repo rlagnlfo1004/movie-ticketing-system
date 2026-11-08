@@ -1,0 +1,19 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: reservation-worker
+  datasource:
+    url: jdbc:mysql://localhost:3306/movie_seats?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: movie
+    password: movie
+  data:
+    redis:
+      host: localhost
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus

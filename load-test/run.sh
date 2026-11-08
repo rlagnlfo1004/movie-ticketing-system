@@ -16,8 +16,9 @@ if [[ "$SCENARIO" != A && "$SCENARIO" != B ]]; then
   exit 2
 fi
 mkdir -p "$RESULT_DIR"
+"$ROOT/gradlew" :waiting-api:bootJar :reservation-api:bootJar :reservation-worker:bootJar
 docker compose -f "$ROOT/docker-compose.yml" up -d --build \
-  redis mysql mock-pg waiting-api-1 waiting-api-2 waiting-api-3 reservation-api nginx \
+  redis mysql mock-pg waiting-api-1 waiting-api-2 waiting-api-3 reservation-api reservation-worker nginx \
   prometheus grafana renderer node-exporter mysqld-exporter redis-exporter nginx-exporter
 
 if [[ "$SCENARIO" == B ]]; then

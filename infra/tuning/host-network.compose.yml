@@ -25,6 +25,9 @@ services:
   reservation-api:
     network_mode: host
     ports: !reset []
+  reservation-worker:
+    network_mode: host
+    ports: !reset []
   storage:
     network_mode: host
   nginx:

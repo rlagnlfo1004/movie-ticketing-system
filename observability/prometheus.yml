@@ -14,6 +14,10 @@ scrape_configs:
     metrics_path: /actuator/prometheus
     static_configs:
       - targets: [reservation-api:8081]
+  - job_name: reservation-worker
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [reservation-worker:8084]
   - job_name: mysql
     static_configs:
       - targets: [mysqld-exporter:9104]
