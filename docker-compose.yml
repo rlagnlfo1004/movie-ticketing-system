@@ -1,22 +1,29 @@
+x-common: &common
+  logging:
+    driver: json-file
+    options:
+      max-size: "20m"
+      max-file: "3"
+  ulimits:
+    nofile:
+      soft: 65535
+      hard: 65535
+
 services:
   redis:
+    <<: *common
     image: redis:7.2-alpine
-    command: >
-      redis-server
-      --maxclients 10000
-      --tcp-backlog 511
-      --hz 20
-      --save ""
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    volumes:
+      - ./infra/tuning/redis-v1.conf:/usr/local/etc/redis/redis.conf:ro
     ports:
       - "6379:6379"
 
   mysql:
+    <<: *common
     image: mysql:8.4
-    command: >
-      --max-connections=500
-      --innodb-buffer-pool-size=3G
-      --innodb-log-file-size=512M
-      --innodb-flush-log-at-trx-commit=2
+    volumes:
+      - ./infra/tuning/mysql.cnf:/etc/mysql/conf.d/tuning.cnf:ro
     environment:
       MYSQL_DATABASE: movie_kim
       MYSQL_USER: movie
@@ -31,7 +38,9 @@ services:
       retries: 20
 
   waiting-api-1:
+    <<: *common
     image: eclipse-temurin:21-jre
+    env_file: ./infra/tuning/jvm.env
     working_dir: /app
     volumes:
       - ./waiting-api/build/libs:/app
@@ -48,7 +57,6 @@ services:
       WAITING_QUEUE_ADMISSION_BATCH_SIZE: 300
       WAITING_QUEUE_ADMISSION_MAX_ACTIVE_USERS: 1000
       WAITING_QUEUE_ADMISSION_LOCK_TTL: 5s
-      JAVA_TOOL_OPTIONS: "-Xms512m -Xmx2g -XX:+UseG1GC -XX:MaxGCPauseMillis=50"
     depends_on:
       - redis
     healthcheck:
@@ -59,7 +67,9 @@ services:
       start_period: 30s
 
   waiting-api-2:
+    <<: *common
     image: eclipse-temurin:21-jre
+    env_file: ./infra/tuning/jvm.env
     working_dir: /app
     volumes:
       - ./waiting-api/build/libs:/app
@@ -76,7 +86,6 @@ services:
       WAITING_QUEUE_ADMISSION_BATCH_SIZE: 300
       WAITING_QUEUE_ADMISSION_MAX_ACTIVE_USERS: 1000
       WAITING_QUEUE_ADMISSION_LOCK_TTL: 5s
-      JAVA_TOOL_OPTIONS: "-Xms512m -Xmx2g -XX:+UseG1GC -XX:MaxGCPauseMillis=50"
     depends_on:
       - redis
     healthcheck:
@@ -87,7 +96,9 @@ services:
       start_period: 30s
 
   waiting-api-3:
+    <<: *common
     image: eclipse-temurin:21-jre
+    env_file: ./infra/tuning/jvm.env
     working_dir: /app
     volumes:
       - ./waiting-api/build/libs:/app
@@ -104,7 +115,6 @@ services:
       WAITING_QUEUE_ADMISSION_BATCH_SIZE: 300
       WAITING_QUEUE_ADMISSION_MAX_ACTIVE_USERS: 1000
       WAITING_QUEUE_ADMISSION_LOCK_TTL: 5s
-      JAVA_TOOL_OPTIONS: "-Xms512m -Xmx2g -XX:+UseG1GC -XX:MaxGCPauseMillis=50"
     depends_on:
       - redis
     healthcheck:
@@ -115,7 +125,9 @@ services:
       start_period: 30s
 
   reservation-api:
+    <<: *common
     image: eclipse-temurin:21-jre
+    env_file: ./infra/tuning/jvm.env
     working_dir: /app
     volumes:
       - ./reservation-api/build/libs:/app
@@ -130,7 +142,6 @@ services:
       SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 20
       SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT: 3000
       SPRING_THREADS_VIRTUAL_ENABLED: "true"
-      JAVA_TOOL_OPTIONS: "-Xms512m -Xmx2g -XX:+UseG1GC -XX:MaxGCPauseMillis=50"
     depends_on:
       redis:
         condition: service_started
@@ -146,10 +157,12 @@ services:
       start_period: 30s
 
   storage:
+    <<: *common
     image: alpine:3.20
     command: ["sh", "-c", "sleep infinity"]
 
   nginx:
+    <<: *common
     image: nginx:1.27-alpine
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
@@ -166,6 +179,7 @@ services:
       - "8000:80"
 
   mock-pg:
+    <<: *common
     build:
       context: .
       dockerfile: load-test/mock-pg.Dockerfile
@@ -183,6 +197,7 @@ services:
       retries: 10
 
   harness-stub:
+    <<: *common
     image: node:22-alpine
     profiles: ["harness-smoke"]
     volumes:
@@ -192,6 +207,7 @@ services:
       PORT: 18080
 
   k6:
+    <<: *common
     image: grafana/k6
     profiles: ["load-test"]
     volumes:
@@ -210,6 +226,7 @@ services:
       - default
 
   prometheus:
+    <<: *common
     image: prom/prometheus:v3.5.0
     command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.path=/prometheus", "--web.enable-remote-write-receiver"]
     volumes:
@@ -218,6 +235,7 @@ services:
       - "9090:9090"
 
   grafana:
+    <<: *common
     image: grafana/grafana:12.1.0
     environment:
       GF_SECURITY_ADMIN_USER: admin
@@ -235,11 +253,13 @@ services:
       - renderer
 
   renderer:
+    <<: *common
     image: grafana/grafana-image-renderer:3.11.6
     environment:
       ENABLE_METRICS: "true"
 
   node-exporter:
+    <<: *common
     image: prom/node-exporter:v1.9.1
     command: ["--path.procfs=/host/proc", "--path.sysfs=/host/sys", "--path.rootfs=/host/root"]
     volumes:
@@ -248,6 +268,7 @@ services:
       - /:/host/root:ro
 
   mysqld-exporter:
+    <<: *common
     image: prom/mysqld-exporter:v0.17.2
     command: ["--config.my-cnf=/etc/mysql-exporter.cnf", "--collect.info_schema.innodb_metrics", "--collect.perf_schema.eventsstatements"]
     volumes:
@@ -257,6 +278,7 @@ services:
         condition: service_healthy
 
   redis-exporter:
+    <<: *common
     image: oliver006/redis_exporter:v1.76.0
     environment:
       REDIS_ADDR: redis://redis:6379
@@ -267,6 +289,7 @@ services:
       - redis
 
   nginx-exporter:
+    <<: *common
     image: nginx/nginx-prometheus-exporter:1.4.2
     command: ["--nginx.scrape-uri=http://nginx/nginx_status"]
     depends_on:
