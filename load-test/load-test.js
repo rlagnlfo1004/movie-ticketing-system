@@ -19,6 +19,7 @@ const queueErrors = new Rate('queue_register_errors');
 const paymentErrors = new Rate('payment_errors');
 
 export const options = __ENV.SCENARIO === 'B' ? {
+  systemTags: ['status', 'method', 'name', 'scenario', 'expected_response'],
   scenarios: Object.fromEntries(rates.map((rate, i) => [`rate_${rate}`, {
     executor: 'constant-arrival-rate', rate, timeUnit: '1s', duration: `${stageSeconds}s`,
     startTime: `${i * stageSeconds}s`, preAllocatedVUs: Math.max(10, Math.ceil(rate / 20)),
@@ -29,6 +30,7 @@ export const options = __ENV.SCENARIO === 'B' ? {
     [`seat_hold_errors{scenario:rate_${rate}}`, ['rate<0.01']],
   ])),
 } : {
+  systemTags: ['status', 'method', 'name', 'scenario', 'expected_response'],
   scenarios: { full_flow: {
     executor: 'constant-arrival-rate', rate: smoke ? 2 : 3000, timeUnit: '1s',
     duration: smoke ? '5s' : '10s', preAllocatedVUs: smoke ? 5 : 5000,
@@ -64,7 +66,7 @@ function makeHold(token, attempts = 4) {
     const response = http.post(`${base}/api/v1/screenings/${sid}/holds`,
       JSON.stringify({ seats: chooseSeats() }), { headers: {
         'Content-Type': 'application/json', 'Queue-Token': token, 'Idempotency-Key': id(),
-      }, timeout: '10s', tags: { operation: 'hold' } });
+      }, timeout: '10s', tags: { name: '/screenings/{sid}/holds', operation: 'hold' } });
     holdDuration.add(response.timings.duration);
     if (response.status === 201) { holds.add(1); holdErrors.add(0); return body(response); }
     if (response.status === 409 && body(response).code === 'SEAT_TAKEN') {
@@ -87,7 +89,7 @@ export function fullFlow() {
   let active = false;
   while (Date.now() < deadline) {
     const response = http.get(`${base}/api/v1/screenings/${sid}/queue/status?token=${encodeURIComponent(token)}`,
-      { timeout: '5s' });
+      { timeout: '5s', tags: { name: '/screenings/{sid}/queue/status' } });
     if (response.status !== 200) return;
     const status = body(response);
     if (status.status === 'ACTIVE') { active = true; break; }
@@ -99,11 +101,11 @@ export function fullFlow() {
   if (!hold || Math.random() >= .85) return;
   const paid = http.post(`${pg}/test/payments/${encodeURIComponent(hold.paymentId)}/approve`,
     JSON.stringify({ amount: hold.amount, webhookUrl: webhook }),
-    { headers: { 'Content-Type': 'application/json' }, timeout: '5s' });
+    { headers: { 'Content-Type': 'application/json' }, timeout: '5s', tags: { name: '/test/payments/{id}/approve' } });
   paymentErrors.add(paid.status === 200 ? 0 : 1);
   if (paid.status !== 200 || Math.random() < .1) return;
   const complete = http.post(`${base}/api/v1/payments/${encodeURIComponent(hold.paymentId)}/complete`,
-    '{}', { headers: { 'Content-Type': 'application/json' }, timeout: '10s' });
+    '{}', { headers: { 'Content-Type': 'application/json' }, timeout: '10s', tags: { name: '/payments/{id}/complete' } });
   if (check(complete, { 'reservation confirmed': r => r.status === 200 })) confirmed.add(1);
 }
 
