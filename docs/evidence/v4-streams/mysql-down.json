@@ -1,0 +1,169 @@
+{
+  "capturedAt": "2026-11-08T08:42:04.706581+00:00",
+  "moment": "mysql-down",
+  "queries": {
+    "locks": "SELECT JSON_OBJECT('transactionId',ENGINE_TRANSACTION_ID,'table',OBJECT_NAME,\n          'index',INDEX_NAME,'type',LOCK_TYPE,'mode',LOCK_MODE,'status',LOCK_STATUS,'data',LOCK_DATA)\n        FROM performance_schema.data_locks WHERE OBJECT_SCHEMA='movie_seats'",
+    "waits": "SELECT JSON_OBJECT('requesting',REQUESTING_ENGINE_TRANSACTION_ID,\n          'blocking',BLOCKING_ENGINE_TRANSACTION_ID,'requestingLock',REQUESTING_ENGINE_LOCK_ID,\n          'blockingLock',BLOCKING_ENGINE_LOCK_ID)\n        FROM performance_schema.data_lock_waits",
+    "paidWithoutReservation": "SELECT JSON_OBJECT('paymentId',p.payment_id,'localStatus',p.status,'amount',p.amount)\n        FROM payments p LEFT JOIN reservations r ON r.payment_id=p.payment_id\n        WHERE p.status='PAID' AND r.reservation_id IS NULL",
+    "unconfirmedLocal": "SELECT JSON_OBJECT('paymentId',p.payment_id,'localStatus',p.status,'amount',p.amount)\n        FROM payments p LEFT JOIN reservations r ON r.payment_id=p.payment_id\n        WHERE r.reservation_id IS NULL",
+    "deadlock": "SHOW ENGINE INNODB STATUS\\G",
+    "pg": "GET /test/payments",
+    "deadlockCount": "SELECT count FROM information_schema.innodb_metrics WHERE name='lock_deadlocks'",
+    "innodbCounters": "SELECT JSON_OBJECT('name',name,'count',count)\n        FROM information_schema.innodb_metrics WHERE name LIKE 'lock_row_lock_%'",
+    "hikariPending": "hikaricp_connections_pending",
+    "hikariPendingLive": "GET /actuator/metrics/hikaricp.connections.pending",
+    "recentPayments": "SELECT JSON_OBJECT('paymentId',payment_id,'status',status,'amount',amount)\n        FROM payments ORDER BY updated_at DESC LIMIT 30"
+  },
+  "locks": null,
+  "waits": null,
+  "latestDeadlock": null,
+  "deadlockCount": null,
+  "innodbCounters": null,
+  "hikariPending": [
+    {
+      "metric": {
+        "__name__": "hikaricp_connections_pending",
+        "instance": "reservation-api:8081",
+        "job": "reservation-api",
+        "pool": "HikariPool-1"
+      },
+      "value": [
+        1794127324.013,
+        "0"
+      ]
+    }
+  ],
+  "hikariPendingLive": {
+    "availableTags": [
+      {
+        "tag": "pool",
+        "values": [
+          "HikariPool-1"
+        ]
+      }
+    ],
+    "description": "Pending threads",
+    "measurements": [
+      {
+        "statistic": "VALUE",
+        "value": 0.0
+      }
+    ],
+    "name": "hikaricp.connections.pending"
+  },
+  "recentPayments": null,
+  "paidWithoutReservation": null,
+  "pgPaidWithoutReservation": null,
+  "redisReservedSeats": [
+    "A-1",
+    "A-10",
+    "A-11",
+    "A-12",
+    "A-13",
+    "A-14",
+    "A-15",
+    "A-16",
+    "A-17",
+    "A-18",
+    "A-19",
+    "A-2",
+    "A-20",
+    "A-21",
+    "A-22",
+    "A-23",
+    "A-27",
+    "A-28",
+    "A-29",
+    "A-3",
+    "A-4",
+    "A-5",
+    "A-6",
+    "A-7",
+    "A-8",
+    "A-9",
+    "B-11",
+    "B-12",
+    "D-37",
+    "D-38",
+    "I-31",
+    "I-32",
+    "I-34",
+    "I-35",
+    "J-22",
+    "J-25",
+    "J-26",
+    "J-27",
+    "J-35",
+    "J-36",
+    "J-38",
+    "J-39",
+    "J-4",
+    "J-5",
+    "J-6",
+    "J-7",
+    "K-12",
+    "K-14",
+    "K-15",
+    "K-18",
+    "K-19",
+    "K-23",
+    "K-24",
+    "K-25",
+    "K-37",
+    "K-7",
+    "K-8",
+    "L-10",
+    "L-11",
+    "L-24",
+    "L-25",
+    "L-26",
+    "L-27",
+    "L-39",
+    "L-8",
+    "L-9",
+    "M-10",
+    "M-11",
+    "N-22",
+    "N-23",
+    "O-25",
+    "O-26",
+    "O-30",
+    "P-13",
+    "P-14",
+    "P-15",
+    "P-29",
+    "P-30",
+    "P-31",
+    "Q-1",
+    "Q-2",
+    "Q-29",
+    "W-25",
+    "W-26"
+  ],
+  "mysqlReservationSeats": null,
+  "missingMysqlSeats": null,
+  "mysqlAvailable": false,
+  "streamLength": 6,
+  "streamGroups": [
+    {
+      "name": "workers",
+      "consumers": 9,
+      "pending": 1,
+      "last-delivered-id": "1794127317672-0",
+      "entries-read": 4,
+      "lag": 2
+    }
+  ],
+  "streamPending": [
+    1,
+    "1794127317672-0",
+    "1794127317672-0",
+    [
+      [
+        "worker-8017f0e9-85fd-4b2a-9700-abaa360cb3ea",
+        "1"
+      ]
+    ]
+  ],
+  "deadLetterEntries": []
+}
