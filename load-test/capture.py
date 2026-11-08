@@ -90,6 +90,11 @@ def capture(directory, start, end):
         (metrics / f"{panel_id:02d}.json").write_text(json.dumps(result, indent=2) + "\n")
         if not result.get("data", {}).get("result"):
             empty.append(panel["title"])
+    k6_metrics = {}
+    for name in ("k6_seat_holds_created_total", "k6_http_reqs_total"):
+        query = urllib.parse.urlencode({"query": name, "start": start, "end": end, "step": 1})
+        k6_metrics[name] = json.loads(get(f"{PROMETHEUS}/api/v1/query_range?{query}"))
+    (metrics / "k6-holds.json").write_text(json.dumps(k6_metrics, indent=2) + "\n")
     (directory / "README.md").write_text(
         f"# Measurement capture\n\nWindow: {start} to {end} (Unix seconds).\n\n"
         "`dashboard.png`, `panels/`, `prometheus/`, before/after MySQL and Redis snapshots, "
