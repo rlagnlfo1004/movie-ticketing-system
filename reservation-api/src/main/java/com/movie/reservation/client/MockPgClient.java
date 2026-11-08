@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
+import java.util.Map;
 
 @Component
 public class MockPgClient {
@@ -36,6 +37,25 @@ public class MockPgClient {
                 throw new ReservationApiException(ReservationErrorCode.PAYMENT_NOT_PAID, null, null);
             }
             throw exception;
+        }
+    }
+
+    public void preRegister(String paymentId, int amount) {
+        client.post().uri("/payments/{id}/pre-register", paymentId)
+                .body(Map.of("totalAmount", amount))
+                .retrieve().toBodilessEntity();
+    }
+
+    public void cancel(String paymentId, String reason) {
+        try {
+            client.post().uri("/payments/{id}/cancel", paymentId)
+                    .body(Map.of("reason", reason))
+                    .retrieve().toBodilessEntity();
+        } catch (RestClientResponseException exception) {
+            if (exception.getStatusCode().value() != 409
+                    || !exception.getResponseBodyAsString().contains("PAYMENT_ALREADY_CANCELLED")) {
+                throw exception;
+            }
         }
     }
 }

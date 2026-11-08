@@ -34,6 +34,11 @@ after(async () => {
 
 test('승인한 결제는 조회되고 서명된 웹훅이 전달된다', async () => {
   const paymentId = 'pay-1';
+  const preregistered = await fetch(`${baseUrl}/payments/${paymentId}/pre-register`, {
+    method: 'POST', headers: { authorization: 'PortOne local-api-secret', 'content-type': 'application/json' },
+    body: JSON.stringify({ totalAmount: 30000 }),
+  });
+  assert.equal(preregistered.status, 200);
   const response = await fetch(`${baseUrl}/test/payments/${paymentId}/approve`, {
     method: 'POST', headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ amount: 30000, webhookUrl: `http://127.0.0.1:${webhook.address().port}/webhook` }),

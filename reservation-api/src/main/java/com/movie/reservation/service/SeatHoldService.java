@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -32,9 +33,6 @@ public class SeatHoldService {
 
     @Value("${reservation.v1-lock-pause:0ms}")
     private Duration lockPause;
-
-    @Value("${reservation.v1-screening-lock-pause:0ms}")
-    private Duration screeningLockPause;
 
     public record HoldResponse(String holdId, String paymentId, int amount, Instant heldUntil) {
     }
@@ -80,7 +78,7 @@ public class SeatHoldService {
         }, screeningId, key);
         if (!replay.isEmpty()) {
             HoldResponse existing = replay.getFirst();
-            List<String> heldSeats = jdbc.query("SELECT seat_no FROM screening_seats WHERE hold_id=?",
+            List<String> heldSeats = jdbc.query("SELECT seat_no FROM seat_hold_seats WHERE hold_id=?",
                     (rs, row) -> rs.getString(1), existing.holdId());
             if (!new HashSet<>(heldSeats).equals(new HashSet<>(seats))) {
                 throw error(ReservationErrorCode.IDEMPOTENCY_KEY_CONFLICT, screeningId, key);
@@ -91,9 +89,20 @@ public class SeatHoldService {
             throw error(ReservationErrorCode.ALREADY_HOLDING, screeningId, key);
         }
 
-        // V1: 요청 좌석 순서 그대로 잠그고, FK의 상영 S-lock 뒤에 상영 행 X-lock을 잡는다.
-        for (int index = 0; index < seats.size(); index++) {
-            String seat = seats.get(index);
+        // V2: 상영 행을 먼저 직렬화하고 모든 요청이 같은 좌석 잠금 순서를 따른다.
+        int decremented = jdbc.update("""
+                UPDATE screenings SET remaining_seat_count=remaining_seat_count-?
+                WHERE id=? AND remaining_seat_count>=?
+                """, seats.size(), screeningId, seats.size());
+        if (decremented == 0) {
+            throw error(ReservationErrorCode.SEAT_TAKEN, screeningId, key);
+        }
+        List<String> ordered = seats.stream()
+                .sorted(Comparator.comparing((String seat) -> seat.charAt(0))
+                        .thenComparingInt(seat -> Integer.parseInt(seat.substring(2))))
+                .toList();
+        for (int index = 0; index < ordered.size(); index++) {
+            String seat = ordered.get(index);
             List<String> status = jdbc.query("""
                     SELECT status FROM screening_seats WHERE screening_id=? AND seat_no=? FOR UPDATE
                     """, (rs, row) -> rs.getString(1), screeningId, seat);
@@ -112,12 +121,12 @@ public class SeatHoldService {
         } catch (DuplicateKeyException duplicate) {
             throw error(ReservationErrorCode.ALREADY_HOLDING, screeningId, key);
         }
-        pause(screeningLockPause);
-        for (String seat : seats) {
+        for (String seat : ordered) {
+            jdbc.update("INSERT INTO seat_hold_seats (hold_id,screening_id,seat_no) VALUES (?,?,?)",
+                    holdId, screeningId, seat);
             jdbc.update("UPDATE screening_seats SET status='HELD',hold_id=?,held_until=? WHERE screening_id=? AND seat_no=?",
                     holdId, Timestamp.from(until), screeningId, seat);
         }
-        jdbc.update("UPDATE screenings SET remaining_seat_count=remaining_seat_count-? WHERE id=?", seats.size(), screeningId);
         jdbc.update("INSERT INTO payments (payment_id,hold_id,screening_id,queue_token,amount,status,created_at,updated_at) VALUES (?,?,?,?,?,'READY',?,?)",
                 paymentId, holdId, screeningId, queueToken, seats.size() * PRICE, Timestamp.from(now), Timestamp.from(now));
         return new HoldResponse(holdId, paymentId, seats.size() * PRICE, until);

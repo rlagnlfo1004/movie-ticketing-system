@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.movie.reservation.client.MockPgClient;
 import com.movie.reservation.config.ReservationProperties;
 import com.movie.reservation.controller.SeatReservationController;
 import com.movie.reservation.exception.ReservationApiExceptionHandler;
@@ -29,6 +30,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 class SeatHoldFilterTest {
 
     private final SeatHoldService service = Mockito.mock(SeatHoldService.class);
+    private final MockPgClient pg = Mockito.mock(MockPgClient.class);
     private final IdempotencyRecordRepository records = Mockito.mock(IdempotencyRecordRepository.class);
     private MockMvc mvc;
 
@@ -39,7 +41,7 @@ class SeatHoldFilterTest {
                 new ReservationProperties.ActiveAdmission("waiting:screening"),
                 new ReservationProperties.Idempotency(Duration.ofMinutes(10)),
                 "^[A-Za-z0-9._:-]{8,256}$", "^[A-Za-z0-9._:-]{8,128}$");
-        mvc = MockMvcBuilders.standaloneSetup(new SeatReservationController(service))
+        mvc = MockMvcBuilders.standaloneSetup(new SeatReservationController(service, pg))
                 .addFilters(new IdempotencyFilter(new IdempotencyFingerprint(new JsonCanonicalizer(mapper)),
                         new IdempotencyValidator(properties, records), mapper))
                 .setControllerAdvice(new ReservationApiExceptionHandler())

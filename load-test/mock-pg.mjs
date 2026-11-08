@@ -16,6 +16,7 @@ export function createMockPgServer(config = {}) {
     firstDeliveryFailureRate = 0.01,
   } = config;
   const payments = new Map();
+  const destinations = new Map();
 
   async function sendWebhook(payment, type, webhookUrl) {
     if (!webhookUrl) return;
@@ -73,20 +74,43 @@ export function createMockPgServer(config = {}) {
         return send(400, { type: 'INVALID_REQUEST', message: 'amount must be a positive integer' });
       }
       const id = decodeURIComponent(approve[1]);
-      if (payments.has(id)) return send(409, { type: 'ALREADY_PAID' });
+      const existing = payments.get(id);
+      if (!existing) return send(404, { type: 'PAYMENT_NOT_FOUND' });
+      if (existing.status !== 'READY') return send(409, { type: 'ALREADY_PAID' });
+      if (existing.amount.total !== input.amount) return send(400, { type: 'INVALID_REQUEST' });
       await sleep(randomDelay(approvalDelayMinMs, approvalDelayMaxMs));
-      const payment = {
-        id, transactionId: randomUUID(), storeId, status: 'PAID',
-        amount: { total: input.amount, paid: input.amount, cancelled: 0, taxFree: 0, discount: 0, cancelledTaxFree: 0 },
-        currency: 'KRW', channel: { type: 'TEST' }, paidAt: new Date().toISOString(),
-      };
-      payments.set(id, payment);
-      void sendWebhook(payment, 'Transaction.Paid', input.webhookUrl);
-      return send(200, payment);
+      existing.transactionId = randomUUID();
+      existing.status = 'PAID';
+      existing.amount.paid = input.amount;
+      existing.paidAt = new Date().toISOString();
+      destinations.set(id, input.webhookUrl);
+      void sendWebhook(existing, 'Transaction.Paid', input.webhookUrl);
+      return send(200, existing);
     }
 
     if (request.headers.authorization !== `PortOne ${apiSecret}`) {
       return send(401, { type: 'UNAUTHORIZED' });
+    }
+    const preregister = path.match(/^\/payments\/([^/]+)\/pre-register$/);
+    if (request.method === 'POST' && preregister) {
+      const input = await readBody();
+      if (!input || !Number.isSafeInteger(input.totalAmount) || input.totalAmount <= 0) {
+        return send(400, { type: 'INVALID_REQUEST' });
+      }
+      const id = decodeURIComponent(preregister[1]);
+      const previous = payments.get(id);
+      if (previous) {
+        if (previous.status !== 'READY') return send(409, { type: 'ALREADY_PAID' });
+        if (previous.amount.total !== input.totalAmount) return send(409, { type: 'AMOUNT_MISMATCH' });
+        return send(200, previous);
+      }
+      const payment = {
+        id, transactionId: null, storeId, status: 'READY',
+        amount: { total: input.totalAmount, paid: 0, cancelled: 0, taxFree: 0, discount: 0, cancelledTaxFree: 0 },
+        currency: 'KRW', channel: { type: 'TEST' }, requestedAt: new Date().toISOString(),
+      };
+      payments.set(id, payment);
+      return send(200, payment);
     }
     const paymentRoute = path.match(/^\/payments\/([^/]+)(\/cancel)?$/);
     if (!paymentRoute) return send(404, { type: 'NOT_FOUND' });
@@ -103,7 +127,7 @@ export function createMockPgServer(config = {}) {
         status: 'SUCCEEDED', id: randomUUID(), totalAmount: payment.amount.cancelled,
         reason: input.reason, requestedAt: new Date().toISOString(), cancelledAt: new Date().toISOString(),
       };
-      if (!input.skipWebhook) void sendWebhook(payment, 'Transaction.Cancelled', input.webhookUrl);
+      if (!input.skipWebhook) void sendWebhook(payment, 'Transaction.Cancelled', destinations.get(payment.id));
       return send(200, { cancellation });
     }
     return send(405, { type: 'METHOD_NOT_ALLOWED' });

@@ -1,5 +1,6 @@
 package com.movie.reservation.controller;
 
+import com.movie.reservation.client.MockPgClient;
 import com.movie.reservation.service.SeatHoldService;
 import com.movie.reservation.service.SeatHoldService.HoldResponse;
 import com.movie.reservation.service.SeatHoldService.MineResponse;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class SeatReservationController {
 
     private final SeatHoldService service;
+    private final MockPgClient pg;
 
     public record HoldRequest(List<String> seats) {
     }
@@ -33,7 +35,9 @@ public class SeatReservationController {
                              @RequestHeader(value = "Queue-Token", required = false) String queueToken,
                              @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
                              @RequestBody HoldRequest request) {
-        return service.hold(screeningId, queueToken, idempotencyKey, request.seats());
+        HoldResponse result = service.hold(screeningId, queueToken, idempotencyKey, request.seats());
+        pg.preRegister(result.paymentId(), result.amount());
+        return result;
     }
 
     @GetMapping("/seats")

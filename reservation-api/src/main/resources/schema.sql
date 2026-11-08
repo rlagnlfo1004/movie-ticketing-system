@@ -33,6 +33,15 @@ CREATE TABLE IF NOT EXISTS screening_seats (
   CONSTRAINT fk_seats_hold FOREIGN KEY (hold_id) REFERENCES seat_holds(hold_id)
 );
 
+CREATE TABLE IF NOT EXISTS seat_hold_seats (
+  hold_id VARCHAR(36) NOT NULL,
+  screening_id VARCHAR(128) NOT NULL,
+  seat_no VARCHAR(8) NOT NULL,
+  PRIMARY KEY (hold_id, seat_no),
+  CONSTRAINT fk_hold_seats_hold FOREIGN KEY (hold_id) REFERENCES seat_holds(hold_id),
+  CONSTRAINT fk_hold_seats_seat FOREIGN KEY (screening_id, seat_no) REFERENCES screening_seats(screening_id, seat_no)
+);
+
 CREATE TABLE IF NOT EXISTS payments (
   payment_id VARCHAR(36) PRIMARY KEY,
   hold_id VARCHAR(36) NOT NULL UNIQUE,
