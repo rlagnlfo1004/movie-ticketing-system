@@ -71,11 +71,17 @@ def main(stage, moment):
     except Exception:
         hikari_pending_live = {}
     local_unconfirmed = rows(local_sql)
+    redis_reserved_output = subprocess.run(
+        ["docker", "compose", "exec", "-T", "redis", "redis-cli", "--raw", "SMEMBERS", "seat:{1}:reserved"],
+        cwd=ROOT, capture_output=True, text=True, check=True).stdout
+    redis_reserved = sorted(line.strip() for line in redis_reserved_output.splitlines() if line.strip())
+    db_reserved = sorted(line.strip() for line in mysql("SELECT seat_no FROM reservation_seats WHERE screening_id='1'").splitlines() if line.strip())
     local_by_id = {item["paymentId"]: item for item in local_unconfirmed}
+    confirmed_payment_ids = set(mysql("SELECT payment_id FROM reservations").splitlines())
     pg_missing = [
         {"paymentId": item["id"], "pgStatus": item["status"],
          "localStatus": local_by_id.get(item["id"], {}).get("localStatus", "NO_LOCAL_PAYMENT")}
-        for item in pg if item["status"] == "PAID" and item["id"] in local_by_id
+        for item in pg if item["status"] == "PAID" and item["id"] not in confirmed_payment_ids
     ]
     data = {
         "capturedAt": datetime.now(timezone.utc).isoformat(), "moment": moment,
@@ -91,6 +97,8 @@ def main(stage, moment):
         "hikariPending": hikari_pending, "hikariPendingLive": hikari_pending_live,
         "recentPayments": rows(recent_sql),
         "paidWithoutReservation": rows(missing_sql), "pgPaidWithoutReservation": pg_missing,
+        "redisReservedSeats": redis_reserved, "mysqlReservationSeats": db_reserved,
+        "missingMysqlSeats": sorted(set(redis_reserved) - set(db_reserved)),
     }
     directory = ROOT / "docs/evidence" / stage
     directory.mkdir(parents=True, exist_ok=True)
@@ -105,6 +113,9 @@ def main(stage, moment):
         "throughput-ceiling": "상영 행 직렬화 중의 DB 락 대기와 Hikari 대기를 확인한다.",
         "late-payment-before-cancel": "만료된 선점의 결제 전 상태를 기록한다.",
         "late-payment-after-cancel": "좌석이 재선점된 뒤 도착한 결제가 취소됐는지 기록한다.",
+        "worker-before-kill": "worker 종료 전 Redis 확정 좌석과 MySQL 적재 좌석의 차이를 기준값으로 기록한다.",
+        "worker-after-kill": "worker 종료 중 Redis에서 확정됐으나 MySQL에 적재되지 않은 좌석을 기록한다.",
+        "worker-after-restart": "worker를 다시 띄워도 Pub/Sub 이벤트가 재전달되지 않는지 확인한다.",
     }.get(moment, "상태 스냅샷을 확인한다.")
     markdown = f"""# {stage}: {moment}
 
@@ -123,6 +134,9 @@ def main(stage, moment):
 | Hikari pending 즉시값 | {hikari_pending_live.get('measurements', [{}])[0].get('value', '없음')} |
 | DB PAID·예매 없음 | {len(data['paidWithoutReservation'])}건 |
 | PG PAID·로컬 예매 없음 | {len(pg_missing)}건 |
+| Redis 확정 좌석 | {len(redis_reserved)}석 |
+| MySQL 적재 좌석 | {len(db_reserved)}석 |
+| Redis에만 있는 좌석 | {len(data['missingMysqlSeats'])}석 |
 
 해석: {interpretation}
 """
