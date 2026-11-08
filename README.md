@@ -18,6 +18,7 @@ V1은 MySQL 좌석 잠금에서 deadlock이 났고, V2는 잠금 순서를 고�
 Java 21과 Docker Compose가 필요하다.
 
 ```bash
+python3 infra/stages/ensure-local-env.py
 ./gradlew :waiting-api:bootJar :reservation-api:bootJar :reservation-worker:bootJar
 docker compose up -d --build
 bash load-test/v3-smoke.sh
@@ -44,6 +45,8 @@ API는 `http://localhost:8000/api/v1`에서 받는다. 첫 기동에서 상영 `
 선점 본문은 `{"seats":["A-12","A-13"]}`이고, 응답은 `holdId`, `paymentId`, `amount`, `heldUntil`, `customData`를 담는다. 좌석 가격은 한 석에 15,000원이다. 앱은 `customData`를 그대로 PortOne `requestPayment`에 전달한다. 필드 의미와 처리 방법은 [`docs/api/payment-context.md`](docs/api/payment-context.md)에 있다.
 
 Redis 재시작 시 예매 API의 readiness가 UP이 되기 전에 대사가 끝난다. 직접 다시 대사할 때는 로컬 `POST http://localhost:8081/admin/reconcile`을 호출하고, `GET`으로 마지막 확정·취소 목록을 확인한다.
+
+로컬 비밀 값은 저장소에서 제외한 `.env`에 생성한다. 단계별 설정과 가상 스레드 비교 방법은 [`infra/stages/README.md`](infra/stages/README.md)에 있다.
 
 ## 검증
 

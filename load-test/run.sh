@@ -2,12 +2,24 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+python3 "$ROOT/infra/stages/ensure-local-env.py"
 SCENARIO="${SCENARIO:-A}"
 SCREENING_ID="${SCREENING_ID:-1}"
 STAGE_SECONDS="${STAGE_SECONDS:-60}"
 SMOKE="${SMOKE:-0}"
 RUN_ID="${RUN_ID:-$(date +%Y%m%d_%H%M%S)}"
 STAGE="${STAGE:-local}"
+STAGE_PROFILE="${STAGE_PROFILE:-${STAGE%%-*}}"
+STAGE_ENV="$ROOT/infra/stages/$STAGE_PROFILE.env"
+if [[ -f "$STAGE_ENV" ]]; then
+  while IFS= read -r line; do
+    [[ "$line" == *=* ]] || continue
+    key="${line%%=*}"
+    value="${line#*=}"
+    if [[ -z "${!key:-}" ]]; then export "$key=$value"; fi
+  done < "$STAGE_ENV"
+fi
 RESULT_DIR="$ROOT/load-test/results/$STAGE/$RUN_ID"
 export STAGE RUN_ID
 
@@ -16,10 +28,18 @@ if [[ "$SCENARIO" != A && "$SCENARIO" != B ]]; then
   exit 2
 fi
 mkdir -p "$RESULT_DIR"
+docker compose -f "$ROOT/docker-compose.yml" stop \
+  waiting-api-1 waiting-api-2 waiting-api-3 reservation-api reservation-worker >/dev/null
 "$ROOT/gradlew" :waiting-api:bootJar :reservation-api:bootJar :reservation-worker:bootJar
 docker compose -f "$ROOT/docker-compose.yml" up -d --build \
   redis mysql mock-pg waiting-api-1 waiting-api-2 waiting-api-3 reservation-api reservation-worker nginx \
   prometheus grafana renderer node-exporter mysqld-exporter redis-exporter nginx-exporter
+for attempt in {1..60}; do
+  if curl -fsS -o /dev/null http://localhost:8081/actuator/health/readiness 2>/dev/null; then break; fi
+  if [[ "$attempt" -eq 60 ]]; then echo "reservation-api did not become ready" >&2; exit 1; fi
+  sleep 1
+done
+docker compose -f "$ROOT/docker-compose.yml" exec -T nginx nginx -s reload
 
 if [[ "$SCENARIO" == B ]]; then
   SCREENING_ID="$SCREENING_ID" STAGE_SECONDS="$STAGE_SECONDS" \
@@ -41,6 +61,9 @@ set -e
 sleep 5
 END_SECONDS="$(date +%s)"
 "$ROOT/load-test/capture.sh" "$STAGE" "$RUN_ID" "$START_SECONDS" "$END_SECONDS"
+if [[ -f "$STAGE_ENV" ]]; then
+  "$ROOT/load-test/report.sh" "$STAGE" "$RUN_ID" "$STAGE_PROFILE"
+fi
 
 echo "Result: $RESULT_DIR/summary.json"
 exit "$K6_STATUS"
