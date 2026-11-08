@@ -157,20 +157,22 @@ def jfr_save(hosts, key, stage, name):
             "JFR.dump", "name=measurement", f"filename=/app/{name}-raw.jfr")
     compose(hosts, key, "app-reservation", "exec", "-T", "reservation-api", "jcmd", "1",
             "JFR.stop", "name=measurement")
-    compose(hosts, key, "app-reservation", "exec", "-T", "reservation-api", "jfr", "scrub",
-            "--include-events", "jdk.VirtualThreadPinned", f"/app/{name}-raw.jfr", f"/app/{name}.jfr")
-    destination = ROOT / "docs/evidence" / stage
-    destination.mkdir(parents=True, exist_ok=True)
-    subprocess.run(["scp", "-q", "-i", str(key),
-                    f"ec2-user@{public(hosts, 'app-reservation')}:{REMOTE_ROOT}/reservation-api/build/libs/{name}.jfr",
-                    str(destination / f"{name}.jfr")], cwd=ROOT, check=True)
-    printed = compose(hosts, key, "app-reservation", "exec", "-T", "reservation-api",
-                      "jfr", "print", "--events", "jdk.VirtualThreadPinned", f"/app/{name}.jfr",
-                      capture=True)
-    (destination / f"{name}-pinning.txt").write_bytes(
-        printed.stdout or b"No jdk.VirtualThreadPinned events in this recording.\n")
-    remote(hosts, key, "app-reservation", "rm", "-f",
-           f"{REMOTE_ROOT}/reservation-api/build/libs/{name}-raw.jfr")
+    try:
+        compose(hosts, key, "app-reservation", "exec", "-T", "reservation-api", "jfr", "scrub",
+                "--include-events", "jdk.VirtualThreadPinned", f"/app/{name}-raw.jfr", f"/app/{name}.jfr")
+        destination = ROOT / "docs/evidence" / stage
+        destination.mkdir(parents=True, exist_ok=True)
+        subprocess.run(["scp", "-q", "-i", str(key),
+                        f"ec2-user@{public(hosts, 'app-reservation')}:{REMOTE_ROOT}/reservation-api/build/libs/{name}.jfr",
+                        str(destination / f"{name}.jfr")], cwd=ROOT, check=True)
+        printed = compose(hosts, key, "app-reservation", "exec", "-T", "reservation-api",
+                          "jfr", "print", "--events", "jdk.VirtualThreadPinned", f"/app/{name}.jfr",
+                          capture=True)
+        (destination / f"{name}-pinning.txt").write_bytes(
+            printed.stdout or b"No jdk.VirtualThreadPinned events in this recording.\n")
+    finally:
+        remote(hosts, key, "app-reservation", "rm", "-f",
+               f"{REMOTE_ROOT}/reservation-api/build/libs/{name}-raw.jfr", check=False)
 
 
 def measure(hosts, key, env, stage, profile, run_id, scenario, smoke, fault=None, jfr_name=None):

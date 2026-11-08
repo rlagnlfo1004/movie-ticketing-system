@@ -186,16 +186,18 @@ def jfr_save(stage, name):
         "name=measurement", f"filename=/app/{raw_filename}")
     run("docker", "compose", "exec", "-T", "reservation-api", "jcmd", "1", "JFR.stop",
         "name=measurement")
-    run("docker", "compose", "exec", "-T", "reservation-api", "jfr", "scrub", "--include-events",
-        "jdk.VirtualThreadPinned", f"/app/{raw_filename}", f"/app/{filename}")
-    shutil.copy2(ROOT / "reservation-api/build/libs" / filename, destination / filename)
-    with (destination / f"{name}-pinning.txt").open("w") as output:
-        run("docker", "compose", "exec", "-T", "reservation-api", "jfr", "print", "--events",
-            "jdk.VirtualThreadPinned", f"/app/{filename}", stdout=output)
-    pinning = destination / f"{name}-pinning.txt"
-    if pinning.stat().st_size == 0:
-        pinning.write_text("No jdk.VirtualThreadPinned events in this recording.\n")
-    (ROOT / "reservation-api/build/libs" / raw_filename).unlink()
+    try:
+        run("docker", "compose", "exec", "-T", "reservation-api", "jfr", "scrub", "--include-events",
+            "jdk.VirtualThreadPinned", f"/app/{raw_filename}", f"/app/{filename}")
+        shutil.copy2(ROOT / "reservation-api/build/libs" / filename, destination / filename)
+        with (destination / f"{name}-pinning.txt").open("w") as output:
+            run("docker", "compose", "exec", "-T", "reservation-api", "jfr", "print", "--events",
+                "jdk.VirtualThreadPinned", f"/app/{filename}", stdout=output)
+        pinning = destination / f"{name}-pinning.txt"
+        if pinning.stat().st_size == 0:
+            pinning.write_text("No jdk.VirtualThreadPinned events in this recording.\n")
+    finally:
+        (ROOT / "reservation-api/build/libs" / raw_filename).unlink(missing_ok=True)
 
 
 def main():
