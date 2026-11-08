@@ -37,6 +37,12 @@ def redis_json(*command):
         return None
 
 
+def redis_scan_count(pattern):
+    result = subprocess.run(["docker", "compose", "exec", "-T", "redis", "redis-cli", "--scan", "--pattern", pattern],
+                            cwd=ROOT, capture_output=True, text=True, check=True)
+    return len([line for line in result.stdout.splitlines() if line.strip()])
+
+
 def main(stage, moment):
     locks_sql = """
         SELECT JSON_OBJECT('transactionId',ENGINE_TRANSACTION_ID,'table',OBJECT_NAME,
@@ -90,6 +96,8 @@ def main(stage, moment):
         ["docker", "compose", "exec", "-T", "redis", "redis-cli", "--raw", "SMEMBERS", "seat:{1}:reserved"],
         cwd=ROOT, capture_output=True, text=True, check=True).stdout
     redis_reserved = sorted(line.strip() for line in redis_reserved_output.splitlines() if line.strip())
+    active_key_count = redis_scan_count("waiting:screening:1:active:*")
+    seat_hold_key_count = redis_scan_count("seat:{1}:hold:*")
     db_reserved = sorted(line.strip() for line in mysql("SELECT seat_no FROM reservation_seats WHERE screening_id='1'").splitlines() if line.strip())
     local_by_id = {item["paymentId"]: item for item in local_unconfirmed}
     confirmed_payment_ids = set(mysql("SELECT payment_id FROM reservations").splitlines())
@@ -122,6 +130,7 @@ def main(stage, moment):
         "paidWithoutReservation": rows(missing_sql) if mysql_available else None,
         "pgPaidWithoutReservation": pg_missing if mysql_available else None,
         "redisReservedSeats": redis_reserved,
+        "activeKeyCount": active_key_count, "seatHoldKeyCount": seat_hold_key_count,
         "mysqlReservationSeats": db_reserved if mysql_available else None,
         "missingMysqlSeats": sorted(set(redis_reserved) - set(db_reserved)) if mysql_available else None,
         "mysqlAvailable": mysql_available, "streamLength": stream_length,
@@ -148,6 +157,8 @@ def main(stage, moment):
         "stream-after-recovery": "XAUTOCLAIM과 DB 커밋 뒤 PEL이 비었는지 확인한다.",
         "mysql-down": "MySQL 중단 중 Redis Stream 길이와 lag를 기록한다.",
         "mysql-recovered": "MySQL 재개 뒤 Stream lag와 DB 적재 상태를 기록한다.",
+        "waiting-down-before": "waiting-api 전체 중단 중 이미 발급된 active 키 수를 기록한다.",
+        "waiting-down-after": "waiting-api 전체 중단 중 Redis Lua가 성공시킨 선점을 확인한다.",
         "stream-duplicate-acked": "중복 Stream 항목이 DB 좌석 수를 다시 줄이지 않고 ACK됐는지 확인한다.",
         "dlq-after-retries": "재전달 한도를 넘긴 Stream 항목의 DLQ 이동을 확인한다.",
     }.get(moment, "상태 스냅샷을 확인한다.")
@@ -170,6 +181,8 @@ def main(stage, moment):
 | DB PAID·예매 없음 | {str(len(data['paidWithoutReservation'])) + '건' if mysql_available else unavailable} |
 | PG PAID·로컬 예매 없음 | {str(len(pg_missing)) + '건' if mysql_available else unavailable} |
 | Redis 확정 좌석 | {len(redis_reserved)}석 |
+| active 키 | {active_key_count}개 |
+| 좌석 선점 키 | {seat_hold_key_count}개 |
 | MySQL 적재 좌석 | {str(len(db_reserved)) + '석' if mysql_available else unavailable} |
 | Redis에만 있는 좌석 | {str(len(data['missingMysqlSeats'])) + '석' if mysql_available else unavailable} |
 | MySQL 조회 가능 | {'예' if mysql_available else '아니오'} |
