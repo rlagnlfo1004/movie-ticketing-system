@@ -10,14 +10,10 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 @ConfigurationProperties(prefix = "reservation")
 public record ReservationProperties(
-        @NotNull ActiveAdmission activeAdmission,
         @NotNull Idempotency idempotency,
         @NotBlank String queueTokenPattern,
         @NotBlank String idempotencyKeyPattern
 ) {
-
-    public record ActiveAdmission(@NotBlank String baseUrl) {
-    }
 
     public record Idempotency(@NotNull Duration ttl) {
     }

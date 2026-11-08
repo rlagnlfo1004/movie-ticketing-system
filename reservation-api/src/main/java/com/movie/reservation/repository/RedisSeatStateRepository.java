@@ -26,7 +26,7 @@ public class RedisSeatStateRepository {
 
     private static DefaultRedisScript<Long> holdScript() {
         DefaultRedisScript<Long> script = new DefaultRedisScript<>();
-        script.setLocation(new ClassPathResource("lua/hold-v3.lua"));
+        script.setLocation(new ClassPathResource("lua/hold-v5.lua"));
         script.setResultType(Long.class);
         return script;
     }
@@ -48,6 +48,7 @@ public class RedisSeatStateRepository {
         keys.add(SeatRedisKeys.paymentHold(sid, paymentId));
         keys.add(SeatRedisKeys.paymentScreening(paymentId));
         keys.add(SeatRedisKeys.tokenLastHold(sid, token));
+        keys.add(SeatRedisKeys.activeAdmission(sid, token));
         for (String seat : seats) keys.add(SeatRedisKeys.hold(sid, seat));
         try {
             Long result = redis.execute(holdScript(), keys,

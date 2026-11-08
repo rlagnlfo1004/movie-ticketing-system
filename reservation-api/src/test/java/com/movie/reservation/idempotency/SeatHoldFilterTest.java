@@ -38,7 +38,6 @@ class SeatHoldFilterTest {
     void setUp() {
         ObjectMapper mapper = new ObjectMapper();
         ReservationProperties properties = new ReservationProperties(
-                new ReservationProperties.ActiveAdmission("waiting:screening"),
                 new ReservationProperties.Idempotency(Duration.ofMinutes(10)),
                 "^[A-Za-z0-9._:-]{8,256}$", "^[A-Za-z0-9._:-]{8,128}$");
         mvc = MockMvcBuilders.standaloneSetup(new SeatReservationController(service, pg))

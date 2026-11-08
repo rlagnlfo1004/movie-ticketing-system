@@ -1,6 +1,5 @@
 package com.movie.reservation.service;
 
-import com.movie.reservation.client.ActiveAdmissionClient;
 import com.movie.reservation.exception.ReservationApiException;
 import com.movie.reservation.exception.ReservationErrorCode;
 import com.movie.reservation.repository.RedisSeatStateRepository;
@@ -23,7 +22,6 @@ public class SeatHoldService {
     private static final Pattern SEAT = Pattern.compile("^[A-Y]-([1-9]|[1-3][0-9]|40)$");
 
     private final RedisSeatStateRepository repository;
-    private final ActiveAdmissionClient admission;
 
     @Value("${reservation.hold-duration:30s}")
     private Duration holdDuration;
@@ -51,15 +49,13 @@ public class SeatHoldService {
                 || seats.stream().anyMatch(seat -> seat == null || !SEAT.matcher(seat).matches())) {
             throw error(ReservationErrorCode.INVALID_SEAT_SELECTION, screeningId, key);
         }
-        if (!admission.validate(screeningId, queueToken).active()) {
-            throw error(ReservationErrorCode.NOT_ADMITTED, screeningId, key);
-        }
         String holdId = UUID.randomUUID().toString();
         String paymentId = UUID.randomUUID().toString();
         Instant heldUntil = Instant.now().plus(holdDuration);
         int amount = seats.size() * 15_000;
         long result = repository.hold(screeningId, queueToken, key, seats, holdId, paymentId, amount, heldUntil, holdDuration);
         if (result == 1) return new HoldResponse(holdId, paymentId, amount, heldUntil);
+        if (result == -1) throw error(ReservationErrorCode.NOT_ADMITTED, screeningId, key);
         if (result == -2) {
             HoldData previous = repository.holdForToken(screeningId, queueToken);
             if (previous != null && previous.key().equals(key)

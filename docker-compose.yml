@@ -135,7 +135,6 @@ services:
     environment:
       SERVER_PORT: 8081
       SPRING_DATA_REDIS_HOST: redis
-      RESERVATION_ACTIVE_ADMISSION_BASE_URL: http://waiting-api-1:8080
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/movie_seats?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: movie
       SPRING_DATASOURCE_PASSWORD: movie

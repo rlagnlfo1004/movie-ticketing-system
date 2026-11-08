@@ -60,4 +60,8 @@ public final class SeatRedisKeys {
     public static String deadLetterStream(String screeningId) {
         return stream(screeningId) + ":dlq";
     }
+
+    public static String activeAdmission(String screeningId, String token) {
+        return "waiting:screening:" + screeningId + ":active:" + token;
+    }
 }
