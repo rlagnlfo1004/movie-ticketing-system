@@ -20,6 +20,7 @@ import com.movie.storage.ticket.IdempotencyClaimResult;
 import com.movie.storage.ticket.IdempotencyRecordRepository;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -71,7 +72,8 @@ class SeatHoldFilterTest {
         when(records.claim(eq("1"), eq("hold-key-123"), any(), eq(Duration.ofMinutes(10))))
                 .thenReturn(IdempotencyClaimResult.CLAIMED);
         when(service.hold(eq("1"), eq("active-token-123"), eq("hold-key-123"), any()))
-                .thenReturn(new HoldResponse("hold-1", "payment-1", 15000, Instant.parse("2026-11-08T08:00:00Z")));
+                .thenReturn(new HoldResponse("hold-1", "payment-1", 15000,
+                        Instant.parse("2026-11-08T08:00:00Z"), Map.of("ticketingContext", "opaque")));
         mvc.perform(request().header("Idempotency-Key", "hold-key-123")
                         .content("{\"seats\":[\"A-12\"]}"))
                 .andExpect(status().isCreated())

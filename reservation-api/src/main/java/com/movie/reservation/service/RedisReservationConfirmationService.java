@@ -5,6 +5,7 @@ import com.movie.reservation.exception.ReservationApiException;
 import com.movie.reservation.exception.ReservationErrorCode;
 import com.movie.reservation.repository.RedisSeatStateRepository;
 import com.movie.reservation.repository.RedisSeatStateRepository.ConfirmationResult;
+import com.movie.reservation.reconcile.ReconciliationService;
 import com.movie.reservation.service.PaymentCompletionService.CompletionResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,8 +15,10 @@ import org.springframework.stereotype.Service;
 public class RedisReservationConfirmationService {
 
     private final RedisSeatStateRepository repository;
+    private final ReconciliationService reconciliation;
 
     public CompletionResponse confirm(String paymentId, Payment pgPayment) {
+        reconciliation.ensureReady();
         String sid = repository.screeningForPayment(paymentId);
         if (sid == null) throw new ReservationApiException(ReservationErrorCode.HOLD_EXPIRED, null, null);
         if (pgPayment.amount() == null || pgPayment.transactionId() == null) {
@@ -34,6 +37,7 @@ public class RedisReservationConfirmationService {
     }
 
     public void cancel(String paymentId) {
+        reconciliation.ensureReady();
         String sid = repository.screeningForPayment(paymentId);
         if (sid != null) repository.cancel(sid, paymentId);
     }

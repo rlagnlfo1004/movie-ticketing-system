@@ -19,7 +19,8 @@ public enum ReservationErrorCode {
     PAYMENT_AMOUNT_MISMATCH(HttpStatus.CONFLICT, "Payment amount does not match the hold.", false),
     HOLD_EXPIRED(HttpStatus.CONFLICT, "Seat hold has expired.", false),
     PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "Payment was not found.", false),
-    INVALID_WEBHOOK_SIGNATURE(HttpStatus.BAD_REQUEST, "Webhook signature is invalid.", false);
+    INVALID_WEBHOOK_SIGNATURE(HttpStatus.BAD_REQUEST, "Webhook signature is invalid.", false),
+    RECONCILIATION_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "Reconciliation is not ready.", true);
 
     private final HttpStatus status;
     private final String message;

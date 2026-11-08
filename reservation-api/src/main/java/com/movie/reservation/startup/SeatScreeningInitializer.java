@@ -10,8 +10,10 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.stereotype.Component;
+import org.springframework.core.annotation.Order;
 
 @Component
+@Order(1)
 @RequiredArgsConstructor
 public class SeatScreeningInitializer implements ApplicationRunner {
 

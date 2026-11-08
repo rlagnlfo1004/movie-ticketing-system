@@ -29,12 +29,20 @@ reservation:
   mock-pg-base-url: http://localhost:8082
   mock-pg-api-secret: mock-api-secret
   webhook-secret: whsec_bW9jay13ZWJob29rLXNlY3JldA==
+  reconciliation-key: MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI=
   idempotency:
     ttl: 10m
   queue-token-pattern: "^[A-Za-z0-9._:-]{8,256}$"
   idempotency-key-pattern: "^[A-Za-z0-9._:-]{8,128}$"
 
 management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: readinessState,reconciliation
   metrics:
     distribution:
       percentiles-histogram:

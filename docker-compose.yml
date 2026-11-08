@@ -15,7 +15,8 @@ services:
     image: redis:7.2-alpine
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
     volumes:
-      - ./infra/tuning/redis-v1.conf:/usr/local/etc/redis/redis.conf:ro
+      - ./infra/tuning/redis-v6.conf:/usr/local/etc/redis/redis.conf:ro
+      - redis-data:/data
     ports:
       - "6379:6379"
 
@@ -140,6 +141,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: movie
       RESERVATION_MOCK_PG_BASE_URL: http://mock-pg:8082
       RESERVATION_WEBHOOK_SECRET: whsec_bW9jay13ZWJob29rLXNlY3JldA==
+      RESERVATION_RECONCILIATION_KEY: MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI=
       RESERVATION_V1_LOCK_PAUSE: ${V1_LOCK_PAUSE:-0ms}
       SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 100
       SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 20
@@ -150,10 +152,14 @@ services:
         condition: service_started
       mysql:
         condition: service_healthy
+      mock-pg:
+        condition: service_healthy
+      reservation-worker:
+        condition: service_healthy
     ports:
       - "8081:8081"
     healthcheck:
-      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/8081 2>/dev/null || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health/readiness | grep -q UP || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 12
@@ -327,3 +333,6 @@ services:
     command: ["--nginx.scrape-uri=http://nginx/nginx_status"]
     depends_on:
       - nginx
+
+volumes:
+  redis-data:

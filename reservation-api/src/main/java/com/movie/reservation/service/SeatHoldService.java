@@ -4,11 +4,15 @@ import com.movie.reservation.exception.ReservationApiException;
 import com.movie.reservation.exception.ReservationErrorCode;
 import com.movie.reservation.repository.RedisSeatStateRepository;
 import com.movie.reservation.repository.RedisSeatStateRepository.HoldData;
+import com.movie.reservation.reconcile.PaymentContextCodec;
+import com.movie.reservation.reconcile.PaymentContextCodec.Context;
+import com.movie.reservation.reconcile.ReconciliationService;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +26,14 @@ public class SeatHoldService {
     private static final Pattern SEAT = Pattern.compile("^[A-Y]-([1-9]|[1-3][0-9]|40)$");
 
     private final RedisSeatStateRepository repository;
+    private final PaymentContextCodec contextCodec;
+    private final ReconciliationService reconciliation;
 
     @Value("${reservation.hold-duration:30s}")
     private Duration holdDuration;
 
-    public record HoldResponse(String holdId, String paymentId, int amount, Instant heldUntil) {
+    public record HoldResponse(String holdId, String paymentId, int amount, Instant heldUntil,
+                               Map<String, String> customData) {
     }
 
     public record Seat(String seatNo, String status) {
@@ -39,6 +46,7 @@ public class SeatHoldService {
     }
 
     public HoldResponse hold(String screeningId, String queueToken, String key, List<String> seats) {
+        reconciliation.ensureReady();
         if (queueToken == null || !Pattern.matches("^[A-Za-z0-9._:-]{8,256}$", queueToken)) {
             throw error(ReservationErrorCode.QUEUE_TOKEN_INVALID, screeningId, key);
         }
@@ -54,13 +62,14 @@ public class SeatHoldService {
         Instant heldUntil = Instant.now().plus(holdDuration);
         int amount = seats.size() * 15_000;
         long result = repository.hold(screeningId, queueToken, key, seats, holdId, paymentId, amount, heldUntil, holdDuration);
-        if (result == 1) return new HoldResponse(holdId, paymentId, amount, heldUntil);
+        if (result == 1) return response(screeningId, holdId, paymentId, queueToken, key, seats, amount, heldUntil);
         if (result == -1) throw error(ReservationErrorCode.NOT_ADMITTED, screeningId, key);
         if (result == -2) {
             HoldData previous = repository.holdForToken(screeningId, queueToken);
             if (previous != null && previous.key().equals(key)
                     && new HashSet<>(previous.seats()).equals(new HashSet<>(seats))) {
-                return new HoldResponse(previous.holdId(), previous.paymentId(), previous.amount(), previous.heldUntil());
+                return response(screeningId, previous.holdId(), previous.paymentId(), queueToken, key,
+                        previous.seats(), previous.amount(), previous.heldUntil());
             }
             throw error(ReservationErrorCode.ALREADY_HOLDING, screeningId, key);
         }
@@ -69,6 +78,7 @@ public class SeatHoldService {
     }
 
     public SeatsResponse seats(String screeningId) {
+        reconciliation.ensureReady();
         if (!"1".equals(screeningId)) throw error(ReservationErrorCode.SCREENING_NOT_FOUND, screeningId, null);
         List<String> seatNumbers = new ArrayList<>(1000);
         for (char row = 'A'; row <= 'Y'; row++) {
@@ -80,6 +90,7 @@ public class SeatHoldService {
     }
 
     public MineResponse mine(String screeningId, String queueToken) {
+        reconciliation.ensureReady();
         if (queueToken == null || queueToken.isBlank()) {
             throw error(ReservationErrorCode.QUEUE_TOKEN_REQUIRED, screeningId, null);
         }
@@ -97,5 +108,12 @@ public class SeatHoldService {
 
     private ReservationApiException error(ReservationErrorCode code, String sid, String key) {
         return new ReservationApiException(code, sid, key);
+    }
+
+    private HoldResponse response(String sid, String holdId, String paymentId, String token, String key,
+                                  List<String> seats, int amount, Instant until) {
+        String encrypted = contextCodec.encode(new Context(sid, holdId, paymentId, token, key,
+                seats, amount, until.toEpochMilli()));
+        return new HoldResponse(holdId, paymentId, amount, until, Map.of("ticketingContext", encrypted));
     }
 }
