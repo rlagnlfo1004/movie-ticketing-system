@@ -1,0 +1,89 @@
+{
+  "capturedAt": "2026-11-08T10:33:30.799441+00:00",
+  "smoke": true,
+  "durability": {
+    "innodb_flush_log_at_trx_commit": 1,
+    "sync_binlog": 1
+  },
+  "fioSyncLatency": {
+    "total_ios": 1023,
+    "lat_ns": {
+      "min": 176333,
+      "max": 4849875,
+      "mean": 517054.378299,
+      "stddev": 430675.522228,
+      "N": 1023,
+      "percentile": {
+        "1.000000": 191488,
+        "5.000000": 209920,
+        "10.000000": 230400,
+        "20.000000": 288768,
+        "30.000000": 325632,
+        "40.000000": 346112,
+        "50.000000": 362496,
+        "60.000000": 387072,
+        "70.000000": 423936,
+        "80.000000": 528384,
+        "90.000000": 1236992,
+        "95.000000": 1400832,
+        "99.000000": 1744896,
+        "99.500000": 2539520,
+        "99.900000": 4014080,
+        "99.950000": 4882432,
+        "99.990000": 4882432
+      }
+    }
+  },
+  "hotRow": [
+    {
+      "connections": 1,
+      "elapsedSeconds": 1.000492832994496,
+      "updates": 1074,
+      "tps": 1073.4709580932185,
+      "p50Ms": 0.724334,
+      "p95Ms": 1.8275,
+      "p99Ms": 2.539125
+    },
+    {
+      "connections": 8,
+      "elapsedSeconds": 1.00479216700478,
+      "updates": 1586,
+      "tps": 1578.435871696495,
+      "p50Ms": 4.846334,
+      "p95Ms": 6.371791,
+      "p99Ms": 8.419584
+    },
+    {
+      "connections": 32,
+      "elapsedSeconds": 1.0437534160009818,
+      "updates": 1370,
+      "tps": 1312.5705544983925,
+      "p50Ms": 20.657292,
+      "p95Ms": 44.713708,
+      "p99Ms": 47.858208
+    },
+    {
+      "connections": 128,
+      "elapsedSeconds": 1.0839019589984673,
+      "updates": 1493,
+      "tps": 1377.430853044626,
+      "p50Ms": 82.9415,
+      "p95Ms": 106.90375,
+      "p99Ms": 113.726417
+    }
+  ],
+  "innodbBefore": {
+    "lock_row_lock_current_waits": 0,
+    "lock_row_lock_time": 11803,
+    "lock_row_lock_time_max": 133,
+    "lock_row_lock_waits": 845,
+    "lock_row_lock_time_avg": 13
+  },
+  "innodbAfter": {
+    "lock_row_lock_current_waits": 0,
+    "lock_row_lock_time": 171171,
+    "lock_row_lock_time_max": 133,
+    "lock_row_lock_waits": 5290,
+    "lock_row_lock_time_avg": 32
+  }
+}
