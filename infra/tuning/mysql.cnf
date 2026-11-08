@@ -1,0 +1,7 @@
+[mysqld]
+max_connections = 500
+innodb_buffer_pool_size = 3G
+innodb_redo_log_capacity = 1G
+innodb_flush_log_at_trx_commit = 1
+sync_binlog = 1
+innodb_print_all_deadlocks = ON

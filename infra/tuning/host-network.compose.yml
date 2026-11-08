@@ -1,0 +1,56 @@
+# Linux 측정 호스트에서만 겹쳐 쓴다. 서비스 간 주소는 배포 단계에서 사설 IP로 치환한다.
+services:
+  redis:
+    network_mode: host
+    ports: !reset []
+  mysql:
+    network_mode: host
+    ports: !reset []
+    volumes:
+      - ./infra/tuning/mysql-stage.cnf:/etc/mysql/conf.d/tuning.cnf:ro
+  waiting-api-1:
+    network_mode: host
+  waiting-api-2:
+    network_mode: host
+    environment:
+      SERVER_PORT: 8082
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8082/actuator/health | grep -q UP || exit 1"]
+  waiting-api-3:
+    network_mode: host
+    environment:
+      SERVER_PORT: 8083
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8083/actuator/health | grep -q UP || exit 1"]
+  reservation-api:
+    network_mode: host
+    ports: !reset []
+  storage:
+    network_mode: host
+  nginx:
+    network_mode: host
+    ports: !reset []
+  mock-pg:
+    network_mode: host
+    ports: !reset []
+  harness-stub:
+    network_mode: host
+  k6:
+    network_mode: host
+    networks: !reset []
+  prometheus:
+    network_mode: host
+    ports: !reset []
+  grafana:
+    network_mode: host
+    ports: !reset []
+  renderer:
+    network_mode: host
+  node-exporter:
+    network_mode: host
+  mysqld-exporter:
+    network_mode: host
+  redis-exporter:
+    network_mode: host
+  nginx-exporter:
+    network_mode: host

@@ -1,0 +1,4 @@
+services:
+  redis:
+    volumes:
+      - ./infra/tuning/redis-v6.conf:/usr/local/etc/redis/redis.conf:ro
