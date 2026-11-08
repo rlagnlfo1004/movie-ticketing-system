@@ -1,0 +1,1 @@
+No jdk.VirtualThreadPinned events in this recording.
