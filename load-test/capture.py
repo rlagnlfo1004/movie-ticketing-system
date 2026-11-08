@@ -9,6 +9,7 @@ import sys
 import urllib.parse
 import urllib.request
 from local_env import get as local_env
+from remote_compose import route
 
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "load-test/results"
@@ -22,7 +23,7 @@ STREAM_KEY = os.environ.get("STREAM_KEY", "stream:{1}:reservations")
 
 
 def run(*args):
-    result = subprocess.run(args, cwd=ROOT, capture_output=True, text=True, check=False)
+    result = subprocess.run(route(args), cwd=ROOT, capture_output=True, text=True, check=False)
     return result.stdout + result.stderr
 
 

@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from urllib.request import urlopen
 from urllib.parse import urlencode
 from local_env import get as local_env
+from remote_compose import route
 
 ROOT = Path(__file__).resolve().parents[1]
 MYSQL_ROOT_PASSWORD = os.environ.get("SEAT_DB_ROOT_PASSWORD") or local_env("SEAT_DB_ROOT_PASSWORD")
@@ -16,7 +17,7 @@ MYSQL_ROOT_PASSWORD = os.environ.get("SEAT_DB_ROOT_PASSWORD") or local_env("SEAT
 
 def mysql(sql):
     result = subprocess.run(
-        ["docker", "compose", "exec", "-T", "-e", f"MYSQL_PWD={MYSQL_ROOT_PASSWORD}", "mysql", "mysql", "-uroot", "-N", "-B", "movie_seats", "-e", sql],
+        route(["docker", "compose", "exec", "-T", "-e", f"MYSQL_PWD={MYSQL_ROOT_PASSWORD}", "mysql", "mysql", "-uroot", "-N", "-B", "movie_seats", "-e", sql]),
         cwd=ROOT, capture_output=True, text=True, check=False,
     )
     if result.returncode != 0:
@@ -31,7 +32,7 @@ def rows(sql):
 
 
 def redis_json(*command):
-    result = subprocess.run(["docker", "compose", "exec", "-T", "redis", "redis-cli", "--json", *command],
+    result = subprocess.run(route(["docker", "compose", "exec", "-T", "redis", "redis-cli", "--json", *command]),
                             cwd=ROOT, capture_output=True, text=True, check=False)
     try:
         return json.loads(result.stdout)
@@ -40,13 +41,13 @@ def redis_json(*command):
 
 
 def redis_scan_count(pattern):
-    result = subprocess.run(["docker", "compose", "exec", "-T", "redis", "redis-cli", "--scan", "--pattern", pattern],
+    result = subprocess.run(route(["docker", "compose", "exec", "-T", "redis", "redis-cli", "--scan", "--pattern", pattern]),
                             cwd=ROOT, capture_output=True, text=True, check=True)
     return len([line for line in result.stdout.splitlines() if line.strip()])
 
 
 def redis_info(section):
-    result = subprocess.run(["docker", "compose", "exec", "-T", "redis", "redis-cli", "INFO", section],
+    result = subprocess.run(route(["docker", "compose", "exec", "-T", "redis", "redis-cli", "INFO", section]),
                             cwd=ROOT, capture_output=True, text=True, check=True)
     return dict(line.strip().split(":", 1) for line in result.stdout.splitlines()
                 if ":" in line and not line.startswith("#"))
@@ -85,24 +86,24 @@ def main(stage, moment):
     innodb = mysql("SHOW ENGINE INNODB STATUS\\G")
     marker = "LATEST DETECTED DEADLOCK"
     deadlock = innodb.split(marker, 1)[1].split("TRANSACTIONS", 1)[0].strip("-\n ") if marker in innodb else ""
-    with urlopen("http://localhost:8082/test/payments", timeout=5) as response:
+    with urlopen(os.environ.get("MOCK_PG_URL", "http://localhost:8082") + "/test/payments", timeout=5) as response:
         pg = json.load(response)["payments"]
     mysql_available = os.environ.get("MYSQL_UNAVAILABLE") != "1"
     deadlock_count = int(mysql("SELECT count FROM information_schema.innodb_metrics WHERE name='lock_deadlocks'").strip() or 0)
     try:
         query = urlencode({"query": "hikaricp_connections_pending"})
-        with urlopen(f"http://localhost:9090/api/v1/query?{query}", timeout=5) as response:
+        with urlopen(f"{os.environ.get('PROMETHEUS_URL', 'http://localhost:9090')}/api/v1/query?{query}", timeout=5) as response:
             hikari_pending = json.load(response).get("data", {}).get("result", [])
     except Exception:
         hikari_pending = []
     try:
-        with urlopen("http://localhost:8081/actuator/metrics/hikaricp.connections.pending", timeout=5) as response:
+        with urlopen(os.environ.get("RESERVATION_API_URL", "http://localhost:8081") + "/actuator/metrics/hikaricp.connections.pending", timeout=5) as response:
             hikari_pending_live = json.load(response)
     except Exception:
         hikari_pending_live = {}
     local_unconfirmed = rows(local_sql)
     redis_reserved_output = subprocess.run(
-        ["docker", "compose", "exec", "-T", "redis", "redis-cli", "--raw", "SMEMBERS", "seat:{1}:reserved"],
+        route(["docker", "compose", "exec", "-T", "redis", "redis-cli", "--raw", "SMEMBERS", "seat:{1}:reserved"]),
         cwd=ROOT, capture_output=True, text=True, check=True).stdout
     redis_reserved = sorted(line.strip() for line in redis_reserved_output.splitlines() if line.strip())
     active_key_count = redis_scan_count("waiting:screening:1:active:*")
@@ -127,7 +128,7 @@ def main(stage, moment):
     redis_aof_config = redis_json("CONFIG", "GET", "appendonly", "appendfsync") or {}
     redis_persistence = redis_info("persistence")
     try:
-        with urlopen("http://localhost:8081/admin/reconcile", timeout=5) as response:
+        with urlopen(os.environ.get("RESERVATION_API_URL", "http://localhost:8081") + "/admin/reconcile", timeout=5) as response:
             reconciliation_result = json.load(response)
     except Exception:
         reconciliation_result = None
@@ -165,7 +166,7 @@ def main(stage, moment):
     directory = ROOT / "docs/evidence" / stage
     directory.mkdir(parents=True, exist_ok=True)
     (directory / f"{moment}.json").write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n")
-    interpretation = {
+    descriptions = {
         "hold-contention": "좌석 선점 중 락 보유·대기 관계를 확인한다.",
         "deadlock-row": "요청 좌석 순서 역전으로 발생한 deadlock을 확인한다.",
         "deadlock-fk": "상영 FK S-lock 뒤 X-lock 전환 경로의 deadlock을 확인한다.",
@@ -193,7 +194,10 @@ def main(stage, moment):
         "waiting-down-after": "waiting-api 전체 중단 중 Redis Lua가 성공시킨 선점을 확인한다.",
         "stream-duplicate-acked": "중복 Stream 항목이 DB 좌석 수를 다시 줄이지 않고 ACK됐는지 확인한다.",
         "dlq-after-retries": "재전달 한도를 넘긴 Stream 항목의 DLQ 이동을 확인한다.",
-    }.get(moment, "상태 스냅샷을 확인한다.")
+    }
+    interpretation = next((value for key, value in descriptions.items()
+                           if moment == key or moment.endswith("-" + key)),
+                          "상태 스냅샷을 확인한다.")
     unavailable = "조회 불가"
     markdown = f"""# {stage}: {moment}
 
