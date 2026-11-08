@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Add the stage's non-secret configuration to a captured run README."""
 from pathlib import Path
+import os
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,7 +23,7 @@ def main(stage, run, profile=None):
         "STAGE_CODE_TAG", "REDIS_CONFIG", "REDIS_APPENDONLY", "REDIS_APPENDFSYNC",
         "HOLD_DURATION", "PAYMENT_MODE", "ACTIVE_CHECK_MODE", "SPRING_THREADS_VIRTUAL_ENABLED")]
     readme.write_text(existing + "\n\n## 단계별로 달라진 설정\n\n"
-                      + f"원본: [infra/stages/{profile}.env](../../../../infra/stages/{profile}.env)\n\n"
+                      + f"원본: [infra/stages/{profile}.env]({os.path.relpath(stage_file, directory)})\n\n"
                       + "| 설정 | 값 |\n| --- | --- |\n" + "\n".join(rows) + "\n")
     print(readme)
 
