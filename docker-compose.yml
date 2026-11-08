@@ -165,6 +165,32 @@ services:
     ports:
       - "8000:80"
 
+  mock-pg:
+    build:
+      context: .
+      dockerfile: load-test/mock-pg.Dockerfile
+    environment:
+      PORT: 8082
+      MOCK_PG_API_SECRET: mock-api-secret
+      MOCK_PG_WEBHOOK_SECRET: whsec_bW9jay13ZWJob29rLXNlY3JldA==
+      MOCK_PG_STORE_ID: store-mock
+    ports:
+      - "8082:8082"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8082/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  harness-stub:
+    image: node:22-alpine
+    profiles: ["harness-smoke"]
+    volumes:
+      - ./load-test/harness-smoke-stub.mjs:/app/stub.mjs:ro
+    command: ["node", "/app/stub.mjs"]
+    environment:
+      PORT: 18080
+
   k6:
     image: grafana/k6
     profiles: ["load-test"]
@@ -172,8 +198,11 @@ services:
       - ./load-test:/load-test
     environment:
       BASE_URL: http://nginx
+      MOCK_PG_URL: http://mock-pg:8082
+      WEBHOOK_URL: http://reservation-api:8081/api/v1/webhooks/portone
       SCREENING_ID: ${SCREENING_ID:-1}
     depends_on:
       - nginx
+      - mock-pg
     networks:
       - default
