@@ -64,6 +64,7 @@ export function createMockPgServer(config = {}) {
     };
     const path = new URL(request.url, 'http://localhost').pathname;
     if (request.method === 'GET' && path === '/health') return send(200, { status: 'UP' });
+    if (request.method === 'GET' && path === '/test/payments') return send(200, { payments: [...payments.values()] });
 
     const approve = path.match(/^\/test\/payments\/([^/]+)\/approve$/);
     if (request.method === 'POST' && approve) {
