@@ -48,6 +48,7 @@ def build_tag(tag, stage):
             fixture.mkdir(parents=True, exist_ok=True)
             (fixture / "mock-pg.mjs").write_bytes(subprocess.check_output(
                 ["git", "show", f"{tag}:load-test/mock-pg.mjs"], cwd=ROOT))
+            (fixture / "tag.txt").write_text(tag + "\n")
             (fixture / "mock-pg.Dockerfile").write_text(
                 "FROM node:22-alpine\nWORKDIR /app\nCOPY .local/stage/mock-pg.mjs /app/mock-pg.mjs\n"
                 "CMD [\"node\", \"/app/mock-pg.mjs\"]\n")

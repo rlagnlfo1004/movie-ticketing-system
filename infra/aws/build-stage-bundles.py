@@ -154,6 +154,9 @@ def service_config(base, role, hosts, secrets, profile):
 def main(hosts_file, profile, destination):
     hosts = read_env(hosts_file)
     stage = read_env(ROOT / "infra/stages" / f"{profile}.env")
+    fixture_tag = ROOT / ".local/stage/tag.txt"
+    if not fixture_tag.exists() or fixture_tag.read_text().strip() != stage["STAGE_CODE_TAG"]:
+        raise SystemExit("Stage mock PG fixture does not match the requested git tag")
     if os.environ.get("VIRTUAL_OFF") == "1":
         stage["SPRING_THREADS_VIRTUAL_ENABLED"] = "false"
     environment = {**os.environ, **stage}
