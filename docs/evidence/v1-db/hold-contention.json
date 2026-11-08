@@ -1,0 +1,61 @@
+{
+  "capturedAt": "2026-11-08T07:49:30.496584+00:00",
+  "moment": "hold-contention",
+  "queries": {
+    "locks": "SELECT JSON_OBJECT('transactionId',ENGINE_TRANSACTION_ID,'table',OBJECT_NAME,\n          'index',INDEX_NAME,'type',LOCK_TYPE,'mode',LOCK_MODE,'status',LOCK_STATUS,'data',LOCK_DATA)\n        FROM performance_schema.data_locks WHERE OBJECT_SCHEMA='movie_seats'",
+    "waits": "SELECT JSON_OBJECT('requesting',REQUESTING_ENGINE_TRANSACTION_ID,\n          'blocking',BLOCKING_ENGINE_TRANSACTION_ID,'requestingLock',REQUESTING_ENGINE_LOCK_ID,\n          'blockingLock',BLOCKING_ENGINE_LOCK_ID)\n        FROM performance_schema.data_lock_waits",
+    "paidWithoutReservation": "SELECT JSON_OBJECT('paymentId',p.payment_id,'localStatus',p.status,'amount',p.amount)\n        FROM payments p LEFT JOIN reservations r ON r.payment_id=p.payment_id\n        WHERE p.status='PAID' AND r.reservation_id IS NULL",
+    "unconfirmedLocal": "SELECT JSON_OBJECT('paymentId',p.payment_id,'localStatus',p.status,'amount',p.amount)\n        FROM payments p LEFT JOIN reservations r ON r.payment_id=p.payment_id\n        WHERE r.reservation_id IS NULL",
+    "deadlock": "SHOW ENGINE INNODB STATUS\\G",
+    "pg": "GET /test/payments"
+  },
+  "locks": [
+    {
+      "data": null,
+      "mode": "IX",
+      "type": "TABLE",
+      "index": null,
+      "table": "screening_seats",
+      "status": "GRANTED",
+      "transactionId": 9065
+    },
+    {
+      "data": null,
+      "mode": "IX",
+      "type": "TABLE",
+      "index": null,
+      "table": "screening_seats",
+      "status": "GRANTED",
+      "transactionId": 9066
+    },
+    {
+      "data": "'1', 'H-1'",
+      "mode": "X,REC_NOT_GAP",
+      "type": "RECORD",
+      "index": "PRIMARY",
+      "table": "screening_seats",
+      "status": "GRANTED",
+      "transactionId": 9065
+    },
+    {
+      "data": "'1', 'H-1'",
+      "mode": "X,REC_NOT_GAP",
+      "type": "RECORD",
+      "index": "PRIMARY",
+      "table": "screening_seats",
+      "status": "WAITING",
+      "transactionId": 9066
+    }
+  ],
+  "waits": [
+    {
+      "blocking": 9065,
+      "requesting": 9066,
+      "blockingLock": "281473271611392:3096:14:7:72:281473164829008",
+      "requestingLock": "281473271610584:10624:14:7:72:281473164822800"
+    }
+  ],
+  "latestDeadlock": "2026-11-08 07:47:15 281469364399872\n*** (1) TRANSACTION:\nTRANSACTION 8031, ACTIVE 0 sec starting index read\nmysql tables in use 1, locked 1\nLOCK WAIT 8 lock struct(s), heap size 1128, 4 row lock(s), undo log entries 2\nMySQL thread id 221, OS thread handle 281469216136960, query id 7605 172.21.0.15 movie updating\nUPDATE screenings SET remaining_seat_count=remaining_seat_count-1 WHERE id='1'\n\n*** (1) HOLDS THE LOCK(S):\nRECORD LOCKS space id 12 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 8031 lock mode S locks rec but not gap\nRecord lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0\n 0: len 1; hex 31; asc 1;;\n 1: len 6; hex 000000001b71; asc      q;;\n 2: len 7; hex 02000001220301; asc     \"  ;;\n 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;\n 4: len 8; hex 99b9d8a000000000; asc         ;;\n 5: len 4; hex 800003e8; asc     ;;\n 6: len 4; hex 800003e4; asc     ;;\n 7: len 8; hex 99bb507a6e030dad; asc   Pzn   ;;\n\n\n*** (1) WAITING FOR THIS LOCK TO BE GRANTED:\nRECORD LOCKS space id 12 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 8031 lock_mode X locks rec but not gap waiting\nRecord lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0\n 0: len 1; hex 31; asc 1;;\n 1: len 6; hex 000000001b71; asc      q;;\n 2: len 7; hex 02000001220301; asc     \"  ;;\n 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;\n 4: len 8; hex 99b9d8a000000000; asc         ;;\n 5: len 4; hex 800003e8; asc     ;;\n 6: len 4; hex 800003e4; asc     ;;\n 7: len 8; hex 99bb507a6e030dad; asc   Pzn   ;;\n\n\n*** (2) TRANSACTION:\nTRANSACTION 8030, ACTIVE 0 sec starting index read\nmysql tables in use 1, locked 1\nLOCK WAIT 8 lock struct(s), heap size 1128, 4 row lock(s), undo log entries 2\nMySQL thread id 222, OS thread handle 281469208309504, query id 7606 172.21.0.15 movie updating\nUPDATE screenings SET remaining_seat_count=remaining_seat_count-1 WHERE id='1'\n\n*** (2) HOLDS THE LOCK(S):\nRECORD LOCKS space id 12 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 8030 lock mode S locks rec but not gap\nRecord lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0\n 0: len 1; hex 31; asc 1;;\n 1: len 6; hex 000000001b71; asc      q;;\n 2: len 7; hex 02000001220301; asc     \"  ;;\n 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;\n 4: len 8; hex 99b9d8a000000000; asc         ;;\n 5: len 4; hex 800003e8; asc     ;;\n 6: len 4; hex 800003e4; asc     ;;\n 7: len 8; hex 99bb507a6e030dad; asc   Pzn   ;;\n\n\n*** (2) WAITING FOR THIS LOCK TO BE GRANTED:\nRECORD LOCKS space id 12 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 8030 lock_mode X locks rec but not gap waiting\nRecord lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0\n 0: len 1; hex 31; asc 1;;\n 1: len 6; hex 000000001b71; asc      q;;\n 2: len 7; hex 02000001220301; asc     \"  ;;\n 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;\n 4: len 8; hex 99b9d8a000000000; asc         ;;\n 5: len 4; hex 800003e8; asc     ;;\n 6: len 4; hex 800003e4; asc     ;;\n 7: len 8; hex 99bb507a6e030dad; asc   Pzn   ;;\n\n*** WE ROLL BACK TRANSACTION (2)",
+  "paidWithoutReservation": [],
+  "pgPaidWithoutReservation": []
+}
