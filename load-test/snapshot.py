@@ -43,6 +43,13 @@ def redis_scan_count(pattern):
     return len([line for line in result.stdout.splitlines() if line.strip()])
 
 
+def redis_info(section):
+    result = subprocess.run(["docker", "compose", "exec", "-T", "redis", "redis-cli", "INFO", section],
+                            cwd=ROOT, capture_output=True, text=True, check=True)
+    return dict(line.strip().split(":", 1) for line in result.stdout.splitlines()
+                if ":" in line and not line.startswith("#"))
+
+
 def main(stage, moment):
     locks_sql = """
         SELECT JSON_OBJECT('transactionId',ENGINE_TRANSACTION_ID,'table',OBJECT_NAME,
@@ -101,6 +108,10 @@ def main(stage, moment):
     db_reserved = sorted(line.strip() for line in mysql("SELECT seat_no FROM reservation_seats WHERE screening_id='1'").splitlines() if line.strip())
     local_by_id = {item["paymentId"]: item for item in local_unconfirmed}
     confirmed_payment_ids = set(mysql("SELECT payment_id FROM reservations").splitlines())
+    approved_pg_ids = {item["id"] for item in pg if item.get("paidAt")}
+    confirmed_pg_ids = sorted(approved_pg_ids & confirmed_payment_ids) if mysql_available else None
+    cancelled_pg_ids = sorted(item["id"] for item in pg if item.get("paidAt") and item["status"] == "CANCELLED")
+    unresolved_pg_ids = sorted(approved_pg_ids - set(confirmed_pg_ids or []) - set(cancelled_pg_ids)) if mysql_available else None
     pg_missing = [
         {"paymentId": item["id"], "pgStatus": item["status"],
          "localStatus": local_by_id.get(item["id"], {}).get("localStatus", "NO_LOCAL_PAYMENT")}
@@ -111,6 +122,13 @@ def main(stage, moment):
     group_info = redis_json("XINFO", "GROUPS", stream) or []
     pending_info = redis_json("XPENDING", stream, "workers") or [0]
     dlq = redis_json("XRANGE", stream + ":dlq", "-", "+", "COUNT", "10") or []
+    redis_aof_config = redis_json("CONFIG", "GET", "appendonly", "appendfsync") or {}
+    redis_persistence = redis_info("persistence")
+    try:
+        with urlopen("http://localhost:8081/admin/reconcile", timeout=5) as response:
+            reconciliation_result = json.load(response)
+    except Exception:
+        reconciliation_result = None
     data = {
         "capturedAt": datetime.now(timezone.utc).isoformat(), "moment": moment,
         "queries": {"locks": locks_sql.strip(), "waits": waits_sql.strip(),
@@ -135,6 +153,12 @@ def main(stage, moment):
         "missingMysqlSeats": sorted(set(redis_reserved) - set(db_reserved)) if mysql_available else None,
         "mysqlAvailable": mysql_available, "streamLength": stream_length,
         "streamGroups": group_info, "streamPending": pending_info, "deadLetterEntries": dlq,
+        "redisAofConfig": redis_aof_config, "redisPersistence": redis_persistence,
+        "reconciliationResult": reconciliation_result,
+        "approvedPgPayments": sorted(approved_pg_ids),
+        "confirmedPgPayments": confirmed_pg_ids,
+        "cancelledPgPayments": cancelled_pg_ids,
+        "unresolvedPgPayments": unresolved_pg_ids,
     }
     directory = ROOT / "docs/evidence" / stage
     directory.mkdir(parents=True, exist_ok=True)
@@ -157,6 +181,12 @@ def main(stage, moment):
         "stream-after-recovery": "XAUTOCLAIM과 DB 커밋 뒤 PEL이 비었는지 확인한다.",
         "mysql-down": "MySQL 중단 중 Redis Stream 길이와 lag를 기록한다.",
         "mysql-recovered": "MySQL 재개 뒤 Stream lag와 DB 적재 상태를 기록한다.",
+        "redis-before-kill": "Redis 강제 종료 전 AOF 설정과 확정 좌석을 기록한다.",
+        "redis-after-restart": "AOF 재시작 직후 Redis·MySQL 좌석과 PG 결제를 기록한다.",
+        "redis-after-reconcile": "대사 뒤 좌석·결제 균형과 확정·취소 목록을 확인한다.",
+        "pg-recovered-free": "PG 승인 결제의 좌석이 비어 있어 대사가 확정한 목록을 기록한다.",
+        "pg-cancelled-taken": "PG 승인 결제의 좌석이 재선점돼 대사가 취소한 목록을 기록한다.",
+        "pg-stream-fallback": "PG 컨텍스트가 없는 이전 단계 결제를 남아 있는 Stream 이벤트로 복원한다.",
         "waiting-down-before": "waiting-api 전체 중단 중 이미 발급된 active 키 수를 기록한다.",
         "waiting-down-after": "waiting-api 전체 중단 중 Redis Lua가 성공시킨 선점을 확인한다.",
         "stream-duplicate-acked": "중복 Stream 항목이 DB 좌석 수를 다시 줄이지 않고 ACK됐는지 확인한다.",
@@ -190,6 +220,15 @@ def main(stage, moment):
 | Stream pending | {pending_info[0] if pending_info else '없음'}건 |
 | Stream lag | {group_info[0].get('lag', '없음') if group_info else '없음'}건 |
 | DLQ 최근 항목 | {len(dlq)}건 |
+| Redis appendonly | {redis_aof_config.get('appendonly', '없음')} |
+| Redis appendfsync | {redis_aof_config.get('appendfsync', '없음')} |
+| AOF delayed fsync | {redis_persistence.get('aof_delayed_fsync', '없음')}건 |
+| PG 승인 건 | {len(approved_pg_ids)}건 |
+| PG 승인 중 DB 확정 | {str(len(confirmed_pg_ids)) + '건' if mysql_available else unavailable} |
+| PG 승인 중 취소 | {len(cancelled_pg_ids)}건 |
+| PG 승인 중 미해소 | {str(len(unresolved_pg_ids)) + '건' if mysql_available else unavailable} |
+| 이번 대사 확정 결제 | {len((reconciliation_result or {}).get('confirmedPayments', []))}건 |
+| 이번 대사 취소 결제 | {len((reconciliation_result or {}).get('cancelledPayments', []))}건 |
 
 해석: {interpretation}
 """

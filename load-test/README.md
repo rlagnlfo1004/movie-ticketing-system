@@ -14,6 +14,8 @@ V4에서는 `v4-pending-recovery-smoke.py`, `v4-mysql-outage-smoke.py`, `v4-idem
 
 모의 PG는 승인 지연 500~2,000ms, 웹훅 지연 200~800ms, 첫 발송 의도적 실패 1%를 사용한다. 모두 실측값이 아닌 가정이다. 웹훅 시크릿과 API 시크릿은 로컬 테스트 전용 값이다. 서버가 `POST /payments/{id}/pre-register`로 금액을 등록한 뒤에만 승인 `POST /test/payments/{id}/approve`가 성공한다. 승인 경로는 부하 하네스 전용이고, 조회·취소는 PortOne V2 경로와 응답의 주요 필드를 따른다.
 
+V6에서는 선점 응답의 `customData`를 모의 결제 승인 요청에도 전달한다. 모의 PG의 `GET /payments`는 페이지 조회와 `customData` 반환을 지원한다. `v6-reconcile-smoke.py`는 결제 컨텍스트 Redis 키를 골라 지우고 PG 내역으로 확정·취소한 뒤 Redis SIGKILL/AOF 재시작을 확인한다. `v6-stream-fallback-smoke.py`는 이전 단계처럼 `customData`가 없는 결제를 Stream 이벤트로 복원한다.
+
 좌석 API가 구현되기 전에는 로컬 계약 스텁으로 k6 호출 흐름만 확인한다. 이 실행의 수치는 성능 결과로 사용하지 않는다.
 
 ```bash

@@ -2,6 +2,8 @@
 
 측정일에는 V1~V6에서 앱 구현만 바꾸고 이 기준선은 그대로 둔다. 아래 값은 **측정 전 설정값**이며, 성능 결과가 아니다. 로컬 Compose는 서비스 DNS가 필요한 검증용 브리지 네트워크를 쓴다. AWS Linux 호스트에서는 `host-network.compose.yml`을 겹쳐 쓰고 서비스 간 주소를 사설 IP로 바꾼다. 한 호스트의 waiting-api 세 프로세스는 8080·8082·8083 포트를 쓴다.
 
+현재 V6 브랜치의 기본 Compose는 `redis-v6.conf`와 이름 붙인 `redis-data` 볼륨을 쓴다. 앞 단계 태그의 Compose는 영속화를 끈 설정을 보존한다.
+
 ## OS와 Docker
 
 - `net.core.somaxconn=4096`: 접속 폭주 때 accept 대기열이 먼저 포화되는 일을 줄인다.
