@@ -1,0 +1,10 @@
+apiVersion: 1
+providers:
+  - name: seat-redesign
+    orgId: 1
+    folder: Seat Redesign
+    type: file
+    disableDeletion: true
+    editable: false
+    options:
+      path: /etc/grafana/provisioning/dashboards/json
