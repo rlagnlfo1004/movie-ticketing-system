@@ -192,6 +192,9 @@ def jfr_save(stage, name):
     with (destination / f"{name}-pinning.txt").open("w") as output:
         run("docker", "compose", "exec", "-T", "reservation-api", "jfr", "print", "--events",
             "jdk.VirtualThreadPinned", f"/app/{filename}", stdout=output)
+    pinning = destination / f"{name}-pinning.txt"
+    if pinning.stat().st_size == 0:
+        pinning.write_text("No jdk.VirtualThreadPinned events in this recording.\n")
     (ROOT / "reservation-api/build/libs" / raw_filename).unlink()
 
 

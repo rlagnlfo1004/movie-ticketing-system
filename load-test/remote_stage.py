@@ -167,7 +167,8 @@ def jfr_save(hosts, key, stage, name):
     printed = compose(hosts, key, "app-reservation", "exec", "-T", "reservation-api",
                       "jfr", "print", "--events", "jdk.VirtualThreadPinned", f"/app/{name}.jfr",
                       capture=True)
-    (destination / f"{name}-pinning.txt").write_bytes(printed.stdout or b"")
+    (destination / f"{name}-pinning.txt").write_bytes(
+        printed.stdout or b"No jdk.VirtualThreadPinned events in this recording.\n")
     remote(hosts, key, "app-reservation", "rm", "-f",
            f"{REMOTE_ROOT}/reservation-api/build/libs/{name}-raw.jfr")
 
@@ -195,16 +196,24 @@ def measure(hosts, key, env, stage, profile, run_id, scenario, smoke, fault=None
     process = subprocess.Popen(["ssh", "-o", "BatchMode=yes", "-i", str(key),
                                 f"ec2-user@{public(hosts, 'lg')}", shlex.join(command)], cwd=ROOT)
     fault_events = []
-    if scenario == "B" and stage in ("v1-db", "v2-db-fixed"):
-        time.sleep(4 if smoke else 301)
-        moment = "hold-contention" if stage == "v1-db" else "throughput-ceiling"
-        subprocess.run([str(ROOT / "load-test/snapshot.sh"), stage, f"{run_id}-{moment}"],
-                       cwd=ROOT, env=env, check=True)
-        fault_events.append({"at": datetime.now(timezone.utc).isoformat(), "event": moment,
-                             "snapshot": f"../../../docs/evidence/{stage}/{run_id}-{moment}.json"})
-    if fault:
-        fault_events = inject(hosts, key, env, stage, run_id, fault, smoke)
-    status = process.wait()
+    try:
+        if scenario == "B" and stage in ("v1-db", "v2-db-fixed"):
+            for _ in range(4 if smoke else 301):
+                if process.poll() is not None:
+                    raise RuntimeError("k6 ended before the contention snapshot")
+                time.sleep(1)
+            moment = "hold-contention" if stage == "v1-db" else "throughput-ceiling"
+            subprocess.run([str(ROOT / "load-test/snapshot.sh"), stage, f"{run_id}-{moment}"],
+                           cwd=ROOT, env=env, check=True)
+            fault_events.append({"at": datetime.now(timezone.utc).isoformat(), "event": moment,
+                                 "snapshot": f"../../../docs/evidence/{stage}/{run_id}-{moment}.json"})
+        if fault:
+            fault_events.extend(inject(hosts, key, env, stage, run_id, fault, smoke))
+        status = process.wait()
+    finally:
+        if process.poll() is None:
+            process.terminate()
+            process.wait(timeout=10)
     if jfr_name:
         jfr_save(hosts, key, stage.split("/", 1)[0], jfr_name)
     if fault_events:
