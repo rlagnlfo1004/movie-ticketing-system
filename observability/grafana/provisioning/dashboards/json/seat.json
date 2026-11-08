@@ -688,7 +688,7 @@
     },
     {
       "id": 21,
-      "title": "JVM GC pause",
+      "title": "Tomcat busy threads",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
@@ -699,6 +699,108 @@
         "w": 12,
         "x": 0,
         "y": 60
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "tomcat_threads_busy_threads",
+          "legendFormat": "{{instance}} {{mode}} {{command}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 22,
+      "title": "JVM live threads",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 60
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "jvm_threads_live_threads",
+          "legendFormat": "{{instance}} {{mode}} {{command}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 23,
+      "title": "Reservation app CPU",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 66
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "process_cpu_usage{job=\"reservation-api\"}",
+          "legendFormat": "{{instance}} {{mode}} {{command}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 24,
+      "title": "JVM GC pause",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 66
       },
       "targets": [
         {
@@ -721,7 +823,7 @@
       }
     },
     {
-      "id": 22,
+      "id": 25,
       "title": "Nginx connections",
       "type": "timeseries",
       "datasource": {
@@ -731,8 +833,8 @@
       "gridPos": {
         "h": 6,
         "w": 12,
-        "x": 12,
-        "y": 60
+        "x": 0,
+        "y": 72
       },
       "targets": [
         {
@@ -755,7 +857,7 @@
       }
     },
     {
-      "id": 23,
+      "id": 26,
       "title": "k6 requests/s",
       "type": "timeseries",
       "datasource": {
@@ -765,8 +867,8 @@
       "gridPos": {
         "h": 6,
         "w": 12,
-        "x": 0,
-        "y": 66
+        "x": 12,
+        "y": 72
       },
       "targets": [
         {
@@ -789,7 +891,7 @@
       }
     },
     {
-      "id": 24,
+      "id": 27,
       "title": "k6 request p95",
       "type": "timeseries",
       "datasource": {
@@ -799,8 +901,8 @@
       "gridPos": {
         "h": 6,
         "w": 12,
-        "x": 12,
-        "y": 66
+        "x": 0,
+        "y": 78
       },
       "targets": [
         {
@@ -823,7 +925,7 @@
       }
     },
     {
-      "id": 25,
+      "id": 28,
       "title": "k6 error rate",
       "type": "timeseries",
       "datasource": {
@@ -833,8 +935,8 @@
       "gridPos": {
         "h": 6,
         "w": 12,
-        "x": 0,
-        "y": 72
+        "x": 12,
+        "y": 78
       },
       "targets": [
         {
@@ -857,7 +959,7 @@
       }
     },
     {
-      "id": 26,
+      "id": 29,
       "title": "Webhook response p95",
       "type": "timeseries",
       "datasource": {
@@ -867,8 +969,8 @@
       "gridPos": {
         "h": 6,
         "w": 12,
-        "x": 12,
-        "y": 72
+        "x": 0,
+        "y": 84
       },
       "targets": [
         {
