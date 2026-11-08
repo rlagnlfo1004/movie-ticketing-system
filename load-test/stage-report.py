@@ -63,6 +63,9 @@ def pinning(tag, state):
 def comparison(tag, hypothesis):
     on, on_path = run_summary(tag)
     off, off_path = run_summary(tag, "vt-off")
+    manifest = load(RESULTS / tag / "batch.json") or {}
+    if manifest.get("smoke"):
+        hypothesis += " (로컬 연결 검증)"
     if not on or not off:
         return f"| {tag} | {hypothesis} | — | — | — | — | — | — | — |"
     def peak_tps(summary):
