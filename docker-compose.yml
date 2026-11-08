@@ -127,7 +127,7 @@ services:
 
   reservation-api:
     <<: *common
-    image: eclipse-temurin:21-jre
+    image: eclipse-temurin:21-jdk
     env_file: ./infra/tuning/jvm.env
     working_dir: /app
     volumes:
@@ -141,6 +141,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${SEAT_DB_PASSWORD:?Run ensure-local-env.py}
       RESERVATION_HOLD_DURATION: ${HOLD_DURATION:-30s}
       RESERVATION_MOCK_PG_BASE_URL: http://mock-pg:8082
+      RESERVATION_ACTIVE_ADMISSION_BASE_URL: http://waiting-api-1:8080
       RESERVATION_MOCK_PG_API_SECRET: ${RESERVATION_MOCK_PG_API_SECRET:?Run ensure-local-env.py}
       RESERVATION_WEBHOOK_SECRET: ${RESERVATION_WEBHOOK_SECRET:?Run ensure-local-env.py}
       RESERVATION_RECONCILIATION_KEY: ${RESERVATION_RECONCILIATION_KEY:?Run ensure-local-env.py}
