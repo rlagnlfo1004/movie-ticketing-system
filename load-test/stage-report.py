@@ -120,6 +120,14 @@ def stage_section(tag):
         for event in sorted(events, key=lambda item: item["at"]):
             snapshot = event.get("snapshot", "").replace("../../../docs/", "../../docs/", 1)
             suffix = f" · [스냅샷]({snapshot})" if snapshot else ""
+            if snapshot and any(word in event["event"] for word in
+                                ("app-closed", "completion", "worker", "stream", "mysql", "redis", "waiting", "balance")):
+                state = load((RESULTS / snapshot).resolve())
+                if state:
+                    redis_count = len(state.get("redisReservedSeats") or [])
+                    mysql_count = len(state.get("mysqlReservationSeats") or []) if state.get("mysqlAvailable") else "조회 불가"
+                    missing = len(state.get("pgPaidWithoutReservation") or []) if state.get("mysqlAvailable") else "조회 불가"
+                    suffix += f" · Redis 확정 {redis_count}석 / MySQL {mysql_count}석 / PG 승인·예매 없음 {missing}건"
             if event.get("run"):
                 suffix += f" · 종료 {event['endedAt']} · 종료 코드 {event['exitCode']}"
             rows.append(f"- {event['at']} · {event['event']}{suffix}")
@@ -136,6 +144,21 @@ def main():
             "실행 사양과 다르면 측정 당시 인스턴스 정보를 별도로 기록해야 한다.", "",
             "| 호스트 | 인스턴스 | vCPU |", "| --- | --- | ---: |"]
     rows.extend(f"| {name} | {instance} | {cpu} |" for name, instance, cpu in HOSTS)
+    rows += ["", "## 적용 튜닝", "", "아래 값은 배포 묶음에 포함한 설정 파일에서 읽었다.", "",
+             "| 파일 | 설정 | 값 |", "| --- | --- | --- |"]
+    for relative in ("infra/tuning/sysctl.conf", "infra/tuning/limits.conf",
+                     "infra/tuning/mysql-stage.cnf", "infra/tuning/jvm.env"):
+        for line in (ROOT / relative).read_text().splitlines():
+            line = line.strip()
+            if not line or line.startswith(("#", "[")):
+                continue
+            key, _, value = line.partition("=")
+            if not value:
+                parts = line.rsplit(" ", 1)
+                if len(parts) != 2:
+                    continue
+                key, value = parts
+            rows.append(f"| [{Path(relative).name}](../../{relative}) | `{key.strip()}` | `{value.strip()}` |")
     rows += ["", "## 절차", "",
              "각 단계의 git 태그에서 JAR를 빌드한다. 각 실행 전에 MySQL·Redis 데이터를 초기화하고 "
              "2분 워밍업을 거친다. A는 전체 흐름 3회, B는 선점 처리량 상한 1회 실행한다. "
