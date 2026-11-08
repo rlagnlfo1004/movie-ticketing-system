@@ -6,6 +6,7 @@ import subprocess
 import time
 import urllib.request
 import uuid
+from local_env import get as local_env
 
 root = Path(__file__).resolve().parents[1]
 base = "http://localhost:8000/api/v1"
@@ -34,7 +35,7 @@ def hold(seat):
 
 
 def expire(token, hold_id):
-    subprocess.run(["docker", "compose", "exec", "-T", "-e", "MYSQL_PWD=root", "mysql",
+    subprocess.run(["docker", "compose", "exec", "-T", "-e", f"MYSQL_PWD={local_env('SEAT_DB_ROOT_PASSWORD')}", "mysql",
                     "mysql", "-uroot", "movie_seats", "-e",
                     f"UPDATE seat_holds SET held_until=NOW(6)-INTERVAL 1 SECOND WHERE hold_id='{hold_id}'"],
                    cwd=root, capture_output=True, check=True)
@@ -90,7 +91,7 @@ approve(expired_hold["paymentId"])
 wait_status(expired_token, "CANCELLED")
 with urllib.request.urlopen(urllib.request.Request(
         f"http://localhost:8082/payments/{expired_hold['paymentId']}",
-        headers={"Authorization": "PortOne mock-api-secret"}), timeout=10) as response:
+        headers={"Authorization": "PortOne " + local_env("MOCK_PG_API_SECRET")}), timeout=10) as response:
     pg_status = json.load(response)["status"]
 if pg_status != "CANCELLED":
     raise SystemExit(f"Expected PG cancellation, got {pg_status}")

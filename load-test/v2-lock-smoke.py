@@ -8,12 +8,13 @@ import time
 import urllib.error
 import urllib.request
 import uuid
+from local_env import get as local_env
 
 root = Path(__file__).resolve().parents[1]
 
 
 def mysql(sql):
-    return subprocess.run(["docker", "compose", "exec", "-T", "-e", "MYSQL_PWD=root", "mysql",
+    return subprocess.run(["docker", "compose", "exec", "-T", "-e", f"MYSQL_PWD={local_env('SEAT_DB_ROOT_PASSWORD')}", "mysql",
                            "mysql", "-uroot", "-N", "-B", "movie_seats", "-e", sql], cwd=root,
                           capture_output=True, text=True, check=True).stdout.strip()
 

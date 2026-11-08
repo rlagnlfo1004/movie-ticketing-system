@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import subprocess
 import time
+from local_env import get as local_env
 
 root = Path(__file__).resolve().parents[1]
 stream = "stream:{1}:reservations"
@@ -18,7 +19,7 @@ def redis_json(*args):
 
 
 def mysql(sql):
-    return run("docker", "compose", "exec", "-T", "-e", "MYSQL_PWD=root", "mysql",
+    return run("docker", "compose", "exec", "-T", "-e", f"MYSQL_PWD={local_env('SEAT_DB_ROOT_PASSWORD')}", "mysql",
                "mysql", "-uroot", "-N", "-B", "movie_seats", "-e", sql)
 
 

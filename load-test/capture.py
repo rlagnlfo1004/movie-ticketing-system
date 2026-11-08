@@ -8,6 +8,7 @@ import subprocess
 import sys
 import urllib.parse
 import urllib.request
+from local_env import get as local_env
 
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "load-test/results"
@@ -15,7 +16,8 @@ DASHBOARD = json.loads((ROOT / "observability/grafana/provisioning/dashboards/js
 PROMETHEUS = os.environ.get("PROMETHEUS_URL", "http://localhost:9090")
 GRAFANA = os.environ.get("GRAFANA_URL", "http://localhost:3000")
 GRAFANA_USER = os.environ.get("GRAFANA_USER", "admin")
-GRAFANA_PASSWORD = os.environ.get("GRAFANA_PASSWORD", "local-grafana")
+GRAFANA_PASSWORD = os.environ.get("GRAFANA_PASSWORD") or local_env("GRAFANA_ADMIN_PASSWORD")
+MYSQL_ROOT_PASSWORD = os.environ.get("SEAT_DB_ROOT_PASSWORD") or local_env("SEAT_DB_ROOT_PASSWORD")
 STREAM_KEY = os.environ.get("STREAM_KEY", "stream:{1}:reservations")
 
 
@@ -26,7 +28,7 @@ def run(*args):
 
 def snapshot(directory, phase):
     directory.mkdir(parents=True, exist_ok=True)
-    mysql = ("docker", "compose", "exec", "-T", "-e", "MYSQL_PWD=root", "mysql", "mysql", "-uroot", "-N", "-B")
+    mysql = ("docker", "compose", "exec", "-T", "-e", f"MYSQL_PWD={MYSQL_ROOT_PASSWORD}", "mysql", "mysql", "-uroot", "-N", "-B")
     (directory / f"innodb-status-{phase}.txt").write_text(run(*mysql, "-e", "SHOW ENGINE INNODB STATUS\\G"))
     (directory / f"innodb-metrics-{phase}.tsv").write_text(run(*mysql, "-e", "SELECT name,count FROM information_schema.innodb_metrics WHERE name LIKE 'lock_%' ORDER BY name"))
     (directory / f"mysql-global-status-{phase}.tsv").write_text(run(*mysql, "-e", "SHOW GLOBAL STATUS"))

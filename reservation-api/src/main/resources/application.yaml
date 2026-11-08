@@ -6,8 +6,8 @@ spring:
     name: reservation-api
   datasource:
     url: jdbc:mysql://localhost:3306/movie_seats?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: movie
-    password: movie
+    username: ${SPRING_DATASOURCE_USERNAME:movie}
+    password: ${SPRING_DATASOURCE_PASSWORD}
   sql:
     init:
       mode: always
@@ -25,11 +25,11 @@ springdoc:
     tags-sorter: alpha
 
 reservation:
-  hold-duration: 30s
+  hold-duration: ${RESERVATION_HOLD_DURATION:5m}
   mock-pg-base-url: http://localhost:8082
-  mock-pg-api-secret: mock-api-secret
-  webhook-secret: whsec_bW9jay13ZWJob29rLXNlY3JldA==
-  reconciliation-key: MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI=
+  mock-pg-api-secret: ${RESERVATION_MOCK_PG_API_SECRET}
+  webhook-secret: ${RESERVATION_WEBHOOK_SECRET}
+  reconciliation-key: ${RESERVATION_RECONCILIATION_KEY}
   idempotency:
     ttl: 10m
   queue-token-pattern: "^[A-Za-z0-9._:-]{8,256}$"

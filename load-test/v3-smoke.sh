@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+DB_ROOT_PASSWORD="$(python3 "$ROOT/load-test/local_env.py" SEAT_DB_ROOT_PASSWORD)"
 BASE=http://localhost:8000/api/v1
 TOKEN="redis-$(date +%s)-$$"
 KEY="redis-key-$(date +%s)-$$"
@@ -23,7 +24,7 @@ curl -fsS -X POST "http://localhost:8082/test/payments/$payment_id/approve" \
 for attempt in {1..15}; do
   if [[ "$(docker compose -f "$ROOT/docker-compose.yml" exec -T redis redis-cli SISMEMBER 'seat:{1}:reserved' "$SEAT" | tr -d '\r')" == 1 ]]; then
     for persisted in {1..15}; do
-      count="$(docker compose -f "$ROOT/docker-compose.yml" exec -T -e MYSQL_PWD=root mysql \
+      count="$(docker compose -f "$ROOT/docker-compose.yml" exec -T -e "MYSQL_PWD=$DB_ROOT_PASSWORD" mysql \
         mysql -uroot -N -B movie_seats -e "SELECT COUNT(*) FROM reservation_seats WHERE screening_id='1' AND seat_no='$SEAT'" | tr -d '\r')"
       if [[ "$count" == 1 ]]; then
         echo "V3 Redis confirmation and Pub/Sub DB persistence passed"

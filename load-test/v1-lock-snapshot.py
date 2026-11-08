@@ -7,6 +7,7 @@ import subprocess
 import time
 import urllib.request
 import uuid
+from local_env import get as local_env
 
 root = Path(__file__).resolve().parents[1]
 seat = "H-1"
@@ -16,7 +17,7 @@ subprocess.run(["docker", "compose", "exec", "-T", "redis", "redis-cli", "SET",
                cwd=root, check=True, capture_output=True)
 
 blocker = subprocess.Popen([
-    "docker", "compose", "exec", "-T", "-e", "MYSQL_PWD=root", "mysql", "mysql", "-uroot", "movie_seats",
+    "docker", "compose", "exec", "-T", "-e", f"MYSQL_PWD={local_env('SEAT_DB_ROOT_PASSWORD')}", "mysql", "mysql", "-uroot", "movie_seats",
     "-e", f"START TRANSACTION; SELECT status FROM screening_seats WHERE screening_id='1' AND seat_no='{seat}' FOR UPDATE; DO SLEEP(6); COMMIT;",
 ], cwd=root, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
 

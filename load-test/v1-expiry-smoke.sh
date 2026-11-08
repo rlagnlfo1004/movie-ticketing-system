@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+DB_ROOT_PASSWORD="$(python3 "$ROOT/load-test/local_env.py" SEAT_DB_ROOT_PASSWORD)"
 TOKEN="expire-$(date +%s)-$$"
 KEY="expire-key-$(date +%s)-$$"
 SEAT="B-$((10 + (RANDOM % 20)))"
@@ -20,7 +21,7 @@ hold="$(curl -fsS -X POST "$BASE/screenings/1/holds" \
   -H "Idempotency-Key: $KEY" -d "{\"seats\":[\"$SEAT\"]}")"
 hold_id="$(jq -r .holdId <<<"$hold")"
 
-docker compose -f "$ROOT/docker-compose.yml" exec -T -e MYSQL_PWD=root mysql mysql -uroot movie_seats \
+docker compose -f "$ROOT/docker-compose.yml" exec -T -e "MYSQL_PWD=$DB_ROOT_PASSWORD" mysql mysql -uroot movie_seats \
   -e "UPDATE seat_holds SET held_until=NOW(6)-INTERVAL 1 SECOND WHERE hold_id='$hold_id'" >/dev/null
 sleep 2
 

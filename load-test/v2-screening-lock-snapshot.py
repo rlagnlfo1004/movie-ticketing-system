@@ -8,6 +8,7 @@ import time
 import urllib.error
 import urllib.request
 import uuid
+from local_env import get as local_env
 
 root = Path(__file__).resolve().parents[1]
 with urllib.request.urlopen("http://localhost:8000/api/v1/screenings/1/seats", timeout=10) as response:
@@ -25,7 +26,7 @@ commands = b"".join(resp("SET", f"waiting:screening:1:active:{token}", token, "E
 subprocess.run(["docker", "compose", "exec", "-T", "redis", "redis-cli", "--pipe"],
                cwd=root, input=commands, capture_output=True, check=True)
 
-blocker = subprocess.Popen(["docker", "compose", "exec", "-T", "-e", "MYSQL_PWD=root", "mysql",
+blocker = subprocess.Popen(["docker", "compose", "exec", "-T", "-e", f"MYSQL_PWD={local_env('SEAT_DB_ROOT_PASSWORD')}", "mysql",
                            "mysql", "-uroot", "movie_seats", "-e",
                            "START TRANSACTION; SELECT id FROM screenings WHERE id='1' FOR UPDATE; DO SLEEP(8); COMMIT;"],
                           cwd=root, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)

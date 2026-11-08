@@ -8,13 +8,15 @@ import sys
 from datetime import datetime, timezone
 from urllib.request import urlopen
 from urllib.parse import urlencode
+from local_env import get as local_env
 
 ROOT = Path(__file__).resolve().parents[1]
+MYSQL_ROOT_PASSWORD = os.environ.get("SEAT_DB_ROOT_PASSWORD") or local_env("SEAT_DB_ROOT_PASSWORD")
 
 
 def mysql(sql):
     result = subprocess.run(
-        ["docker", "compose", "exec", "-T", "-e", "MYSQL_PWD=root", "mysql", "mysql", "-uroot", "-N", "-B", "movie_seats", "-e", sql],
+        ["docker", "compose", "exec", "-T", "-e", f"MYSQL_PWD={MYSQL_ROOT_PASSWORD}", "mysql", "mysql", "-uroot", "-N", "-B", "movie_seats", "-e", sql],
         cwd=ROOT, capture_output=True, text=True, check=False,
     )
     if result.returncode != 0:

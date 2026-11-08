@@ -6,6 +6,7 @@ import subprocess
 import time
 import urllib.request
 import uuid
+from local_env import get as local_env
 
 root = Path(__file__).resolve().parents[1]
 base = "http://localhost:8000/api/v1"
@@ -20,7 +21,7 @@ def redis(*args):
 
 
 def mysql(sql):
-    return run("docker", "compose", "exec", "-T", "-e", "MYSQL_PWD=root", "mysql",
+    return run("docker", "compose", "exec", "-T", "-e", f"MYSQL_PWD={local_env('SEAT_DB_ROOT_PASSWORD')}", "mysql",
                "mysql", "-uroot", "-N", "-B", "movie_seats", "-e", sql)
 
 

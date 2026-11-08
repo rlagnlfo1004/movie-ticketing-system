@@ -5,6 +5,9 @@ build/
 *.jar
 *.log
 .env*
+!.env.example
+*.secret.env
+.local/
 .DS_Store
 Thumbs.db
 *.tmp

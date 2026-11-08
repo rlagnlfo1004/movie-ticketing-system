@@ -6,8 +6,8 @@ const randomDelay = (min, max) => Math.round(min + Math.random() * (max - min));
 
 export function createMockPgServer(config = {}) {
   const {
-    apiSecret = 'mock-api-secret',
-    webhookSecret = `whsec_${Buffer.from('mock-webhook-secret').toString('base64')}`,
+    apiSecret,
+    webhookSecret,
     storeId = 'store-mock',
     approvalDelayMinMs = 500,
     approvalDelayMaxMs = 2000,
@@ -15,6 +15,9 @@ export function createMockPgServer(config = {}) {
     webhookDelayMaxMs = 800,
     firstDeliveryFailureRate = 0.01,
   } = config;
+  if (!apiSecret || !webhookSecret?.startsWith('whsec_')) {
+    throw new Error('Mock PG API and webhook secrets are required');
+  }
   const payments = new Map();
   const destinations = new Map();
 

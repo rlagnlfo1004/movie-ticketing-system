@@ -15,7 +15,7 @@ services:
     image: redis:7.2-alpine
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
     volumes:
-      - ./infra/tuning/redis-v6.conf:/usr/local/etc/redis/redis.conf:ro
+      - ${REDIS_CONFIG:-./infra/tuning/redis-v6.conf}:/usr/local/etc/redis/redis.conf:ro
       - redis-data:/data
     ports:
       - "6379:6379"
@@ -26,14 +26,14 @@ services:
     volumes:
       - ./infra/tuning/mysql.cnf:/etc/mysql/conf.d/tuning.cnf:ro
     environment:
-      MYSQL_DATABASE: movie_seats
-      MYSQL_USER: movie
-      MYSQL_PASSWORD: movie
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ${SEAT_DB_NAME:?Run ensure-local-env.py}
+      MYSQL_USER: ${SEAT_DB_USER:?Run ensure-local-env.py}
+      MYSQL_PASSWORD: ${SEAT_DB_PASSWORD:?Run ensure-local-env.py}
+      MYSQL_ROOT_PASSWORD: ${SEAT_DB_ROOT_PASSWORD:?Run ensure-local-env.py}
     ports:
       - "3306:3306"
     healthcheck:
-      test: ["CMD-SHELL", "mysql -h localhost -umovie -pmovie -e 'SELECT 1' movie_kim"]
+      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_ROOT_PASSWORD mysql -h localhost -uroot -e 'SELECT 1' $${MYSQL_DATABASE}"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -49,7 +49,7 @@ services:
     environment:
       SPRING_DATA_REDIS_HOST: redis
       SERVER_PORT: 8080
-      SPRING_THREADS_VIRTUAL_ENABLED: "true"
+      SPRING_THREADS_VIRTUAL_ENABLED: ${SPRING_THREADS_VIRTUAL_ENABLED:-true}
       SPRING_DATA_REDIS_LETTUCE_POOL_ENABLED: "true"
       SPRING_DATA_REDIS_LETTUCE_POOL_MAX_ACTIVE: 200
       SPRING_DATA_REDIS_LETTUCE_POOL_MAX_IDLE: 100
@@ -78,7 +78,7 @@ services:
     environment:
       SPRING_DATA_REDIS_HOST: redis
       SERVER_PORT: 8080
-      SPRING_THREADS_VIRTUAL_ENABLED: "true"
+      SPRING_THREADS_VIRTUAL_ENABLED: ${SPRING_THREADS_VIRTUAL_ENABLED:-true}
       SPRING_DATA_REDIS_LETTUCE_POOL_ENABLED: "true"
       SPRING_DATA_REDIS_LETTUCE_POOL_MAX_ACTIVE: 200
       SPRING_DATA_REDIS_LETTUCE_POOL_MAX_IDLE: 100
@@ -107,7 +107,7 @@ services:
     environment:
       SPRING_DATA_REDIS_HOST: redis
       SERVER_PORT: 8080
-      SPRING_THREADS_VIRTUAL_ENABLED: "true"
+      SPRING_THREADS_VIRTUAL_ENABLED: ${SPRING_THREADS_VIRTUAL_ENABLED:-true}
       SPRING_DATA_REDIS_LETTUCE_POOL_ENABLED: "true"
       SPRING_DATA_REDIS_LETTUCE_POOL_MAX_ACTIVE: 200
       SPRING_DATA_REDIS_LETTUCE_POOL_MAX_IDLE: 100
@@ -136,17 +136,19 @@ services:
     environment:
       SERVER_PORT: 8081
       SPRING_DATA_REDIS_HOST: redis
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/movie_seats?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: movie
-      SPRING_DATASOURCE_PASSWORD: movie
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${SEAT_DB_NAME:?Run ensure-local-env.py}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${SEAT_DB_USER:?Run ensure-local-env.py}
+      SPRING_DATASOURCE_PASSWORD: ${SEAT_DB_PASSWORD:?Run ensure-local-env.py}
+      RESERVATION_HOLD_DURATION: ${HOLD_DURATION:-30s}
       RESERVATION_MOCK_PG_BASE_URL: http://mock-pg:8082
-      RESERVATION_WEBHOOK_SECRET: whsec_bW9jay13ZWJob29rLXNlY3JldA==
-      RESERVATION_RECONCILIATION_KEY: MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI=
+      RESERVATION_MOCK_PG_API_SECRET: ${RESERVATION_MOCK_PG_API_SECRET:?Run ensure-local-env.py}
+      RESERVATION_WEBHOOK_SECRET: ${RESERVATION_WEBHOOK_SECRET:?Run ensure-local-env.py}
+      RESERVATION_RECONCILIATION_KEY: ${RESERVATION_RECONCILIATION_KEY:?Run ensure-local-env.py}
       RESERVATION_V1_LOCK_PAUSE: ${V1_LOCK_PAUSE:-0ms}
       SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 100
       SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 20
       SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT: 3000
-      SPRING_THREADS_VIRTUAL_ENABLED: "true"
+      SPRING_THREADS_VIRTUAL_ENABLED: ${SPRING_THREADS_VIRTUAL_ENABLED:-true}
     depends_on:
       redis:
         condition: service_started
@@ -176,9 +178,10 @@ services:
     environment:
       SERVER_PORT: 8084
       SPRING_DATA_REDIS_HOST: redis
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/movie_seats?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: movie
-      SPRING_DATASOURCE_PASSWORD: movie
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${SEAT_DB_NAME:?Run ensure-local-env.py}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${SEAT_DB_USER:?Run ensure-local-env.py}
+      SPRING_DATASOURCE_PASSWORD: ${SEAT_DB_PASSWORD:?Run ensure-local-env.py}
+      SPRING_THREADS_VIRTUAL_ENABLED: ${SPRING_THREADS_VIRTUAL_ENABLED:-true}
       WORKER_TEST_WRITE_PAUSE: ${WORKER_TEST_WRITE_PAUSE:-0ms}
       WORKER_RECLAIM_MIN_IDLE: ${WORKER_RECLAIM_MIN_IDLE:-30s}
     depends_on:
@@ -224,9 +227,9 @@ services:
       dockerfile: load-test/mock-pg.Dockerfile
     environment:
       PORT: 8082
-      MOCK_PG_API_SECRET: mock-api-secret
-      MOCK_PG_WEBHOOK_SECRET: whsec_bW9jay13ZWJob29rLXNlY3JldA==
-      MOCK_PG_STORE_ID: store-mock
+      MOCK_PG_API_SECRET: ${MOCK_PG_API_SECRET:?Run ensure-local-env.py}
+      MOCK_PG_WEBHOOK_SECRET: ${MOCK_PG_WEBHOOK_SECRET:?Run ensure-local-env.py}
+      MOCK_PG_STORE_ID: ${MOCK_PG_STORE_ID:-store-mock}
     ports:
       - "8082:8082"
     healthcheck:
@@ -278,7 +281,7 @@ services:
     image: grafana/grafana:12.1.0
     environment:
       GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: local-grafana
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Run ensure-local-env.py}
       GF_AUTH_ANONYMOUS_ENABLED: "true"
       GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
       GF_RENDERING_SERVER_URL: http://renderer:8081/render
@@ -311,7 +314,7 @@ services:
     image: prom/mysqld-exporter:v0.17.2
     command: ["--config.my-cnf=/etc/mysql-exporter.cnf", "--collect.info_schema.innodb_metrics", "--collect.perf_schema.eventsstatements"]
     volumes:
-      - ./observability/mysql-exporter.cnf:/etc/mysql-exporter.cnf:ro
+      - ./.local/mysql-exporter.cnf:/etc/mysql-exporter.cnf:ro
     depends_on:
       mysql:
         condition: service_healthy
