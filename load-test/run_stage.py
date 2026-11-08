@@ -161,6 +161,11 @@ def verify_artifact_secrets(stage, batch=None):
     secrets = set(values(ROOT / ".env") +
                   values(Path.home() / ".config/movie-ticketing/portone.env") +
                   values(Path.home() / ".config/movie-ticketing/loadtest-grafana.env"))
+    global_report = ROOT / "load-test/results/README.md"
+    if secrets and global_report.exists():
+        contents = global_report.read_bytes()
+        if any(secret in contents for secret in secrets):
+            raise RuntimeError(f"Secret appeared in evidence: {global_report}")
     for directory in (ROOT / "load-test/results" / stage, ROOT / "docs/evidence" / stage):
         if not directory.exists():
             continue
