@@ -2,6 +2,7 @@
 """Build the measurement method and evidence index without inventing values."""
 from datetime import datetime, timezone
 import json
+import math
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -46,7 +47,9 @@ def panel_peak(directory, title):
     for series in raw.get("data", {}).get("result", []):
         for _, value in series.get("values", []):
             try:
-                values.append(float(value))
+                number = float(value)
+                if math.isfinite(number):
+                    values.append(number)
             except ValueError:
                 pass
     return f"{max(values):.2f}" if values else "—"
@@ -100,19 +103,24 @@ def stage_section(tag):
     for key in ("REDIS_CONFIG", "REDIS_APPENDONLY", "REDIS_APPENDFSYNC", "HOLD_DURATION",
                 "PAYMENT_MODE", "ACTIVE_CHECK_MODE", "SPRING_THREADS_VIRTUAL_ENABLED"):
         rows.append(f"| {key} | `{settings.get(key, '—')}` |")
-    rows += ["", "| 실행 | 선점 성공 건수 | 선점 p95(ms) | 선점 p99(ms) | 확정 건수 |", 
-             "| --- | ---: | ---: | ---: | ---: |"]
+    rows += ["", "| 실행 | 선점 성공 | 평균 성공 TPS | 선점 p95/p99(ms) | 확정 | deadlock 증가 | 웹훅 p95(s) | Stream lag 최대 |",
+             "| --- | ---: | ---: | --- | ---: | ---: | ---: | ---: |"]
     for run in sorted(directory.iterdir()):
         if not run.is_dir() or not run.name.startswith(manifest["batch"] + "-"):
             continue
         summary = load(run / "summary.json")
         if summary is None:
             continue
+        counters = load(run / "innodb-metrics-delta.json") or {}
+        deadlocks = counters.get("lock_deadlocks", "—")
         rows.append(f"| [{run.name}]({tag}/{run.name}/README.md) | "
                     f"{metric(summary, 'seat_holds_created', 'count')} | "
-                    f"{metric(summary, 'seat_hold_duration', 'p(95)')} | "
+                    f"{metric(summary, 'seat_holds_created', 'rate')} | "
+                    f"{metric(summary, 'seat_hold_duration', 'p(95)')} / "
                     f"{metric(summary, 'seat_hold_duration', 'p(99)')} | "
-                    f"{metric(summary, 'reservations_confirmed', 'count')} |")
+                    f"{metric(summary, 'reservations_confirmed', 'count')} | "
+                    f"{deadlocks} | {panel_peak(run, 'Webhook response p95')} | "
+                    f"{panel_peak(run, 'Redis stream lag')} |")
         rows.append(f"\n  [대시보드]({tag}/{run.name}/dashboard.png) · "
                     f"[패널 PNG]({tag}/{run.name}/panels/) · "
                     f"[Prometheus JSON]({tag}/{run.name}/prometheus/) · "
