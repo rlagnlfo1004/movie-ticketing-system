@@ -33,3 +33,18 @@ python3 infra/aws/cost.py           # 저장한 가격 원본으로 시간당 �
 검증한 계획은 **22개 생성, 변경 0개, 삭제 0개**였다. `plan.sh`는 실행 당시 작업자의 공인 IPv4를 `/32`로 읽는다. IP가 바뀌었으면 새 계획에서 보안 그룹 범위를 다시 확인한다. Terraform은 SSH 공개 키만 읽고 개인 키를 상태 파일에 넣지 않는다.
 
 측정일 `apply` 뒤 `render-hosts-env.sh`가 Terraform 출력에서 `hosts.env`를 만든다. #25의 `build-host-env.py`가 이 파일과 단계 env를 합쳐 서버별 환경 파일을 생성한다. `destroy` 뒤 `destroy-check.sh <결과.json>`은 태그가 붙은 리소스, EC2 인스턴스, EBS 볼륨, Elastic IP, NAT Gateway의 잔존 여부를 읽기 전용으로 확인하고 결과를 JSON에 남긴다.
+
+## 측정일 런북
+
+`apply`는 유료 측정 티켓에서만 실행한다. 호스트가 준비되면 저장소 루트에서 다음 순서로 실행한다. 런북 명령은 Terraform `apply`를 호출하지 않는다.
+
+```bash
+./infra/aws/render-hosts-env.sh
+./load-test/db-baseline.sh --hosts-env infra/aws/hosts.env --ssh-key ~/.ssh/id_ed25519
+for stage in v1 v2 v3 v4 v5 v6; do
+  ./load-test/run-stage.sh "$stage" --hosts-env infra/aws/hosts.env --ssh-key ~/.ssh/id_ed25519
+done
+./load-test/report.sh --all
+```
+
+`db-baseline.sh`는 앱을 시작하기 전에 MySQL 호스트의 별도 EBS 볼륨에서 fio와 단일 행 UPDATE를 실행한다. `run-stage.sh`는 태그별 JAR·모의 PG·Compose를 일곱 호스트에 배포하고, 실행마다 데이터를 초기화해 원본·스냅샷을 로컬로 수집한다. V2·V4에서는 가상 스레드 끔 비교와 비밀 값이 제거된 JFR을 저장한다. 세부 측정 방법과 파일 검증 기준은 [부하 테스트 런북](../../load-test/README.md)에 있다. 측정 결과를 커밋·푸시한 뒤에만 `destroy`와 잔존 검사·액세스 키 삭제를 진행한다.
