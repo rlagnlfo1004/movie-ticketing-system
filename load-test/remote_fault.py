@@ -57,6 +57,7 @@ def inject(hosts, key, env, stage, run_id, kind, smoke):
         events.append(event("reservation-worker SIGKILL"))
         events.append(snapshot(env, stage, run_id, moments[1]))
         compose(hosts, key, "app-reservation", "up", "-d", "--no-deps", "reservation-worker")
+        events.append(event("reservation-worker restarted"))
         from remote_stage import wait_healthy
         wait_healthy(hosts, key, "app-reservation", "reservation-worker")
     elif kind == "mysql-stop":
@@ -65,6 +66,7 @@ def inject(hosts, key, env, stage, run_id, kind, smoke):
         events.append(snapshot(env, stage, run_id, moments[1], mysql_down=True))
         time.sleep(1 if smoke else 30)
         compose(hosts, key, "mysql", "start", "mysql")
+        events.append(event("MySQL started"))
         from remote_stage import wait_healthy
         wait_healthy(hosts, key, "mysql", "mysql")
     elif kind == "waiting-stop":
@@ -73,6 +75,7 @@ def inject(hosts, key, env, stage, run_id, kind, smoke):
         events.append(snapshot(env, stage, run_id, moments[1]))
         time.sleep(1 if smoke else 30)
         compose(hosts, key, "app-waiting", "start", "waiting-api-1", "waiting-api-2", "waiting-api-3")
+        events.append(event("all waiting-api started"))
         from remote_stage import wait_healthy
         for service in ("waiting-api-1", "waiting-api-2", "waiting-api-3"):
             wait_healthy(hosts, key, "app-waiting", service)
@@ -82,6 +85,7 @@ def inject(hosts, key, env, stage, run_id, kind, smoke):
                "exec", "-T", "redis", "sh", "-c", "kill -9 1", check=False)
         events.append(event("Redis SIGKILL"))
         compose(hosts, key, "redis", "up", "-d", "--no-deps", "redis")
+        events.append(event("Redis restarted"))
         for _ in range(30):
             status = compose(hosts, key, "redis", "exec", "-T", "redis", "redis-cli", "PING",
                              check=False, capture=True)

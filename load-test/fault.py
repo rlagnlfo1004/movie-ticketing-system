@@ -80,6 +80,7 @@ def main(stage, run_id, kind, delay, outage):
             record(events, "reservation-worker SIGKILL")
             snapshot(stage, run_id, moments[1], events)
             run(*COMPOSE, "up", "-d", "--no-deps", "reservation-worker")
+            record(events, "reservation-worker restarted")
             wait_healthy("reservation-worker")
         elif kind == "mysql-stop":
             run(*COMPOSE, "stop", "mysql")
@@ -87,6 +88,7 @@ def main(stage, run_id, kind, delay, outage):
             snapshot(stage, run_id, moments[1], events, mysql_unavailable=True)
             time.sleep(float(outage))
             run(*COMPOSE, "start", "mysql")
+            record(events, "MySQL started")
             wait_healthy("mysql")
         elif kind == "waiting-stop":
             run(*COMPOSE, "stop", "waiting-api-1", "waiting-api-2", "waiting-api-3")
@@ -94,6 +96,7 @@ def main(stage, run_id, kind, delay, outage):
             snapshot(stage, run_id, moments[1], events)
             time.sleep(float(outage))
             run(*COMPOSE, "start", "waiting-api-1", "waiting-api-2", "waiting-api-3")
+            record(events, "all waiting-api started")
             for service in ("waiting-api-1", "waiting-api-2", "waiting-api-3"):
                 wait_healthy(service)
         else:
@@ -101,6 +104,7 @@ def main(stage, run_id, kind, delay, outage):
                            cwd=ROOT, check=False)
             record(events, "Redis SIGKILL")
             run(*COMPOSE, "up", "-d", "--no-deps", "redis")
+            record(events, "Redis restarted")
             for _ in range(30):
                 response = subprocess.run([*COMPOSE, "exec", "-T", "redis", "redis-cli", "PING"],
                                           cwd=ROOT, capture_output=True, text=True)
