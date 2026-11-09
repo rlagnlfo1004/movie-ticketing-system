@@ -51,29 +51,28 @@ def inject(hosts, key, env, stage, run_id, kind, smoke):
         "redis-kill": ("redis-before-kill", "redis-after-restart", "redis-after-reconcile"),
     }[kind]
     time.sleep(2 if smoke else 5)
-    if kind == "worker-kill" and not smoke:
-        for _ in range(90):
-            result = compose(hosts, key, "redis", "exec", "-T", "redis", "redis-cli",
-                             "SCARD", "seat:{1}:reserved", check=False, capture=True)
-            if result.returncode == 0 and int(result.stdout.strip() or b"0") >= 20:
-                break
-            time.sleep(1)
-        else:
-            raise RuntimeError("No confirmed seats before worker fault injection")
-    events.append(snapshot(env, stage, run_id, moments[0]))
     if kind == "worker-kill":
+        events.append({"at": datetime.now(timezone.utc).isoformat(), "event": "worker initial state",
+                       "snapshot": f"../../../docs/evidence/{stage}/{run_id}-before.json"})
         compose(hosts, key, "app-reservation", "kill", "-s", "SIGKILL", "reservation-worker")
         events.append(event("reservation-worker SIGKILL"))
         events.append(snapshot(env, stage, run_id, moments[1]))
+        outage_state = None
         if not smoke:
             time.sleep(30)
             outage_moment = "worker-during-outage" if stage.startswith("v3") else "stream-during-outage"
             events.append(snapshot(env, stage, run_id, outage_moment))
+            outage_state = json.loads((ROOT / "docs/evidence" / stage / f"{run_id}-{outage_moment}.json").read_text())
         compose(hosts, key, "app-reservation", "up", "-d", "--no-deps", "reservation-worker")
         events.append(event("reservation-worker restarted"))
         from remote_stage import wait_healthy
         wait_healthy(hosts, key, "app-reservation", "reservation-worker")
+        if outage_state and stage.startswith("v4"):
+            groups = outage_state.get("streamGroups") or []
+            if not any((group.get("pending") or 0) > 0 or (group.get("lag") or 0) > 0 for group in groups):
+                raise RuntimeError("No Stream backlog while worker was down")
     elif kind == "mysql-stop":
+        events.append(snapshot(env, stage, run_id, moments[0]))
         compose(hosts, key, "mysql", "stop", "mysql")
         events.append(event("MySQL stopped"))
         events.append(snapshot(env, stage, run_id, moments[1], mysql_down=True))
@@ -83,6 +82,7 @@ def inject(hosts, key, env, stage, run_id, kind, smoke):
         from remote_stage import wait_healthy
         wait_healthy(hosts, key, "mysql", "mysql")
     elif kind == "waiting-stop":
+        events.append(snapshot(env, stage, run_id, moments[0]))
         compose(hosts, key, "app-waiting", "stop", "waiting-api-1", "waiting-api-2", "waiting-api-3")
         events.append(event("all waiting-api stopped"))
         events.append(snapshot(env, stage, run_id, moments[1]))
@@ -93,6 +93,7 @@ def inject(hosts, key, env, stage, run_id, kind, smoke):
         for service in ("waiting-api-1", "waiting-api-2", "waiting-api-3"):
             wait_healthy(hosts, key, "app-waiting", service)
     else:
+        events.append(snapshot(env, stage, run_id, moments[0]))
         from remote_stage import remote
         remote(hosts, key, "redis", "docker", "compose", "-f", "/home/ec2-user/movie-ticketing/compose.json",
                "exec", "-T", "redis", "sh", "-c", "kill -9 1", check=False)

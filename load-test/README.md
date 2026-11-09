@@ -32,7 +32,7 @@ SMOKE=1 SCENARIO=A STAGE=v1 ./load-test/run.sh
 
 V4에서는 `v4-pending-recovery-smoke.py`, `v4-mysql-outage-smoke.py`, `v4-idempotency-smoke.py`, `v4-dlq-smoke.py`로 장애 경로를 확인한다. 첫 두 스크립트는 로컬 worker를 SIGKILL하거나 MySQL 컨테이너를 멈췄다가 다시 띄운다. 수치 비교에는 사용하지 않는다.
 
-AWS의 정식 worker 종료 실험은 Redis 확정 좌석이 20석 이상 생긴 뒤 worker를 SIGKILL한다. 30초 동안 중단 상태를 유지하며 전·직후·중단 중·복구 후 스냅샷을 저장한다. V4는 재기동 뒤 Stream lag·pending과 MySQL 누락이 0이 될 때까지 확인한다. 이미 완료한 단계의 worker 실험만 다시 검증할 때는 `run-stage.sh v3 --fault-only worker-kill --hosts-env infra/aws/hosts.env --ssh-key ~/.ssh/id_ed25519`처럼 실행한다. 기존 배치의 A·B는 반복하지 않고, 재검증 실행을 같은 배치에 추가한다.
+AWS의 정식 worker 종료 실험은 부하 시작 5초 뒤 worker를 SIGKILL한다. 30초 동안 중단 상태를 유지하며 전·직후·중단 중·복구 후 스냅샷을 저장한다. V4는 중단 중 Stream lag 또는 pending이 실제로 증가했는지 검사한 뒤, 재기동 뒤 lag·pending과 MySQL 누락이 0이 될 때까지 확인한다. 이미 완료한 단계의 worker 실험만 다시 검증할 때는 `run-stage.sh v3 --fault-only worker-kill --hosts-env infra/aws/hosts.env --ssh-key ~/.ssh/id_ed25519`처럼 실행한다. 기존 배치의 A·B는 반복하지 않고, 재검증 실행을 같은 배치에 추가한다.
 
 모의 PG는 승인 지연 500~2,000ms, 웹훅 지연 200~800ms, 첫 발송 의도적 실패 1%를 사용한다. 모두 실측값이 아닌 가정이다. 웹훅 시크릿과 API 시크릿은 로컬 테스트 전용 값이다. 서버가 `POST /payments/{id}/pre-register`로 금액을 등록한 뒤에만 승인 `POST /test/payments/{id}/approve`가 성공한다. 승인 경로는 부하 하네스 전용이고, 조회·취소는 PortOne V2 경로와 응답의 주요 필드를 따른다.
 
