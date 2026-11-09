@@ -23,7 +23,8 @@
 ## Nginx와 JVM
 
 - `worker_processes auto`: edge 호스트의 vCPU 수에 맞춰 worker를 띄운다.
-- `worker_connections=10240`과 `worker_rlimit_nofile=65535`: 접속 수가 파일 한도에 먼저 걸리지 않게 한다.
+- `worker_connections=65535`와 `worker_rlimit_nofile=65535`: 접속 수가 파일 한도에 먼저 걸리지 않게 한다.
+- 문제: 3만 요청을 10초에 시작한 첫 정식 A 시도에서 Nginx 양쪽 worker가 `10240 worker_connections are not enough`를 기록했고, 대기열 등록 연결이 실패했다. 해결: worker당 연결 한도를 65,535로 높여 같은 부하 조건에서 다시 확인한다. 이 시도는 유효한 단계 비교에서 제외한다.
 - upstream `keepalive` 100/32, `proxy_http_version 1.1`, 빈 `Connection` 헤더: 앱으로 향하는 연결을 재사용한다.
 - `listen reuseport`: worker별 수신 소켓으로 accept 경합을 줄인다.
 - `access_log off`: 측정 중 요청별 파일 쓰기 비용을 제외한다.
