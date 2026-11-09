@@ -36,7 +36,7 @@ export const options = __ENV.SCENARIO === 'B' ? {
   systemTags: ['status', 'method', 'name', 'scenario', 'expected_response'],
   scenarios: { full_flow: {
     executor: 'constant-arrival-rate', rate: smoke ? 2 : 3000, timeUnit: '1s',
-    duration: smoke ? '5s' : '10s', preAllocatedVUs: smoke ? 5 : 5000,
+    duration: smoke ? '5s' : '10s', preAllocatedVUs: smoke ? 5 : 30000,
     maxVUs: smoke ? 20 : 30000, exec: 'fullFlow',
     gracefulStop: smoke ? '30s' : '15m',
   } },

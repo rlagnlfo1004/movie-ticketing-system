@@ -9,7 +9,7 @@ data "aws_ssm_parameter" "al2023_arm64" {
 locals {
   zone = var.availability_zone != "" ? var.availability_zone : data.aws_availability_zones.available.names[0]
   hosts = {
-    lg              = "c7g.xlarge"
+    lg              = "c7g.2xlarge"
     edge            = "c7g.large"
     app-waiting     = "m7g.xlarge"
     app-reservation = "m7g.xlarge"
