@@ -1,0 +1,205 @@
+{
+  "status": "success",
+  "data": {
+    "resultType": "matrix",
+    "result": [
+      {
+        "metric": {
+          "__name__": "k6_http_req_duration_p95",
+          "expected_response": "false",
+          "method": "GET",
+          "name": "/screenings/{sid}/queue/status",
+          "scenario": "full_flow",
+          "status": "0",
+          "testid": "20261109T144453Z-a1"
+        },
+        "values": [
+          [
+            1794235688.403,
+            "5.000972143"
+          ],
+          [
+            1794235693.403,
+            "5.0009326204999995"
+          ],
+          [
+            1794235698.403,
+            "5.0009326204999995"
+          ]
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "k6_http_req_duration_p95",
+          "expected_response": "false",
+          "method": "GET",
+          "name": "/screenings/{sid}/queue/status",
+          "scenario": "full_flow",
+          "status": "502",
+          "testid": "20261109T144453Z-a1"
+        },
+        "values": [
+          [
+            1794235693.403,
+            "3.0000074894999997"
+          ],
+          [
+            1794235698.403,
+            "0.000424964"
+          ]
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "k6_http_req_duration_p95",
+          "expected_response": "false",
+          "method": "POST",
+          "name": "http://10.84.1.63/api/v1/screenings/1/queue/register",
+          "scenario": "full_flow",
+          "status": "0",
+          "testid": "20261109T144453Z-a1"
+        },
+        "values": [
+          [
+            1794235688.403,
+            "10.000646875700001"
+          ],
+          [
+            1794235693.403,
+            "10.0006541762"
+          ],
+          [
+            1794235698.403,
+            "10.0006541762"
+          ]
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "k6_http_req_duration_p95",
+          "expected_response": "false",
+          "method": "POST",
+          "name": "http://10.84.1.63/api/v1/screenings/1/queue/register",
+          "scenario": "full_flow",
+          "status": "502",
+          "testid": "20261109T144453Z-a1"
+        },
+        "values": [
+          [
+            1794235693.403,
+            "3.000932094"
+          ],
+          [
+            1794235698.403,
+            "3.000932094"
+          ]
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "k6_http_req_duration_p95",
+          "expected_response": "true",
+          "method": "GET",
+          "name": "/screenings/{sid}/queue/status",
+          "scenario": "full_flow",
+          "status": "200",
+          "testid": "20261109T144453Z-a1"
+        },
+        "values": [
+          [
+            1794235683.403,
+            "1.7947300186"
+          ],
+          [
+            1794235688.403,
+            "4.830012873449999"
+          ],
+          [
+            1794235693.403,
+            "4.9253153168"
+          ],
+          [
+            1794235698.403,
+            "4.9253153168"
+          ]
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "k6_http_req_duration_p95",
+          "expected_response": "true",
+          "method": "GET",
+          "name": "http://10.84.1.63/api/v1/screenings/1/seats",
+          "scenario": "full_flow",
+          "status": "200",
+          "testid": "20261109T144453Z-a1"
+        },
+        "values": [
+          [
+            1794235688.403,
+            "0.056719774"
+          ],
+          [
+            1794235693.403,
+            "0.056719774"
+          ],
+          [
+            1794235698.403,
+            "0.056719774"
+          ]
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "k6_http_req_duration_p95",
+          "expected_response": "true",
+          "method": "POST",
+          "name": "/screenings/{sid}/holds",
+          "operation": "hold",
+          "scenario": "full_flow",
+          "status": "201",
+          "testid": "20261109T144453Z-a1"
+        },
+        "values": [
+          [
+            1794235693.403,
+            "5.249232353"
+          ],
+          [
+            1794235698.403,
+            "5.249232353"
+          ]
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "k6_http_req_duration_p95",
+          "expected_response": "true",
+          "method": "POST",
+          "name": "http://10.84.1.63/api/v1/screenings/1/queue/register",
+          "scenario": "full_flow",
+          "status": "200",
+          "testid": "20261109T144453Z-a1"
+        },
+        "values": [
+          [
+            1794235683.403,
+            "2.0206412287999997"
+          ],
+          [
+            1794235688.403,
+            "6.35517396915"
+          ],
+          [
+            1794235693.403,
+            "8.5571050834"
+          ],
+          [
+            1794235698.403,
+            "9.137280345999999"
+          ]
+        ]
+      }
+    ]
+  }
+}
