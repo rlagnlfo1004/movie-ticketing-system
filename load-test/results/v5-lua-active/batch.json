@@ -1,0 +1,8 @@
+{
+  "batch": "20261109T205834Z",
+  "tag": "v5-lua-active",
+  "profile": "v5",
+  "smoke": false,
+  "skipA": true,
+  "startedAt": "2026-11-09T20:58:34.554729+00:00"
+}
