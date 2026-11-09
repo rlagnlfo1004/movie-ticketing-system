@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>루멘 시네마 · 좌석 예매</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="/demo/"><span class="brand-mark">✦</span><span>LUMEN <small>CINEMA</small></span></a>
+      <nav aria-label="화면 선택"><button id="booking-tab" class="nav-link active" type="button">예매하기</button><button id="admin-tab" class="nav-link" type="button">운영 현황</button></nav>
+      <div class="header-right"><span id="mode-pill" class="mode-pill">INTERACTIVE DEMO</span><span class="avatar">KH</span></div>
+    </header>
+
+    <main id="booking-view" class="booking-view">
+      <section class="hero">
+        <div class="hero-copy"><span class="eyebrow">NOW SHOWING · SCREEN 01</span><h1>한 장면을<br><em>내 자리에서.</em></h1><p>좌석을 고르고, 선점하고, 예매를 마치는 순간까지.</p><div class="hero-meta"><span>2026. 11. 09</span><span class="dot"></span><span>19:30</span><span class="dot"></span><span>2D · 128분</span></div></div>
+        <div class="poster" aria-label="영화 별빛 너머의 포스터"><div class="poster-orbit orbit-one"></div><div class="poster-orbit orbit-two"></div><span class="poster-top">LUMEN ORIGINAL</span><div class="poster-title">별빛<br><i>너머의</i><br>우리</div><span class="poster-bottom">BEYOND THE STARS · 2026</span></div>
+      </section>
+
+      <section class="journey" aria-label="예매 단계"><div class="journey-step active" data-step="queue"><b>01</b><span>대기열 입장</span></div><div class="journey-line"></div><div class="journey-step" data-step="seat"><b>02</b><span>좌석 선택</span></div><div class="journey-line"></div><div class="journey-step" data-step="payment"><b>03</b><span>결제</span></div><div class="journey-line"></div><div class="journey-step" data-step="done"><b>04</b><span>예매 완료</span></div></section>
+
+      <div class="content-grid">
+        <div class="primary-column">
+          <section class="surface queue-panel" id="queue-panel"><div class="section-top"><div><span class="eyebrow dark">STEP 01 · QUEUE</span><h2>기다림도 예매의 일부</h2><p>입장 순서가 되면 좌석을 선택할 수 있어요.</p></div><span class="status-dot">LIVE</span></div><div class="queue-main"><div class="queue-number"><span>현재 대기 순번</span><strong id="queue-rank">128</strong><small>번째</small></div><div class="queue-side"><span class="queue-label">내 앞의 대기 인원</span><strong id="queue-ahead">127명</strong><div class="progress-track"><div id="queue-progress" class="progress-fill"></div></div><p id="queue-message">잠시 후 입장할 수 있어요.</p></div></div><button id="queue-button" class="button primary" type="button">대기열 등록하기 <span>↗</span></button></section>
+
+          <section class="surface seat-panel" id="seat-panel"><div class="section-top"><div><span class="eyebrow dark">STEP 02 · YOUR SEAT</span><h2>마음에 드는 자리를 골라요</h2><p>좌석은 한 번에 최대 4석까지 선택할 수 있어요.</p></div><div class="seat-legend"><span><i class="legend-dot available"></i>선택 가능</span><span><i class="legend-dot selected"></i>선택</span><span><i class="legend-dot held"></i>선점</span><span><i class="legend-dot confirmed"></i>확정</span></div></div><div class="screen-wrap"><div class="screen-glow"></div><div class="screen">SCREEN</div><p>이쪽이 스크린이에요</p></div><div class="seat-map-scroll"><div id="seat-map" class="seat-map" role="grid" aria-label="25행 40열 좌석"></div></div><div class="seat-map-foot">좌석을 누르면 오른쪽 예매 내역에 표시돼요. <span>1인 최대 4석</span></div></section>
+
+          <section class="surface result-panel" id="result-panel" hidden><div id="result-icon" class="result-icon">✓</div><span class="eyebrow dark">YOUR RESERVATION</span><h2 id="result-title">예매가 완료됐어요</h2><p id="result-copy">좋은 자리에서 만나요.</p><div class="ticket-strip"><span>별빛 너머의 우리</span><b>SCREEN 01 · 19:30</b><strong id="result-seats">M-20 · M-21</strong></div><button id="restart-button" class="button secondary" type="button">다시 둘러보기</button></section>
+        </div>
+
+        <aside class="side-column"><section class="surface summary-panel"><span class="eyebrow dark">MY BOOKING</span><h2>예매 내역</h2><div class="summary-film"><div class="mini-poster">✦</div><div><b>별빛 너머의 우리</b><small>오늘 19:30 · 루멘 1관</small></div></div><div class="summary-row"><span>선택한 좌석</span><b id="selected-seats">좌석을 선택해 주세요</b></div><div class="summary-row"><span>인원</span><b id="seat-count">0명</b></div><div class="summary-row total"><span>결제 금액</span><b id="total-price">0원</b></div><div id="hold-timer" class="timer" hidden><span>선점 유지 시간</span><strong id="timer-value">00:30</strong></div><button id="hold-button" class="button primary" type="button" disabled>좌석 선점하기 <span>→</span></button><button id="pay-button" class="button primary" type="button" hidden>결제하기 <span>→</span></button><p id="booking-message" class="booking-message" role="status">대기열에 등록해 주세요.</p></section><section class="note-card"><span>✦</span><div><b>이 화면은 시연용입니다</b><p>목 데이터는 실제 예매·측정 결과와 연결되지 않습니다.</p></div></section></aside>
+      </div>
+    </main>
+
+    <main id="admin-view" class="admin-view" hidden><div class="admin-heading"><div><span class="eyebrow dark">OPERATIONS · LIVE OVERVIEW</span><h1>상영 운영 현황</h1><p>상영별 좌석과 결제 흐름을 한눈에 확인합니다.</p></div><span class="admin-date">2026. 11. 09 <i></i> 실시간 목 데이터</span></div><div class="metrics"><article class="metric"><span>남은 좌석</span><strong id="metric-remaining">742</strong><small>전체 1,000석</small></article><article class="metric"><span>선점 중</span><strong id="metric-held">34</strong><small>결제 대기</small></article><article class="metric"><span>예매 확정</span><strong id="metric-confirmed">224</strong><small>결제 완료</small></article><article class="metric"><span>결제 취소</span><strong id="metric-cancelled">7</strong><small>오늘 누적</small></article></div><div class="admin-grid"><section class="surface admin-card"><div class="section-top"><div><span class="eyebrow dark">SCREENINGS</span><h2>상영별 현황</h2></div><span class="status-dot">LIVE</span></div><div class="screening-row"><div><b>별빛 너머의 우리</b><small>19:30 · 루멘 1관</small></div><div class="screening-bar"><i style="width:74.2%"></i></div><strong><span id="screening-remaining">742</span> <small>/ 1,000</small></strong></div><div class="screening-row"><div><b>파도의 기억</b><small>20:10 · 루멘 2관</small></div><div class="screening-bar"><i style="width:52%"></i></div><strong>520 <small>/ 1,000</small></strong></div><div class="screening-row"><div><b>밤의 지도</b><small>21:00 · 루멘 3관</small></div><div class="screening-bar"><i style="width:86.8%"></i></div><strong>868 <small>/ 1,000</small></strong></div></section><section class="surface admin-card lag-card"><span class="eyebrow dark">REDIS STREAM</span><h2>적재 지연</h2><div class="lag-number"><strong id="metric-lag">12</strong><span>events</span></div><div class="lag-chart"><i style="height:34%"></i><i style="height:49%"></i><i style="height:41%"></i><i style="height:62%"></i><i style="height:36%"></i><i style="height:52%"></i><i style="height:29%"></i><i style="height:44%"></i><i style="height:25%"></i><i style="height:30%"></i><i style="height:20%"></i><i style="height:16%"></i></div><p>예약 확정 이벤트가 MySQL에 반영되기를 기다리고 있습니다.</p></section></div><p class="admin-disclaimer">표시된 값은 시연용 목 데이터이며, 부하 테스트나 운영 지표로 사용하지 않습니다.</p></main>
+
+    <footer><span>© 2026 LUMEN CINEMA</span><span>한 장면을 내 자리에서.</span></footer>
+  </div>
+  <script src="./app.js"></script>
+</body>
+</html>
