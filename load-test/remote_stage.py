@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Deploy a stage to seven hosts and collect each run before any teardown."""
 from datetime import datetime, timezone
+import base64
 import json
 import os
 from pathlib import Path
@@ -50,6 +51,23 @@ def wait_url(url, seconds=150):
             pass
         time.sleep(1)
     raise RuntimeError(f"Remote service did not become ready: {url}")
+
+
+def verify_grafana_datasource():
+    from urllib.request import Request
+    password = read_env(Path.home() / ".config/movie-ticketing/loadtest-grafana.env")["GRAFANA_ADMIN_PASSWORD"]
+    auth = base64.b64encode(f"admin:{password}".encode()).decode()
+    url = "http://127.0.0.1:13000/api/datasources/proxy/uid/prometheus/api/v1/query?query=up"
+    for _ in range(30):
+        try:
+            with urlopen(Request(url, headers={"Authorization": f"Basic {auth}"}), timeout=15) as response:
+                result = json.load(response)
+            if result.get("status") == "success" and result.get("data", {}).get("result"):
+                return
+        except Exception:
+            pass
+        time.sleep(1)
+    raise RuntimeError("Grafana cannot query Prometheus")
 
 
 def wait_healthy(hosts, key, role, service, seconds=120):
@@ -126,6 +144,7 @@ def reset(hosts, key):
                 raise RuntimeError("Remote Redis FLUSHALL failed")
     wait_url("http://127.0.0.1:13000/api/health")
     wait_url("http://127.0.0.1:19090/-/ready")
+    verify_grafana_datasource()
 
 
 def seed(hosts, key, seconds):

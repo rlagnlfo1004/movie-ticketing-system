@@ -67,6 +67,12 @@ def prepare_shared(hosts, stage, tag, bundle, role):
     if role == "mon":
         source = ROOT / "observability/grafana/provisioning"
         shutil.copytree(source, bundle / "observability/grafana/provisioning", dirs_exist_ok=True)
+        datasource = bundle / "observability/grafana/provisioning/datasources/prometheus.yml"
+        contents = datasource.read_text()
+        expected = "url: http://prometheus:9090"
+        if expected not in contents:
+            raise RuntimeError("Grafana Prometheus datasource URL changed")
+        write_text(datasource, contents.replace(expected, "url: http://127.0.0.1:9090"))
     if role == "edge":
         nginx = (bundle / "nginx/nginx.conf").read_text()
         nginx = nginx.replace("waiting-api-1:8080", hosts["APP_WAITING_PRIVATE_IP"] + ":8080")

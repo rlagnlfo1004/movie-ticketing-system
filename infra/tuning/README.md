@@ -22,6 +22,7 @@
 - 문제: [첫 정식 A 시도](../../load-test/results/v1-db/20261109T141642Z-a1/README.md)에서 실행 중 VU 확장이 10초의 요청 등록 속도를 따라가지 못해 반복이 누락됐다. 해결: `lg`를 8 vCPU·16GiB로 늘리고 비스모크 A의 30,000 VU를 시작 전에 확보한다. 이 시도는 비교에서 제외한다.
 - 문제: [Nginx 연결 한도 확장 뒤 시도](../../load-test/results/v1-db/20261109T144453Z-a1/README.md)에서는 waiting-api 호스트의 TCP listen 대기열이 넘쳐 Nginx가 세 upstream을 모두 일시적으로 사용 불가로 판단했다. 해결: 호스트의 `somaxconn`·SYN backlog를 16,384로, waiting-api Tomcat의 `max-connections`를 20,000, `accept-count`를 16,384로 높이고 Nginx의 일시적 upstream 제외를 껐다. 이 시도도 비교에서 제외한다.
 - 문제: [listen overflow를 없앤 뒤 시도](../../load-test/results/v1-db/20261109T145313Z-a1/README.md)에서는 1초 주기의 대기 상태 조회가 폭주해 waiting-api 응답 시간 초과가 발생했다. 해결: 대기 중 조회 권장 간격을 5초로 늘리고, 첫 조회를 2~10초에 분산한 뒤 후속 조회에 ±20% 지터를 적용했다. 등록 3만 명/10초 조건은 유지한다. 이 시도도 비교에서 제외한다.
+- 문제: 원격 Prometheus JSON에는 시계열이 있는데 Grafana PNG는 `No data`였다. 원격 host 네트워크의 Grafana 데이터소스가 Docker DNS 주소 `prometheus:9090`을 사용한 것이 원인이다. 해결: 원격 배포 묶음에서 `127.0.0.1:9090`으로 바꾸고, 매 실행 전에 Grafana 프록시를 통해 `up` 지표가 조회되는지 확인한다.
 
 ## Nginx와 JVM
 
