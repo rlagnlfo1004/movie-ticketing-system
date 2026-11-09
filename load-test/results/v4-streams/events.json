@@ -1,0 +1,97 @@
+[
+  {
+    "at": "2026-11-09T18:22:03.457701+00:00",
+    "endedAt": "2026-11-09T18:32:35.175817+00:00",
+    "event": "scenario-A",
+    "run": "20261109T181840Z-a1",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-09T18:38:13.274351+00:00",
+    "endedAt": "2026-11-09T18:48:45.653720+00:00",
+    "event": "scenario-A",
+    "run": "20261109T181840Z-a2",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-09T18:54:25.270699+00:00",
+    "endedAt": "2026-11-09T19:04:56.937648+00:00",
+    "event": "scenario-A",
+    "run": "20261109T181840Z-a3",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-09T19:10:48.786447+00:00",
+    "endedAt": "2026-11-09T19:16:59.055387+00:00",
+    "event": "scenario-B",
+    "run": "20261109T181840Z-b1",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-09T19:22:42.675139+00:00",
+    "endedAt": "2026-11-09T19:33:14.056755+00:00",
+    "event": "fault-worker-kill",
+    "run": "20261109T181840Z-worker-kill",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-09T19:22:54.697255+00:00",
+    "event": "stream-before-kill",
+    "snapshot": "../../../docs/evidence/v4-streams/20261109T181840Z-worker-kill-stream-before-kill.json"
+  },
+  {
+    "at": "2026-11-09T19:22:55.122727+00:00",
+    "event": "reservation-worker SIGKILL"
+  },
+  {
+    "at": "2026-11-09T19:23:02.086239+00:00",
+    "event": "stream-after-kill",
+    "snapshot": "../../../docs/evidence/v4-streams/20261109T181840Z-worker-kill-stream-after-kill.json"
+  },
+  {
+    "at": "2026-11-09T19:23:02.546730+00:00",
+    "event": "reservation-worker restarted"
+  },
+  {
+    "at": "2026-11-09T19:23:21.183277+00:00",
+    "event": "stream-after-recovery",
+    "snapshot": "../../../docs/evidence/v4-streams/20261109T181840Z-worker-kill-stream-after-recovery.json"
+  },
+  {
+    "at": "2026-11-09T19:38:54.061795+00:00",
+    "endedAt": "2026-11-09T19:49:26.559978+00:00",
+    "event": "fault-mysql-stop",
+    "run": "20261109T181840Z-mysql-stop",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-09T19:39:06.239920+00:00",
+    "event": "mysql-before-outage",
+    "snapshot": "../../../docs/evidence/v4-streams/20261109T181840Z-mysql-stop-mysql-before-outage.json"
+  },
+  {
+    "at": "2026-11-09T19:39:10.660223+00:00",
+    "event": "MySQL stopped"
+  },
+  {
+    "at": "2026-11-09T19:39:15.820868+00:00",
+    "event": "mysql-down",
+    "snapshot": "../../../docs/evidence/v4-streams/20261109T181840Z-mysql-stop-mysql-down.json"
+  },
+  {
+    "at": "2026-11-09T19:39:46.392409+00:00",
+    "event": "MySQL started"
+  },
+  {
+    "at": "2026-11-09T19:39:59.290720+00:00",
+    "event": "mysql-recovered",
+    "snapshot": "../../../docs/evidence/v4-streams/20261109T181840Z-mysql-stop-mysql-recovered.json"
+  },
+  {
+    "at": "2026-11-09T19:55:52.197089+00:00",
+    "endedAt": "2026-11-09T20:02:02.459461+00:00",
+    "event": "vt-off-scenario-B",
+    "run": "vt-off/20261109T181840Z-b1",
+    "exitCode": 0
+  }
+]

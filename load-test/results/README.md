@@ -1,6 +1,6 @@
 # 좌석 예매 측정 방법과 원본
 
-문서 생성 시각(UTC): 2026-11-09T18:17:13.993350+00:00
+문서 생성 시각(UTC): 2026-11-09T20:04:25.031867+00:00
 
 ## 환경
 
@@ -170,9 +170,64 @@
 - 2026-11-09T18:04:45.562355+00:00 · reservation-worker restarted
 - 2026-11-09T18:05:04.221796+00:00 · worker-after-restart · [스냅샷](../../docs/evidence/v3-pubsub/20261109T174849Z-worker-kill-worker-after-restart.json) · Redis 확정 599석 / MySQL 581석 / PG 승인·예매 없음 9건
 
+### v4-streams
+
+- 실행 시작(UTC): 2026-11-09T18:18:40.833980+00:00
+- 실행 명령: `./load-test/run-stage.sh v4`
+- 성격: 정식 측정
+- 코드: `v4-streams`
+
+| 설정 | 값 |
+| --- | --- |
+| REDIS_CONFIG | `./infra/tuning/redis-v1.conf` |
+| REDIS_APPENDONLY | `no` |
+| REDIS_APPENDFSYNC | `everysec` |
+| HOLD_DURATION | `30s` |
+| PAYMENT_MODE | `mock` |
+| ACTIVE_CHECK_MODE | `http` |
+| SPRING_THREADS_VIRTUAL_ENABLED | `true` |
+
+| 실행 | 선점 성공 | 평균 성공 TPS | 선점 p95/p99(ms) | 확정 | deadlock 증가 | 웹훅 p95(s) | Stream lag 최대 |
+| --- | ---: | ---: | --- | ---: | ---: | ---: | ---: |
+| [20261109T181840Z-a1](v4-streams/20261109T181840Z-a1/README.md) | 274.00 | 0.44 | 32.94 / 49.60 | 208.00 | 0.0 | 0.01 | 2.00 |
+| [20261109T181840Z-a2](v4-streams/20261109T181840Z-a2/README.md) | 173.00 | 0.28 | 20.82 / 3654.18 | 128.00 | 0.0 | 0.01 | 1.00 |
+| [20261109T181840Z-a3](v4-streams/20261109T181840Z-a3/README.md) | 459.00 | 0.74 | 195.51 / 255.88 | 372.00 | 0.0 | 0.16 | 12.00 |
+| [20261109T181840Z-b1](v4-streams/20261109T181840Z-b1/README.md) | 7014.00 | 19.48 | 5.02 / 8.52 | — | 0.0 | — | 0.00 |
+| [20261109T181840Z-mysql-stop](v4-streams/20261109T181840Z-mysql-stop/README.md) | 384.00 | 0.62 | 46.42 / 880.42 | 287.00 | 0.0 | 0.02 | 238.00 |
+| [20261109T181840Z-worker-kill](v4-streams/20261109T181840Z-worker-kill/README.md) | 344.00 | 0.55 | 205.05 / 370.79 | 267.00 | 0.0 | 0.09 | 131.00 |
+
+실행별 원본:
+
+- 20261109T181840Z-a1: [대시보드](v4-streams/20261109T181840Z-a1/dashboard.png) · [패널 PNG](v4-streams/20261109T181840Z-a1/panels/) · [Prometheus JSON](v4-streams/20261109T181840Z-a1/prometheus/) · [k6 원본](v4-streams/20261109T181840Z-a1/summary.json)
+- 20261109T181840Z-a2: [대시보드](v4-streams/20261109T181840Z-a2/dashboard.png) · [패널 PNG](v4-streams/20261109T181840Z-a2/panels/) · [Prometheus JSON](v4-streams/20261109T181840Z-a2/prometheus/) · [k6 원본](v4-streams/20261109T181840Z-a2/summary.json)
+- 20261109T181840Z-a3: [대시보드](v4-streams/20261109T181840Z-a3/dashboard.png) · [패널 PNG](v4-streams/20261109T181840Z-a3/panels/) · [Prometheus JSON](v4-streams/20261109T181840Z-a3/prometheus/) · [k6 원본](v4-streams/20261109T181840Z-a3/summary.json)
+- 20261109T181840Z-b1: [대시보드](v4-streams/20261109T181840Z-b1/dashboard.png) · [패널 PNG](v4-streams/20261109T181840Z-b1/panels/) · [Prometheus JSON](v4-streams/20261109T181840Z-b1/prometheus/) · [k6 원본](v4-streams/20261109T181840Z-b1/summary.json)
+- 20261109T181840Z-mysql-stop: [대시보드](v4-streams/20261109T181840Z-mysql-stop/dashboard.png) · [패널 PNG](v4-streams/20261109T181840Z-mysql-stop/panels/) · [Prometheus JSON](v4-streams/20261109T181840Z-mysql-stop/prometheus/) · [k6 원본](v4-streams/20261109T181840Z-mysql-stop/summary.json)
+- 20261109T181840Z-worker-kill: [대시보드](v4-streams/20261109T181840Z-worker-kill/dashboard.png) · [패널 PNG](v4-streams/20261109T181840Z-worker-kill/panels/) · [Prometheus JSON](v4-streams/20261109T181840Z-worker-kill/prometheus/) · [k6 원본](v4-streams/20261109T181840Z-worker-kill/summary.json)
+
+장애 주입과 상태 스냅샷(UTC, 시간순):
+
+- 2026-11-09T18:22:03.457701+00:00 · scenario-A · 종료 2026-11-09T18:32:35.175817+00:00 · 종료 코드 0
+- 2026-11-09T18:38:13.274351+00:00 · scenario-A · 종료 2026-11-09T18:48:45.653720+00:00 · 종료 코드 0
+- 2026-11-09T18:54:25.270699+00:00 · scenario-A · 종료 2026-11-09T19:04:56.937648+00:00 · 종료 코드 0
+- 2026-11-09T19:10:48.786447+00:00 · scenario-B · 종료 2026-11-09T19:16:59.055387+00:00 · 종료 코드 0
+- 2026-11-09T19:22:42.675139+00:00 · fault-worker-kill · 종료 2026-11-09T19:33:14.056755+00:00 · 종료 코드 0
+- 2026-11-09T19:22:54.697255+00:00 · stream-before-kill · [스냅샷](../../docs/evidence/v4-streams/20261109T181840Z-worker-kill-stream-before-kill.json) · Redis 확정 0석 / MySQL 0석 / PG 승인·예매 없음 0건
+- 2026-11-09T19:22:55.122727+00:00 · reservation-worker SIGKILL
+- 2026-11-09T19:23:02.086239+00:00 · stream-after-kill · [스냅샷](../../docs/evidence/v4-streams/20261109T181840Z-worker-kill-stream-after-kill.json) · Redis 확정 0석 / MySQL 0석 / PG 승인·예매 없음 0건
+- 2026-11-09T19:23:02.546730+00:00 · reservation-worker restarted
+- 2026-11-09T19:23:21.183277+00:00 · stream-after-recovery · [스냅샷](../../docs/evidence/v4-streams/20261109T181840Z-worker-kill-stream-after-recovery.json) · Redis 확정 356석 / MySQL 356석 / PG 승인·예매 없음 0건
+- 2026-11-09T19:38:54.061795+00:00 · fault-mysql-stop · 종료 2026-11-09T19:49:26.559978+00:00 · 종료 코드 0
+- 2026-11-09T19:39:06.239920+00:00 · mysql-before-outage · [스냅샷](../../docs/evidence/v4-streams/20261109T181840Z-mysql-stop-mysql-before-outage.json) · Redis 확정 0석 / MySQL 0석 / PG 승인·예매 없음 0건
+- 2026-11-09T19:39:10.660223+00:00 · MySQL stopped
+- 2026-11-09T19:39:15.820868+00:00 · mysql-down · [스냅샷](../../docs/evidence/v4-streams/20261109T181840Z-mysql-stop-mysql-down.json) · Redis 확정 6석 / MySQL 조회 불가석 / PG 승인·예매 없음 조회 불가건
+- 2026-11-09T19:39:46.392409+00:00 · MySQL started
+- 2026-11-09T19:39:59.290720+00:00 · mysql-recovered · [스냅샷](../../docs/evidence/v4-streams/20261109T181840Z-mysql-stop-mysql-recovered.json) · Redis 확정 481석 / MySQL 481석 / PG 승인·예매 없음 0건
+- 2026-11-09T19:55:52.197089+00:00 · vt-off-scenario-B · 종료 2026-11-09T20:02:02.459461+00:00 · 종료 코드 0
+
 ## MySQL 중단 뒤 확정 상태
 
-- MySQL 중단 실행 원본이 아직 없다.
+- [MySQL 중단 실행](v4-streams/20261109T181840Z-mysql-stop/README.md): 2026-11-09T19:39:10.660223+00:00 ~ 2026-11-09T19:39:46.392409+00:00. 복구 뒤 결제 승인 대비 확정 239/239 (100.00%), 중단 창의 웹훅 p95 최대 0.02초, Stream lag 최대 238.00건. 분자·분모는 [복구 스냅샷](../../docs/evidence/v4-streams/20261109T181840Z-mysql-stop-mysql-recovered.json)에서 확인한다.
 
 ## waiting-api 중단 중 active 선점
 
@@ -185,10 +240,12 @@
 | 단계 | 가설 | 켬 선점 TPS | 끔 선점 TPS | p95·p99(ms) | Tomcat/JVM 스레드 | Hikari active/pending | pinning 건수 | CPU |
 | --- | --- | ---: | ---: | --- | --- | --- | --- | --- |
 | [v2-db-fixed 켬](v2-db-fixed/20261109T163341Z-b1/README.md) / [끔](v2-db-fixed/vt-off/20261109T163341Z-b1/README.md) | 상영 행 락 병목에서 켬/끔 차이 확인 | 2.67 | 2.57 | 3471.49 / 10000.48 · 3795.92 / 10000.85 | 측정 불가 / 200.00 · 62.00 / 240.00 | 100.00 / 100.00 · 6301.00 / 101.00 | 0 / 0 | 68.00% / 49.00% |
-| v4-streams | HTTP 동기 호출 구간에서 켬/끔 차이 확인 (정식 측정 대기) | — | — | — | — | — | — | — |
+| [v4-streams 켬](v4-streams/20261109T181840Z-b1/README.md) / [끔](v4-streams/vt-off/20261109T181840Z-b1/README.md) | HTTP 동기 호출 구간에서 켬/끔 차이 확인 | 4.35 | 4.36 | 5.02 / 7.04 · 8.52 / 29.16 | 측정 불가 / 37.00 · 87.00 / 276.00 | 1.00 / 1.00 · 0.00 / 0.00 | 0 / 0 | 76.00% / 84.00% |
 
 - v2-db-fixed on: [JFR](../../docs/evidence/v2-db-fixed/20261109T163341Z-vt-on.jfr) · [pinning 원본](../../docs/evidence/v2-db-fixed/20261109T163341Z-vt-on-pinning.txt)
 - v2-db-fixed off: [JFR](../../docs/evidence/v2-db-fixed/20261109T163341Z-vt-off.jfr) · [pinning 원본](../../docs/evidence/v2-db-fixed/20261109T163341Z-vt-off-pinning.txt)
+- v4-streams on: [JFR](../../docs/evidence/v4-streams/20261109T181840Z-vt-on.jfr) · [pinning 원본](../../docs/evidence/v4-streams/20261109T181840Z-vt-on-pinning.txt)
+- v4-streams off: [JFR](../../docs/evidence/v4-streams/20261109T181840Z-vt-off.jfr) · [pinning 원본](../../docs/evidence/v4-streams/20261109T181840Z-vt-off-pinning.txt)
 
 ## DB 단독 기준과 V2 선점 상한
 
