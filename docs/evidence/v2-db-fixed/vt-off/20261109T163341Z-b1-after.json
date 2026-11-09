@@ -1,0 +1,282 @@
+{
+  "capturedAt": "2026-11-09T17:46:42.190141+00:00",
+  "moment": "20261109T163341Z-b1-after",
+  "queries": {
+    "locks": "SELECT JSON_OBJECT('transactionId',ENGINE_TRANSACTION_ID,'table',OBJECT_NAME,\n          'index',INDEX_NAME,'type',LOCK_TYPE,'mode',LOCK_MODE,'status',LOCK_STATUS,'data',LOCK_DATA)\n        FROM performance_schema.data_locks WHERE OBJECT_SCHEMA='movie_seats'",
+    "waits": "SELECT JSON_OBJECT('requesting',REQUESTING_ENGINE_TRANSACTION_ID,\n          'blocking',BLOCKING_ENGINE_TRANSACTION_ID,'requestingLock',REQUESTING_ENGINE_LOCK_ID,\n          'blockingLock',BLOCKING_ENGINE_LOCK_ID)\n        FROM performance_schema.data_lock_waits",
+    "paidWithoutReservation": "SELECT JSON_OBJECT('paymentId',p.payment_id,'localStatus',p.status,'amount',p.amount)\n        FROM payments p LEFT JOIN reservations r ON r.payment_id=p.payment_id\n        WHERE p.status='PAID' AND r.reservation_id IS NULL",
+    "unconfirmedLocal": "SELECT JSON_OBJECT('paymentId',p.payment_id,'localStatus',p.status,'amount',p.amount)\n        FROM payments p LEFT JOIN reservations r ON r.payment_id=p.payment_id\n        WHERE r.reservation_id IS NULL",
+    "deadlock": "SHOW ENGINE INNODB STATUS\\G",
+    "pg": "GET /test/payments",
+    "deadlockCount": "SELECT count FROM information_schema.innodb_metrics WHERE name='lock_deadlocks'",
+    "innodbCounters": "SELECT JSON_OBJECT('name',name,'count',count)\n        FROM information_schema.innodb_metrics WHERE name LIKE 'lock_row_lock_%'",
+    "hikariPending": "hikaricp_connections_pending",
+    "hikariPendingLive": "GET /actuator/metrics/hikaricp.connections.pending",
+    "recentPayments": "SELECT JSON_OBJECT('paymentId',payment_id,'status',status,'amount',amount)\n        FROM payments ORDER BY updated_at DESC LIMIT 30"
+  },
+  "locks": [],
+  "waits": [],
+  "latestDeadlock": "2026-11-09 17:44:41 281447372369664\n*** (1) TRANSACTION:\nTRANSACTION 249608, ACTIVE 0 sec starting index read\nmysql tables in use 1, locked 1\nLOCK WAIT 8 lock struct(s), heap size 1128, 7 row lock(s), undo log entries 2\nMySQL thread id 163, OS thread handle 281445342560000, query id 1017649 10.84.1.23 movie updating\nUPDATE screenings SET remaining_seat_count=remaining_seat_count+2 WHERE id='1'\n\n*** (1) HOLDS THE LOCK(S):\nRECORD LOCKS space id 4 page no 11 n bits 288 index PRIMARY of table `movie_seats`.`screening_seats` trx id 249608 lock_mode X locks rec but not gap\nRecord lock, heap no 199 PHYSICAL RECORD: n_fields 7; compact format; info bits 0\n 0: len 1; hex 31; asc 1;;\n 1: len 4; hex 4b2d3135; asc K-15;;\n 2: len 6; hex 00000003cf08; asc       ;;\n 3: len 7; hex 010000013d0d15; asc     =  ;;\n 4: len 9; hex 415641494c41424c45; asc AVAILABLE;;\n 5: SQL NULL;\n 6: SQL NULL;\n\nRecord lock, heap no 200 PHYSICAL RECORD: n_fields 7; compact format; info bits 0\n 0: len 1; hex 31; asc 1;;\n 1: len 4; hex 4b2d3136; asc K-16;;\n 2: len 6; hex 00000003cf08; asc       ;;\n 3: len 7; hex 010000013d0d9a; asc     =  ;;\n 4: len 9; hex 415641494c41424c45; asc AVAILABLE;;\n 5: SQL NULL;\n 6: SQL NULL;\n\n\n*** (1) WAITING FOR THIS LOCK TO BE GRANTED:\nRECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 249608 lock_mode X locks rec but not gap waiting\nRecord lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0\n 0: len 1; hex 31; asc 1;;\n 1: len 6; hex 00000003cebe; asc       ;;\n 2: len 7; hex 01000001571a2e; asc     W .;;\n 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;\n 4: len 8; hex 99b9d8a000000000; asc         ;;\n 5: len 4; hex 800003e8; asc     ;;\n 6: len 4; hex 8000003e; asc    >;;\n 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;\n\n\n*** (2) TRANSACTION:\nTRANSACTION 249534, ACTIVE 1 sec starting index read\nmysql tables in use 1, locked 1\nLOCK WAIT 4 lock struct(s), heap size 1128, 2 row lock(s), undo log entries 1\nMySQL thread id 111, OS thread handle 281445362687744, query id 1018051 10.84.1.23 movie statistics\nSELECT status FROM screening_seats WHERE screening_id='1' AND seat_no='K-16' FOR UPDATE\n\n*** (2) HOLDS THE LOCK(S):\nRECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 249534 lock_mode X locks rec but not gap\nRecord lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0\n 0: len 1; hex 31; asc 1;;\n 1: len 6; hex 00000003cebe; asc       ;;\n 2: len 7; hex 01000001571a2e; asc     W .;;\n 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;\n 4: len 8; hex 99b9d8a000000000; asc         ;;\n 5: len 4; hex 800003e8; asc     ;;\n 6: len 4; hex 8000003e; asc    >;;\n 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;\n\n\n*** (2) WAITING FOR THIS LOCK TO BE GRANTED:\nRECORD LOCKS space id 4 page no 11 n bits 288 index PRIMARY of table `movie_seats`.`screening_seats` trx id 249534 lock_mode X locks rec but not gap waiting\nRecord lock, heap no 200 PHYSICAL RECORD: n_fields 7; compact format; info bits 0\n 0: len 1; hex 31; asc 1;;\n 1: len 4; hex 4b2d3136; asc K-16;;\n 2: len 6; hex 00000003cf08; asc       ;;\n 3: len 7; hex 010000013d0d9a; asc     =  ;;\n 4: len 9; hex 415641494c41424c45; asc AVAILABLE;;\n 5: SQL NULL;\n 6: SQL NULL;\n\n*** WE ROLL BACK TRANSACTION (2)",
+  "deadlockCount": 131,
+  "innodbCounters": [
+    {
+      "name": "lock_row_lock_current_waits",
+      "count": 0
+    },
+    {
+      "name": "lock_row_lock_time",
+      "count": 20500801
+    },
+    {
+      "name": "lock_row_lock_time_max",
+      "count": 440
+    },
+    {
+      "name": "lock_row_lock_waits",
+      "count": 101671
+    },
+    {
+      "name": "lock_row_lock_time_avg",
+      "count": 201
+    }
+  ],
+  "hikariPending": [
+    {
+      "metric": {
+        "__name__": "hikaricp_connections_pending",
+        "instance": "10.84.1.23:8081",
+        "job": "reservation-api",
+        "pool": "HikariPool-1"
+      },
+      "value": [
+        1794246393.404,
+        "0"
+      ]
+    }
+  ],
+  "hikariPendingLive": {
+    "availableTags": [
+      {
+        "tag": "pool",
+        "values": [
+          "HikariPool-1"
+        ]
+      }
+    ],
+    "description": "Pending threads",
+    "measurements": [
+      {
+        "statistic": "VALUE",
+        "value": 0.0
+      }
+    ],
+    "name": "hikaricp.connections.pending"
+  },
+  "recentPayments": [
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "dd81f0cc-e655-4dcb-99e1-0751ab4be639"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "fffae0ca-2994-444c-a3d5-1edae302d55a"
+    },
+    {
+      "amount": 30000,
+      "status": "READY",
+      "paymentId": "535d67d8-fd39-4ff4-8349-c0d18c4e4520"
+    },
+    {
+      "amount": 30000,
+      "status": "READY",
+      "paymentId": "0b25563e-367d-4a50-a0e3-6dffdd517948"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "96d74e92-db4a-4a46-9331-89c13b4e81cf"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "6561c4d4-fffe-4678-8da3-a0350617458f"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "7c7c2922-21bf-46d4-99b1-ffbae9cb3288"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "ee21e7c8-fb9d-400e-bd9e-8e6b4469f317"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "d5081323-bfe0-40a7-9da7-75e38fa6482f"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "38547b0b-48c0-44d3-9a58-956d35418924"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "937106a1-d68b-46c4-93fd-09799e2ab33c"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "7dc55db7-d376-448a-b58c-68917bf7d6db"
+    },
+    {
+      "amount": 30000,
+      "status": "READY",
+      "paymentId": "7212170f-948a-42f5-b71b-dd45b476f784"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "5922324d-43bc-4fa6-a63a-76547b730332"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "5bc4d9af-795a-48ed-a92e-b15cb6896fc8"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "ba746180-cd7c-4202-9749-58dc53efc614"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "5ef54e81-10fb-49f0-89ef-58acfd8b33dd"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "79845805-43cf-4b6c-bb83-386c38bf27dc"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "fd31ee9c-3a58-46c4-b2c2-5b76537289fc"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "44c78360-a734-45f8-a51a-2a28d65230ab"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "7f3ffb32-f69e-46f3-a6c2-0dbf4bf32590"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "8252db5f-dde1-4b85-b7a1-07f2ac73bfeb"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "1c23c1ad-5bb5-4cfd-b8b4-21467783dcf8"
+    },
+    {
+      "amount": 30000,
+      "status": "READY",
+      "paymentId": "8e80eefe-bd40-4744-b075-9d4837499cb7"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "1ad37ab8-02e3-4bd7-89ac-ac2b11be8022"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "d4a828fe-ad5e-4858-b05c-c3085873f5ac"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "c6842220-bd35-425b-8775-1e322e6b56bc"
+    },
+    {
+      "amount": 30000,
+      "status": "READY",
+      "paymentId": "af09a205-00f2-4d52-bb48-b3ec9ebe1999"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "e8eb1b71-2eba-4f9a-9e37-832136aaaf8c"
+    },
+    {
+      "amount": 15000,
+      "status": "READY",
+      "paymentId": "aa681571-831b-40c4-8444-76a952cf37fe"
+    }
+  ],
+  "paidWithoutReservation": [],
+  "pgPaidWithoutReservation": [],
+  "redisReservedSeats": [],
+  "activeKeyCount": 378881,
+  "seatHoldKeyCount": 0,
+  "mysqlReservationSeats": [],
+  "missingMysqlSeats": [],
+  "mysqlAvailable": true,
+  "streamLength": 0,
+  "streamGroups": [],
+  "streamPending": [
+    0
+  ],
+  "deadLetterEntries": [],
+  "redisAofConfig": {
+    "appendonly": "no",
+    "appendfsync": "everysec"
+  },
+  "redisPersistence": {
+    "loading": "0",
+    "async_loading": "0",
+    "current_cow_peak": "0",
+    "current_cow_size": "0",
+    "current_cow_size_age": "0",
+    "current_fork_perc": "0.00",
+    "current_save_keys_processed": "0",
+    "current_save_keys_total": "0",
+    "rdb_changes_since_last_save": "883207",
+    "rdb_bgsave_in_progress": "0",
+    "rdb_last_save_time": "1794245694",
+    "rdb_last_bgsave_status": "ok",
+    "rdb_last_bgsave_time_sec": "-1",
+    "rdb_current_bgsave_time_sec": "-1",
+    "rdb_saves": "0",
+    "rdb_last_cow_size": "0",
+    "rdb_last_load_keys_expired": "0",
+    "rdb_last_load_keys_loaded": "0",
+    "aof_enabled": "0",
+    "aof_rewrite_in_progress": "0",
+    "aof_rewrite_scheduled": "0",
+    "aof_last_rewrite_time_sec": "-1",
+    "aof_current_rewrite_time_sec": "-1",
+    "aof_last_bgrewrite_status": "ok",
+    "aof_rewrites": "0",
+    "aof_rewrites_consecutive_failures": "0",
+    "aof_last_write_status": "ok",
+    "aof_last_cow_size": "0",
+    "module_fork_in_progress": "0",
+    "module_fork_last_cow_size": "0"
+  },
+  "reconciliationResult": null,
+  "approvedPgPayments": [],
+  "confirmedPgPayments": [],
+  "cancelledPgPayments": [],
+  "unresolvedPgPayments": []
+}
