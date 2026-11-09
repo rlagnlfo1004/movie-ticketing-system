@@ -32,7 +32,7 @@ def metric(summary, name, field):
 
 def run_summary(tag, suffix=""):
     manifest = load(RESULTS / tag / "batch.json")
-    if not manifest:
+    if not manifest or manifest.get("smoke"):
         return None, None
     location = RESULTS / tag / suffix / f"{manifest['batch']}-b1"
     return load(location / "summary.json"), location
@@ -62,7 +62,7 @@ def mysql_outage_metrics():
     directory = RESULTS / tag
     manifest = load(directory / "batch.json") or {}
     batch = manifest.get("batch")
-    if not batch:
+    if not batch or manifest.get("smoke"):
         return ["- MySQL 중단 실행 원본이 아직 없다."]
     events = load(directory / "events.json") or []
     stopped = next((item for item in events if item["event"] == "MySQL stopped"), None)
@@ -89,7 +89,7 @@ def mysql_outage_metrics():
 
 def pinning(tag, state):
     manifest = load(RESULTS / tag / "batch.json")
-    if not manifest:
+    if not manifest or manifest.get("smoke"):
         return "—"
     path = ROOT / "docs/evidence" / tag / f"{manifest['batch']}-vt-{state}-pinning.txt"
     return str(path.read_text().count("jdk.VirtualThreadPinned {")) if path.exists() else "—"
@@ -117,7 +117,7 @@ def hold_success_during_waiting_stop():
     directory = RESULTS / tag
     manifest = load(directory / "batch.json") or {}
     batch = manifest.get("batch")
-    if not batch:
+    if not batch or manifest.get("smoke"):
         return ["- waiting-api 중단 실행 원본이 아직 없다."]
     run_id = f"{batch}-waiting-stop"
     events = load(directory / "events.json") or []
@@ -149,7 +149,7 @@ def comparison(tag, hypothesis):
     off, off_path = run_summary(tag, "vt-off")
     manifest = load(RESULTS / tag / "batch.json") or {}
     if manifest.get("smoke"):
-        hypothesis += " (로컬 연결 검증)"
+        hypothesis += " (정식 측정 대기)"
     if not on or not off:
         return f"| {tag} | {hypothesis} | — | — | — | — | — | — | — |"
     def peak_tps(summary):
@@ -171,7 +171,7 @@ def comparison(tag, hypothesis):
 def stage_section(tag):
     directory = RESULTS / tag
     manifest = load(directory / "batch.json")
-    if not manifest:
+    if not manifest or manifest.get("smoke"):
         return []
     profile = manifest["profile"]
     stage_env = ROOT / "infra/stages" / f"{profile}.env"
@@ -282,7 +282,7 @@ def main():
     evidence_links = []
     for tag in ("v2-db-fixed", "v4-streams"):
         manifest = load(RESULTS / tag / "batch.json")
-        if not manifest:
+        if not manifest or manifest.get("smoke"):
             continue
         for state in ("on", "off"):
             name = f"{manifest['batch']}-vt-{state}"
