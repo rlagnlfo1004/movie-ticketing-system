@@ -49,3 +49,4 @@ out/
 ### VS Code ###
 .vscode/
 /load-test/results/
+/load-test/demo-capture/node_modules/

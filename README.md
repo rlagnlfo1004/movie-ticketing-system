@@ -15,6 +15,31 @@
 
 V1은 MySQL 좌석 잠금에서 deadlock이 났고, V2는 잠금 순서를 고쳐 상영 행 직렬화가 남았다. V3는 좌석 상태를 Redis로 옮겼지만 Pub/Sub 이벤트가 worker 재기동 뒤 유실됐다. V4는 Streams의 PEL·ACK·XAUTOCLAIM으로 그 누락을 회수했다. V5는 waiting-api HTTP 확인을 선점 Lua의 active 키 검사로 옮겼다. V6는 AOF와 결제 대사로 Redis 재시작 때의 남은 차이를 다룬다. 단계별 원본은 [`docs/evidence/`](docs/evidence/)에 있다. 측정 전제와 가정은 [`infra/tuning/README.md`](infra/tuning/README.md)와 [`load-test/README.md`](load-test/README.md)에 적었다.
 
+## 서비스 화면 데모
+
+[`/demo/`](http://localhost:8000/demo/)에서 대기열 입장부터 좌석 선택·선점·결제·예매 완료까지 체험할 수 있다. 기본 화면과 운영 현황은 **목 데이터로 만든 시연용**이며 측정 근거로 사용하지 않는다. Docker Compose를 실행하지 않아도 `reservation-api/src/main/resources/static/demo/index.html`을 브라우저에서 열어 볼 수 있다.
+
+| 순서 | 데스크톱 1440px | 모바일 390px |
+| --- | --- | --- |
+| 대기열 | <img src="docs/screenshots/demo/desktop-01-queue.png" width="360" alt="대기 순번 화면"> | <img src="docs/screenshots/demo/mobile-01-queue.png" width="160" alt="모바일 대기 순번 화면"> |
+| 좌석 선택 | <img src="docs/screenshots/demo/desktop-02-seats.png" width="360" alt="25행 40열 좌석 배치도"> | <img src="docs/screenshots/demo/mobile-02-seats.png" width="160" alt="모바일 좌석 배치도"> |
+| 선점과 타이머 | <img src="docs/screenshots/demo/desktop-03-hold.png" width="360" alt="좌석 선점과 유지 시간"> | <img src="docs/screenshots/demo/mobile-03-hold.png" width="160" alt="모바일 선점과 유지 시간"> |
+| 예매 확정 | <img src="docs/screenshots/demo/desktop-04-confirmed.png" width="360" alt="예매 확정 화면"> | <img src="docs/screenshots/demo/mobile-04-confirmed.png" width="160" alt="모바일 예매 확정 화면"> |
+| 선점 만료 | <img src="docs/screenshots/demo/desktop-05-expired.png" width="360" alt="선점 만료 화면"> | <img src="docs/screenshots/demo/mobile-05-expired.png" width="160" alt="모바일 선점 만료 화면"> |
+| 좌석 충돌 | <img src="docs/screenshots/demo/desktop-06-seat-taken.png" width="360" alt="다른 사용자가 먼저 선점한 좌석"> | <img src="docs/screenshots/demo/mobile-06-seat-taken.png" width="160" alt="모바일 좌석 충돌 화면"> |
+| 운영 현황 | <img src="docs/screenshots/demo/desktop-07-admin.png" width="360" alt="상영 운영 현황"> | <img src="docs/screenshots/demo/mobile-07-admin.png" width="160" alt="모바일 상영 운영 현황"> |
+
+캡처를 다시 만들려면 다음 명령을 실행한다. 기본값은 로컬 HTML의 목 데이터이며, `DEMO_URL=http://localhost:8000/demo/ npm run capture`로 Docker Compose의 페이지를 캡처할 수도 있다. 두 브라우저 컨텍스트가 같은 좌석을 선점하는 장면도 스크립트가 재현한다.
+
+```bash
+cd load-test/demo-capture
+npm ci
+npx playwright install chromium
+npm run capture
+```
+
+PortOne 실결제 확인은 서버를 실제 PortOne API로 설정한 뒤 `python3 load-test/demo-capture/open-live.py`로 연다. 이 스크립트는 로컬 `~/.config/movie-ticketing/portone.env`에서 공개 `PORTONE_STORE_ID`와 `PORTONE_CHANNEL_KEY`만 읽어 `mode=live` 화면을 연다. `--base-url`로 ngrok 등의 공개 주소를 지정할 수 있다. API 시크릿과 웹훅 시크릿은 브라우저에 전달하지 않는다. 이 경로의 실제 결제창 캡처는 [PortOne 검증 작업](https://github.com/rlagnlfo1004/movie-ticketing-system/issues/22)에서 진행한다.
+
 ## 로컬 실행
 
 Java 21과 Docker Compose가 필요하다.
