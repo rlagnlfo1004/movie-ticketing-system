@@ -274,7 +274,7 @@ def measure(hosts, key, env, stage, profile, run_id, scenario, smoke, fault=None
             "event": f"scenario-{scenario}", "run": run_id, "exitCode": status}, fault_events
 
 
-def run_remote(profile, hosts_file, key, smoke, skip_a=False):
+def run_remote(profile, hosts_file, key, smoke, skip_a=False, fault_only=None):
     if not key.is_file():
         raise RuntimeError("SSH key is missing")
     identity = subprocess.check_output(["aws", "sts", "get-caller-identity", "--profile", "movie-loadtest",
@@ -287,6 +287,15 @@ def run_remote(profile, hosts_file, key, smoke, skip_a=False):
         raise RuntimeError("hosts.env is missing")
     hosts = read_env(hosts_file)
     tag = stage_settings(profile)["STAGE_CODE_TAG"]
+    directory = ROOT / "load-test/results" / tag
+    if fault_only:
+        manifest_path = directory / "batch.json"
+        events_path = directory / "events.json"
+        if not manifest_path.is_file() or not events_path.is_file():
+            raise RuntimeError("Fault-only run needs a completed formal batch for this stage")
+        manifest = json.loads(manifest_path.read_text())
+        if manifest.get("profile") != profile or manifest.get("smoke"):
+            raise RuntimeError("Fault-only run needs a completed formal batch for this stage")
     subprocess.run(["python3", str(ROOT / "infra/stages/ensure-local-env.py")],
                    cwd=ROOT, check=True)
     subprocess.run(["python3", str(ROOT / "infra/stages/measurement-secrets.py"), "create"],
@@ -308,15 +317,18 @@ def run_remote(profile, hosts_file, key, smoke, skip_a=False):
             if process.poll() is None:
                 process.terminate()
         raise RuntimeError("Measurement SSH port forwarding failed")
-    batch = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    directory = ROOT / "load-test/results" / tag
     directory.mkdir(parents=True, exist_ok=True)
-    (directory / "batch.json").write_text(json.dumps({"batch": batch, "tag": tag,
-        "profile": profile, "smoke": smoke, "skipA": skip_a,
-        "startedAt": datetime.now(timezone.utc).isoformat()}, indent=2) + "\n")
-    events = []
+    if fault_only:
+        batch = manifest["batch"]
+        events = json.loads(events_path.read_text())
+    else:
+        batch = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        (directory / "batch.json").write_text(json.dumps({"batch": batch, "tag": tag,
+            "profile": profile, "smoke": smoke, "skipA": skip_a,
+            "startedAt": datetime.now(timezone.utc).isoformat()}, indent=2) + "\n")
+        events = []
     try:
-        scenarios = (("B", 1),) if skip_a else (("A", 3), ("B", 1))
+        scenarios = () if fault_only else ((("B", 1),) if skip_a else (("A", 3), ("B", 1)))
         for scenario, count in scenarios:
             for index in range(1, count + 1):
                 run_id = f"{batch}-{scenario.lower()}{index}"
@@ -331,8 +343,13 @@ def run_remote(profile, hosts_file, key, smoke, skip_a=False):
                       4: [("worker-kill", "A"), ("mysql-stop", "A")],
                       5: [("waiting-stop", "B")],
                       6: [("redis-kill", "A")]}.get(int(profile[1:]), [])
+        if fault_only:
+            fault_plan = [item for item in fault_plan if item[0] == fault_only]
+            if not fault_plan:
+                raise RuntimeError(f"{fault_only} is not a fault for {profile}")
         for fault, scenario in fault_plan:
-            run_id = f"{batch}-{fault}"
+            run_id = f"{batch}-{fault}" if not fault_only else (
+                f"{batch}-{fault}-retry-{datetime.now(timezone.utc).strftime('%H%M%S')}")
             reset(hosts, key)
             time.sleep(1 if smoke else 120)
             event, fault_events = measure(hosts, key, env, tag, profile, run_id, scenario, smoke, fault=fault)
@@ -348,7 +365,7 @@ def run_remote(profile, hosts_file, key, smoke, skip_a=False):
                 verify_payment_balance(tag, moment)
                 events.append({"at": datetime.now(timezone.utc).isoformat(), "event": "final-balance",
                                "snapshot": f"../../../docs/evidence/{tag}/{moment}.json"})
-        if int(profile[1:]) in (2, 4):
+        if not fault_only and int(profile[1:]) in (2, 4):
             deploy(hosts_file, hosts, key, profile, output, virtual_off=True)
             reset(hosts, key)
             time.sleep(1 if smoke else 120)
@@ -358,7 +375,7 @@ def run_remote(profile, hosts_file, key, smoke, skip_a=False):
             event["event"] = "vt-off-scenario-B"
             event["run"] = f"vt-off/{run_id}"
             events.append(event)
-        if profile == "v6":
+        if not fault_only and profile == "v6":
             deploy(hosts_file, hosts, key, "v6-always", output)
             reset(hosts, key)
             time.sleep(1 if smoke else 120)
