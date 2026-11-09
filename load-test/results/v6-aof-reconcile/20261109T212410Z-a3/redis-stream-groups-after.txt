@@ -1,0 +1,15 @@
+name
+workers
+consumers
+1
+pending
+0
+last-delivered-id
+1794261930262-0
+entries-read
+413
+lag
+0
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
