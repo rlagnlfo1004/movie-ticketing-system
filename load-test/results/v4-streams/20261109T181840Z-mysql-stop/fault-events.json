@@ -1,0 +1,25 @@
+[
+  {
+    "at": "2026-11-09T19:39:06.239920+00:00",
+    "event": "mysql-before-outage",
+    "snapshot": "../../../docs/evidence/v4-streams/20261109T181840Z-mysql-stop-mysql-before-outage.json"
+  },
+  {
+    "at": "2026-11-09T19:39:10.660223+00:00",
+    "event": "MySQL stopped"
+  },
+  {
+    "at": "2026-11-09T19:39:15.820868+00:00",
+    "event": "mysql-down",
+    "snapshot": "../../../docs/evidence/v4-streams/20261109T181840Z-mysql-stop-mysql-down.json"
+  },
+  {
+    "at": "2026-11-09T19:39:46.392409+00:00",
+    "event": "MySQL started"
+  },
+  {
+    "at": "2026-11-09T19:39:59.290720+00:00",
+    "event": "mysql-recovered",
+    "snapshot": "../../../docs/evidence/v4-streams/20261109T181840Z-mysql-stop-mysql-recovered.json"
+  }
+]
