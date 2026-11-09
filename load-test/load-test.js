@@ -89,6 +89,7 @@ export function fullFlow() {
   queueErrors.add(token ? 0 : 1);
   if (!token) return;
   const deadline = Date.now() + (smoke ? 15000 : 600000);
+  if (!smoke) sleep(2 + Math.random() * 8);
   let active = false;
   while (Date.now() < deadline) {
     const response = http.get(`${base}/api/v1/screenings/${sid}/queue/status?token=${encodeURIComponent(token)}`,
@@ -96,7 +97,8 @@ export function fullFlow() {
     if (response.status !== 200) return;
     const status = body(response);
     if (status.status === 'ACTIVE') { active = true; break; }
-    sleep(Math.max(.1, (status.pollAfterMillis || 1000) / 1000));
+    const pollSeconds = Math.max(.1, (status.pollAfterMillis || 1000) / 1000);
+    sleep(smoke ? pollSeconds : pollSeconds * (.8 + Math.random() * .4));
   }
   if (!active) return;
   if (http.get(`${base}/api/v1/screenings/${sid}/seats`, { timeout: '10s' }).status !== 200) return;
