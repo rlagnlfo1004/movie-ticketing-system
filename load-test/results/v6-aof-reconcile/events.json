@@ -1,0 +1,76 @@
+[
+  {
+    "at": "2026-11-09T21:27:34.296110+00:00",
+    "endedAt": "2026-11-09T21:38:06.371136+00:00",
+    "event": "scenario-A",
+    "run": "20261109T212410Z-a1",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-09T21:43:45.726528+00:00",
+    "endedAt": "2026-11-09T21:54:17.362392+00:00",
+    "event": "scenario-A",
+    "run": "20261109T212410Z-a2",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-09T21:59:57.353772+00:00",
+    "endedAt": "2026-11-09T22:10:28.175631+00:00",
+    "event": "scenario-A",
+    "run": "20261109T212410Z-a3",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-09T22:16:21.354418+00:00",
+    "endedAt": "2026-11-09T22:22:27.849571+00:00",
+    "event": "scenario-B",
+    "run": "20261109T212410Z-b1",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-09T22:28:12.704836+00:00",
+    "endedAt": "2026-11-09T22:38:44.230968+00:00",
+    "event": "fault-redis-kill",
+    "run": "20261109T212410Z-redis-kill",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-09T22:28:24.743188+00:00",
+    "event": "redis-before-kill",
+    "snapshot": "../../../docs/evidence/v6-aof-reconcile/20261109T212410Z-redis-kill-redis-before-kill.json"
+  },
+  {
+    "at": "2026-11-09T22:28:25.102886+00:00",
+    "event": "Redis SIGKILL"
+  },
+  {
+    "at": "2026-11-09T22:28:25.458376+00:00",
+    "event": "Redis restarted"
+  },
+  {
+    "at": "2026-11-09T22:28:32.704853+00:00",
+    "event": "redis-after-restart",
+    "snapshot": "../../../docs/evidence/v6-aof-reconcile/20261109T212410Z-redis-kill-redis-after-restart.json"
+  },
+  {
+    "at": "2026-11-09T22:28:32.724396+00:00",
+    "event": "reconciliation called"
+  },
+  {
+    "at": "2026-11-09T22:28:39.684787+00:00",
+    "event": "redis-after-reconcile",
+    "snapshot": "../../../docs/evidence/v6-aof-reconcile/20261109T212410Z-redis-kill-redis-after-reconcile.json"
+  },
+  {
+    "at": "2026-11-09T22:41:09.636301+00:00",
+    "event": "final-balance",
+    "snapshot": "../../../docs/evidence/v6-aof-reconcile/20261109T212410Z-redis-kill-final-balance.json"
+  },
+  {
+    "at": "2026-11-09T22:45:23.006711+00:00",
+    "endedAt": "2026-11-09T22:51:29.559950+00:00",
+    "event": "appendfsync-always-scenario-B",
+    "run": "always/20261109T212410Z-b1",
+    "exitCode": 0
+  }
+]

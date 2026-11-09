@@ -1,6 +1,6 @@
 # 좌석 예매 측정 방법과 원본
 
-문서 생성 시각(UTC): 2026-11-09T21:22:43.856551+00:00
+문서 생성 시각(UTC): 2026-11-09T22:53:55.395802+00:00
 
 ## 환경
 
@@ -289,6 +289,55 @@
 - 2026-11-09T21:15:13.691914+00:00 · all waiting-api started
 - 2026-11-09T21:15:48.179199+00:00 · waiting-down-recovered · [스냅샷](../../docs/evidence/v5-lua-active/20261109T205834Z-waiting-stop-waiting-down-recovered.json) · Redis 확정 0석 / MySQL 0석 / PG 승인·예매 없음 0건
 
+### v6-aof-reconcile
+
+- 실행 시작(UTC): 2026-11-09T21:24:10.593527+00:00
+- 실행 명령: `./load-test/run-stage.sh v6`
+- 성격: 정식 측정
+- 코드: `v6-aof-reconcile`
+
+| 설정 | 값 |
+| --- | --- |
+| REDIS_CONFIG | `./infra/tuning/redis-v6.conf` |
+| REDIS_APPENDONLY | `yes` |
+| REDIS_APPENDFSYNC | `everysec` |
+| HOLD_DURATION | `30s` |
+| PAYMENT_MODE | `mock` |
+| ACTIVE_CHECK_MODE | `lua` |
+| SPRING_THREADS_VIRTUAL_ENABLED | `true` |
+
+| 실행 | 선점 성공 | 평균 성공 TPS | 선점 p95/p99(ms) | 확정 | deadlock 증가 | 웹훅 p95(s) | Stream lag 최대 |
+| --- | ---: | ---: | --- | ---: | ---: | ---: | ---: |
+| [20261109T212410Z-a1](v6-aof-reconcile/20261109T212410Z-a1/README.md) | 432.00 | 0.69 | 52.22 / 78.32 | 338.00 | 0.0 | 0.08 | 2.00 |
+| [20261109T212410Z-a2](v6-aof-reconcile/20261109T212410Z-a2/README.md) | 479.00 | 0.77 | 148.32 / 221.03 | 365.00 | 0.0 | 0.18 | 16.00 |
+| [20261109T212410Z-a3](v6-aof-reconcile/20261109T212410Z-a3/README.md) | 494.00 | 0.80 | 113.20 / 144.68 | 374.00 | 0.0 | 0.22 | 2.00 |
+| [20261109T212410Z-b1](v6-aof-reconcile/20261109T212410Z-b1/README.md) | 6984.00 | 19.40 | 3.73 / 6.26 | — | 0.0 | — | 0.00 |
+| [20261109T212410Z-redis-kill](v6-aof-reconcile/20261109T212410Z-redis-kill/README.md) | 419.00 | 0.67 | 61.15 / 79.96 | 336.00 | 0.0 | 0.08 | 9.00 |
+
+실행별 원본:
+
+- 20261109T212410Z-a1: [대시보드](v6-aof-reconcile/20261109T212410Z-a1/dashboard.png) · [패널 PNG](v6-aof-reconcile/20261109T212410Z-a1/panels/) · [Prometheus JSON](v6-aof-reconcile/20261109T212410Z-a1/prometheus/) · [k6 원본](v6-aof-reconcile/20261109T212410Z-a1/summary.json)
+- 20261109T212410Z-a2: [대시보드](v6-aof-reconcile/20261109T212410Z-a2/dashboard.png) · [패널 PNG](v6-aof-reconcile/20261109T212410Z-a2/panels/) · [Prometheus JSON](v6-aof-reconcile/20261109T212410Z-a2/prometheus/) · [k6 원본](v6-aof-reconcile/20261109T212410Z-a2/summary.json)
+- 20261109T212410Z-a3: [대시보드](v6-aof-reconcile/20261109T212410Z-a3/dashboard.png) · [패널 PNG](v6-aof-reconcile/20261109T212410Z-a3/panels/) · [Prometheus JSON](v6-aof-reconcile/20261109T212410Z-a3/prometheus/) · [k6 원본](v6-aof-reconcile/20261109T212410Z-a3/summary.json)
+- 20261109T212410Z-b1: [대시보드](v6-aof-reconcile/20261109T212410Z-b1/dashboard.png) · [패널 PNG](v6-aof-reconcile/20261109T212410Z-b1/panels/) · [Prometheus JSON](v6-aof-reconcile/20261109T212410Z-b1/prometheus/) · [k6 원본](v6-aof-reconcile/20261109T212410Z-b1/summary.json)
+- 20261109T212410Z-redis-kill: [대시보드](v6-aof-reconcile/20261109T212410Z-redis-kill/dashboard.png) · [패널 PNG](v6-aof-reconcile/20261109T212410Z-redis-kill/panels/) · [Prometheus JSON](v6-aof-reconcile/20261109T212410Z-redis-kill/prometheus/) · [k6 원본](v6-aof-reconcile/20261109T212410Z-redis-kill/summary.json)
+
+장애 주입과 상태 스냅샷(UTC, 시간순):
+
+- 2026-11-09T21:27:34.296110+00:00 · scenario-A · 종료 2026-11-09T21:38:06.371136+00:00 · 종료 코드 0
+- 2026-11-09T21:43:45.726528+00:00 · scenario-A · 종료 2026-11-09T21:54:17.362392+00:00 · 종료 코드 0
+- 2026-11-09T21:59:57.353772+00:00 · scenario-A · 종료 2026-11-09T22:10:28.175631+00:00 · 종료 코드 0
+- 2026-11-09T22:16:21.354418+00:00 · scenario-B · 종료 2026-11-09T22:22:27.849571+00:00 · 종료 코드 0
+- 2026-11-09T22:28:12.704836+00:00 · fault-redis-kill · 종료 2026-11-09T22:38:44.230968+00:00 · 종료 코드 0
+- 2026-11-09T22:28:24.743188+00:00 · redis-before-kill · [스냅샷](../../docs/evidence/v6-aof-reconcile/20261109T212410Z-redis-kill-redis-before-kill.json) · Redis 확정 0석 / MySQL 0석 / PG 승인·예매 없음 0건
+- 2026-11-09T22:28:25.102886+00:00 · Redis SIGKILL
+- 2026-11-09T22:28:25.458376+00:00 · Redis restarted
+- 2026-11-09T22:28:32.704853+00:00 · redis-after-restart · [스냅샷](../../docs/evidence/v6-aof-reconcile/20261109T212410Z-redis-kill-redis-after-restart.json) · Redis 확정 3석 / MySQL 5석 / PG 승인·예매 없음 0건
+- 2026-11-09T22:28:32.724396+00:00 · reconciliation called
+- 2026-11-09T22:28:39.684787+00:00 · redis-after-reconcile · [스냅샷](../../docs/evidence/v6-aof-reconcile/20261109T212410Z-redis-kill-redis-after-reconcile.json) · Redis 확정 11석 / MySQL 13석 / PG 승인·예매 없음 0건
+- 2026-11-09T22:41:09.636301+00:00 · final-balance · [스냅샷](../../docs/evidence/v6-aof-reconcile/20261109T212410Z-redis-kill-final-balance.json) · Redis 확정 687석 / MySQL 687석 / PG 승인·예매 없음 0건
+- 2026-11-09T22:45:23.006711+00:00 · appendfsync-always-scenario-B · 종료 2026-11-09T22:51:29.559950+00:00 · 종료 코드 0
+
 ## MySQL 중단 뒤 확정 상태
 
 - [MySQL 중단 실행](v4-streams/20261109T181840Z-mysql-stop/README.md): 2026-11-09T19:39:10.660223+00:00 ~ 2026-11-09T19:39:46.392409+00:00. 복구 뒤 결제 승인 대비 확정 239/239 (100.00%), 중단 창의 웹훅 p95 최대 0.02초, Stream lag 최대 238.00건. 분자·분모는 [복구 스냅샷](../../docs/evidence/v4-streams/20261109T181840Z-mysql-stop-mysql-recovered.json)에서 확인한다.
@@ -320,5 +369,5 @@
 
 | 설정 | 선점 성공 TPS | p95(ms) | p99(ms) | 원본 |
 | --- | ---: | ---: | ---: | --- |
-| everysec | — | — | — | — |
-| always | — | — | — | — |
+| everysec | 19.40 | 3.73 | 6.26 | [k6](v6-aof-reconcile/20261109T212410Z-b1/summary.json) |
+| always | 19.31 | 14.98 | 18.08 | [k6](v6-aof-reconcile/always/20261109T212410Z-b1/summary.json) |
