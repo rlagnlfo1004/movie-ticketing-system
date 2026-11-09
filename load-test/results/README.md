@@ -1,6 +1,6 @@
 # 좌석 예매 측정 방법과 원본
 
-문서 생성 시각(UTC): 2026-11-09T20:39:19.631854+00:00
+문서 생성 시각(UTC): 2026-11-09T20:57:12.223617+00:00
 
 ## 환경
 
@@ -154,11 +154,13 @@
 | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: |
 | [20261109T174849Z-b1](v3-pubsub/20261109T174849Z-b1/README.md) | 6926.00 | 19.24 | 4.53 / 8.14 | — | 0.0 | — | — |
 | [20261109T174849Z-worker-kill](v3-pubsub/20261109T174849Z-worker-kill/README.md) | 501.00 | 0.81 | 419.22 / 553.64 | 374.00 | 0.0 | — | — |
+| [20261109T174849Z-worker-kill-retry-204103](v3-pubsub/20261109T174849Z-worker-kill-retry-204103/README.md) | 501.00 | 0.81 | 209.53 / 263.66 | 373.00 | 0.0 | — | — |
 
 실행별 원본:
 
 - 20261109T174849Z-b1: [대시보드](v3-pubsub/20261109T174849Z-b1/dashboard.png) · [패널 PNG](v3-pubsub/20261109T174849Z-b1/panels/) · [Prometheus JSON](v3-pubsub/20261109T174849Z-b1/prometheus/) · [k6 원본](v3-pubsub/20261109T174849Z-b1/summary.json)
 - 20261109T174849Z-worker-kill: [대시보드](v3-pubsub/20261109T174849Z-worker-kill/dashboard.png) · [패널 PNG](v3-pubsub/20261109T174849Z-worker-kill/panels/) · [Prometheus JSON](v3-pubsub/20261109T174849Z-worker-kill/prometheus/) · [k6 원본](v3-pubsub/20261109T174849Z-worker-kill/summary.json)
+- 20261109T174849Z-worker-kill-retry-204103: [대시보드](v3-pubsub/20261109T174849Z-worker-kill-retry-204103/dashboard.png) · [패널 PNG](v3-pubsub/20261109T174849Z-worker-kill-retry-204103/panels/) · [Prometheus JSON](v3-pubsub/20261109T174849Z-worker-kill-retry-204103/prometheus/) · [k6 원본](v3-pubsub/20261109T174849Z-worker-kill-retry-204103/summary.json)
 
 장애 주입과 상태 스냅샷(UTC, 시간순):
 
@@ -169,6 +171,13 @@
 - 2026-11-09T18:04:45.138313+00:00 · worker-after-kill · [스냅샷](../../docs/evidence/v3-pubsub/20261109T174849Z-worker-kill-worker-after-kill.json) · Redis 확정 0석 / MySQL 0석 / PG 승인·예매 없음 0건
 - 2026-11-09T18:04:45.562355+00:00 · reservation-worker restarted
 - 2026-11-09T18:05:04.221796+00:00 · worker-after-restart · [스냅샷](../../docs/evidence/v3-pubsub/20261109T174849Z-worker-kill-worker-after-restart.json) · Redis 확정 599석 / MySQL 581석 / PG 승인·예매 없음 9건
+- 2026-11-09T20:44:26.368599+00:00 · fault-worker-kill · 종료 2026-11-09T20:54:56.881166+00:00 · 종료 코드 0
+- 2026-11-09T20:44:31.384915+00:00 · worker initial state · [스냅샷](../../docs/evidence/v3-pubsub/20261109T174849Z-worker-kill-retry-204103-before.json) · Redis 확정 0석 / MySQL 0석 / PG 승인·예매 없음 0건
+- 2026-11-09T20:44:31.863301+00:00 · reservation-worker SIGKILL
+- 2026-11-09T20:44:38.914682+00:00 · worker-after-kill · [스냅샷](../../docs/evidence/v3-pubsub/20261109T174849Z-worker-kill-retry-204103-worker-after-kill.json) · Redis 확정 0석 / MySQL 0석 / PG 승인·예매 없음 0건
+- 2026-11-09T20:45:16.332953+00:00 · worker-during-outage · [스냅샷](../../docs/evidence/v3-pubsub/20261109T174849Z-worker-kill-retry-204103-worker-during-outage.json) · Redis 확정 584석 / MySQL 0석 / PG 승인·예매 없음 294건
+- 2026-11-09T20:45:16.802674+00:00 · reservation-worker restarted
+- 2026-11-09T20:45:34.948003+00:00 · worker-after-restart · [스냅샷](../../docs/evidence/v3-pubsub/20261109T174849Z-worker-kill-retry-204103-worker-after-restart.json) · Redis 확정 584석 / MySQL 0석 / PG 승인·예매 없음 294건
 
 ### v4-streams
 

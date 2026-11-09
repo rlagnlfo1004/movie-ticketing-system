@@ -35,5 +35,40 @@
     "at": "2026-11-09T18:05:04.221796+00:00",
     "event": "worker-after-restart",
     "snapshot": "../../../docs/evidence/v3-pubsub/20261109T174849Z-worker-kill-worker-after-restart.json"
+  },
+  {
+    "at": "2026-11-09T20:44:26.368599+00:00",
+    "endedAt": "2026-11-09T20:54:56.881166+00:00",
+    "event": "fault-worker-kill",
+    "run": "20261109T174849Z-worker-kill-retry-204103",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-09T20:44:31.384915+00:00",
+    "event": "worker initial state",
+    "snapshot": "../../../docs/evidence/v3-pubsub/20261109T174849Z-worker-kill-retry-204103-before.json"
+  },
+  {
+    "at": "2026-11-09T20:44:31.863301+00:00",
+    "event": "reservation-worker SIGKILL"
+  },
+  {
+    "at": "2026-11-09T20:44:38.914682+00:00",
+    "event": "worker-after-kill",
+    "snapshot": "../../../docs/evidence/v3-pubsub/20261109T174849Z-worker-kill-retry-204103-worker-after-kill.json"
+  },
+  {
+    "at": "2026-11-09T20:45:16.332953+00:00",
+    "event": "worker-during-outage",
+    "snapshot": "../../../docs/evidence/v3-pubsub/20261109T174849Z-worker-kill-retry-204103-worker-during-outage.json"
+  },
+  {
+    "at": "2026-11-09T20:45:16.802674+00:00",
+    "event": "reservation-worker restarted"
+  },
+  {
+    "at": "2026-11-09T20:45:34.948003+00:00",
+    "event": "worker-after-restart",
+    "snapshot": "../../../docs/evidence/v3-pubsub/20261109T174849Z-worker-kill-retry-204103-worker-after-restart.json"
   }
 ]
