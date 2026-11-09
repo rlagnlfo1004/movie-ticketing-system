@@ -8,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "load-test/results"
 HOSTS = [
-    ("lg", "c7g.xlarge", 4), ("edge", "c7g.large", 2),
+    ("lg", "c7g.2xlarge", 8), ("edge", "c7g.large", 2),
     ("app-waiting", "m7g.xlarge", 4), ("app-reservation", "m7g.xlarge", 4),
     ("redis", "r7g.large", 2), ("mysql", "r7g.xlarge", 4),
     ("mon", "t4g.medium", 2),

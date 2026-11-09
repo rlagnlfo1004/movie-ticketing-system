@@ -8,18 +8,18 @@
 
 | 호스트 | 인스턴스 | vCPU | 서울 온디맨드 시간당 USD |
 | --- | --- | ---: | ---: |
-| lg | c7g.xlarge | 4 | 0.1632 |
+| lg | c7g.2xlarge | 8 | 0.3264 |
 | edge | c7g.large | 2 | 0.0816 |
 | app-waiting | m7g.xlarge | 4 | 0.2006 |
 | app-reservation | m7g.xlarge | 4 | 0.2006 |
 | redis | r7g.large | 2 | 0.1292 |
 | mysql | r7g.xlarge | 4 | 0.2584 |
 | mon | t4g.medium | 2 | 0.0416 |
-| **합계** | **7대** | **22** | **1.0752** |
+| **합계** | **7대** | **26** | **1.2384** |
 
-루트 gp3 20GiB×7대와 MySQL 별도 gp3 100GiB의 합계 240GiB에, 서울 리전 gp3 $0.0912/GiB-월과 월 730시간 가정을 적용하면 **약 $0.029984/시간**이다. gp3의 기본 3,000 IOPS·125MiB/s는 추가 요금이 없는 범위다. 공인 IPv4 7개는 $0.005×7 = **$0.035/시간**이다. 합계는 **약 $1.140184/시간**이다. 데이터 전송·기타 서비스 요금은 이 값에 포함하지 않았다. `mon`의 T4g CPU 크레딧은 `standard`로 둬 추가 무제한 크레딧 요금을 피한다.
+루트 gp3 20GiB×7대와 MySQL 별도 gp3 100GiB의 합계 240GiB에, 서울 리전 gp3 $0.0912/GiB-월과 월 730시간 가정을 적용하면 **약 $0.029984/시간**이다. gp3의 기본 3,000 IOPS·125MiB/s는 추가 요금이 없는 범위다. 공인 IPv4 7개는 $0.005×7 = **$0.035/시간**이다. 합계는 **약 $1.303384/시간**이다. 데이터 전송·기타 서비스 요금은 이 값에 포함하지 않았다. `mon`의 T4g CPU 크레딧은 `standard`로 둬 추가 무제한 크레딧 요금을 피한다.
 
-가격은 2026-11-08에 AWS Price List `GetProducts` API로 조회한 [원본 JSON](pricing-2026-11-08.json)과 [계산 스크립트](cost.py)를 따른다. gp3 기본 성능은 [Amazon EBS 문서](https://docs.aws.amazon.com/ebs/latest/userguide/general-purpose.html), 공인 IPv4 요금은 [Amazon VPC 가격](https://aws.amazon.com/vpc/pricing/)에 근거한다.
+가격은 2026-11-08에 AWS Price List `GetProducts` API로 조회한 [원본 JSON](pricing-2026-11-08.json), 2026-11-09에 조회한 [부하 발생기 확장 가격](pricing-lg-resize-2026-11-09.json)과 [계산 스크립트](cost.py)를 따른다. gp3 기본 성능은 [Amazon EBS 문서](https://docs.aws.amazon.com/ebs/latest/userguide/general-purpose.html), 공인 IPv4 요금은 [Amazon VPC 가격](https://aws.amazon.com/vpc/pricing/)에 근거한다.
 
 ## 사용자 데이터와 기동
 
@@ -30,7 +30,7 @@ Terraform은 AWS 계정 `976071095824`·프로필 `movie-loadtest`·리전 `ap-n
 python3 infra/aws/cost.py           # 저장한 가격 원본으로 시간당 비용 재계산
 ```
 
-검증한 계획은 **22개 생성, 변경 0개, 삭제 0개**였다. `plan.sh`는 실행 당시 작업자의 공인 IPv4를 `/32`로 읽는다. IP가 바뀌었으면 새 계획에서 보안 그룹 범위를 다시 확인한다. Terraform은 SSH 공개 키만 읽고 개인 키를 상태 파일에 넣지 않는다.
+처음 검증한 계획은 **22개 생성, 변경 0개, 삭제 0개**였다. 정식 V1 첫 실행에서 k6가 3만 VU를 제때 확보하지 못해 부하 발생기를 `c7g.2xlarge`로 교체했다. 교체 plan은 1개 생성·1개 삭제였다. `plan.sh`는 실행 당시 작업자의 공인 IPv4를 `/32`로 읽는다. IP가 바뀌었으면 새 계획에서 보안 그룹 범위를 다시 확인한다. Terraform은 SSH 공개 키만 읽고 개인 키를 상태 파일에 넣지 않는다.
 
 측정일 `apply` 뒤 `render-hosts-env.sh`가 Terraform 출력에서 `hosts.env`를 만든다. #25의 `build-host-env.py`가 이 파일과 단계 env를 합쳐 서버별 환경 파일을 생성한다. `destroy` 뒤 `destroy-check.sh <결과.json>`은 태그가 붙은 리소스, EC2 인스턴스, EBS 볼륨, Elastic IP, NAT Gateway의 잔존 여부를 읽기 전용으로 확인하고 결과를 JSON에 남긴다.
 

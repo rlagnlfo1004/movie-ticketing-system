@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 data = json.loads((Path(__file__).parent / "pricing-2026-11-08.json").read_text())
+lg_resize = json.loads((Path(__file__).parent / "pricing-lg-resize-2026-11-09.json").read_text())
 
 
 def usd_for_unit(product, unit):
@@ -17,11 +18,12 @@ def usd_for_unit(product, unit):
 
 
 hosts = {
-    "lg": "c7g.xlarge", "edge": "c7g.large", "app-waiting": "m7g.xlarge",
+    "lg": "c7g.2xlarge", "edge": "c7g.large", "app-waiting": "m7g.xlarge",
     "app-reservation": "m7g.xlarge", "redis": "r7g.large", "mysql": "r7g.xlarge",
     "mon": "t4g.medium",
 }
-instance_prices = {host: usd_for_unit(data["instances"][kind], "Hrs") for host, kind in hosts.items()}
+instance_prices = {host: usd_for_unit(
+    lg_resize["instance"] if host == "lg" else data["instances"][kind], "Hrs") for host, kind in hosts.items()}
 gp3_product = next(item for item in data["gp3"] if item["product"]["attributes"]["usagetype"].endswith("VolumeUsage.gp3"))
 storage = 240 * usd_for_unit(gp3_product, "GB-Mo") / 730
 public_ipv4 = 7 * 0.005
