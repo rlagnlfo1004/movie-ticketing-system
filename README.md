@@ -1,5 +1,7 @@
 # 좌석 지정 영화 예매 시스템
 
+[![Test](https://github.com/rlagnlfo1004/movie-ticketing-system/actions/workflows/test.yml/badge.svg?branch=feat%2Fseat-redesign)](https://github.com/rlagnlfo1004/movie-ticketing-system/actions/workflows/test.yml?query=branch%3Afeat%2Fseat-redesign)
+
 한 상영의 1,000석을 여러 사용자가 동시에 고를 때 중복 예매를 막는 시스템이다. 대기열 입장 후 좌석을 선점하고, 결제 상태를 확인해 예매를 확정한다. 현재 구현 단계는 **V6: Redis AOF와 MySQL·PG 대사**까지 처리한다. 남은 정식 측정과 V7 결정은 [작업 지도](https://github.com/rlagnlfo1004/movie-ticketing-system/issues/2)에서 진행한다.
 
 ## 현재 흐름
