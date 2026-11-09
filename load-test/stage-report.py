@@ -157,7 +157,12 @@ def comparison(tag, hypothesis):
                  if key.startswith("seat_holds_created{scenario:rate_") and isinstance(value.get("rate"), (int, float))]
         return f"{max(rates):.2f}" if rates else metric(summary, "seat_holds_created", "rate")
     def pair(title):
-        return f"{panel_peak(on_path, title)} / {panel_peak(off_path, title)}"
+        values = [panel_peak(path, title) for path in (on_path, off_path)]
+        if title == "Tomcat busy threads":
+            values = ["측정 불가" if value == "-1.00" else value for value in values]
+        if title == "Reservation app CPU":
+            values = [f"{float(value) * 100:.2f}%" if value != "—" else value for value in values]
+        return " / ".join(values)
     return (f"| [{tag} 켬]({on_path.relative_to(RESULTS)}/README.md) / "
             f"[끔]({off_path.relative_to(RESULTS)}/README.md) | {hypothesis} | {peak_tps(on)} | "
             f"{peak_tps(off)} | {metric(on, 'seat_hold_duration', 'p(95)')} / "
@@ -276,11 +281,12 @@ def main():
     rows.extend(hold_success_during_waiting_stop())
     rows.append("")
     rows += ["## 가상 스레드 켬 vs 끔", "",
-             "값의 순서는 켬 / 끔이다. CPU는 reservation-api 프로세스 사용률이다.", "",
+             "값의 순서는 켬 / 끔이다. CPU는 reservation-api 프로세스 사용률이다. "
+             "가상 스레드에서 Tomcat busy 값이 -1이면 측정 불가로 표시한다.", "",
              "| 단계 | 가설 | 켬 선점 TPS | 끔 선점 TPS | p95·p99(ms) | Tomcat/JVM 스레드 | Hikari active/pending | pinning 건수 | CPU |",
              "| --- | --- | ---: | ---: | --- | --- | --- | --- | --- |",
-             comparison("v2-db-fixed", "락 병목으로 차이 없음"),
-             comparison("v4-streams", "HTTP 동기 호출 구간에서 켬이 유리"), "",
+             comparison("v2-db-fixed", "상영 행 락 병목에서 켬/끔 차이 확인"),
+             comparison("v4-streams", "HTTP 동기 호출 구간에서 켬/끔 차이 확인"), "",
              "## DB 단독 기준과 V2 선점 상한", ""]
     evidence_links = []
     for tag in ("v2-db-fixed", "v4-streams"):
