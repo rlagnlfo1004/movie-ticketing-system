@@ -1,0 +1,2049 @@
+*************************** 1. row ***************************
+InnoDB
+
+
+=====================================
+2026-11-09 17:44:24 281445245243136 INNODB MONITOR OUTPUT
+=====================================
+Per second averages calculated from the last 30 seconds
+-----------------
+BACKGROUND THREAD
+-----------------
+srv_master_thread loops: 388 srv_active, 0 srv_shutdown, 167 srv_idle
+srv_master_thread log flush and writes: 0
+----------
+SEMAPHORES
+----------
+OS WAIT ARRAY INFO: reservation count 43883
+OS WAIT ARRAY INFO: signal count 42764
+RW-shared spins 0, rounds 0, OS waits 0
+RW-excl spins 0, rounds 0, OS waits 0
+RW-sx spins 0, rounds 0, OS waits 0
+Spin rounds per wait: 0.00 RW-shared, 0.00 RW-excl, 0.00 RW-sx
+------------------------
+LATEST DETECTED DEADLOCK
+------------------------
+2026-11-09 17:44:24 281447372369664
+*** (1) TRANSACTION:
+TRANSACTION 238099, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 8 lock struct(s), heap size 1128, 8 row lock(s), undo log entries 2
+MySQL thread id 83, OS thread handle 281446938435328, query id 971299 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count+2 WHERE id='1'
+
+*** (1) HOLDS THE LOCK(S):
+RECORD LOCKS space id 4 page no 11 n bits 288 index PRIMARY of table `movie_seats`.`screening_seats` trx id 238099 lock_mode X locks rec but not gap
+Record lock, heap no 3 PHYSICAL RECORD: n_fields 7; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 4; hex 462d3138; asc F-18;;
+ 2: len 6; hex 00000003a213; asc       ;;
+ 3: len 7; hex 020000017a2961; asc     z)a;;
+ 4: len 9; hex 415641494c41424c45; asc AVAILABLE;;
+ 5: SQL NULL;
+ 6: SQL NULL;
+
+Record lock, heap no 4 PHYSICAL RECORD: n_fields 7; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 4; hex 462d3139; asc F-19;;
+ 2: len 6; hex 00000003a213; asc       ;;
+ 3: len 7; hex 020000017a29e6; asc     z) ;;
+ 4: len 9; hex 415641494c41424c45; asc AVAILABLE;;
+ 5: SQL NULL;
+ 6: SQL NULL;
+
+
+*** (1) WAITING FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238099 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a189; asc       ;;
+ 2: len 7; hex 02000002372f66; asc     7/f;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+
+*** (2) TRANSACTION:
+TRANSACTION 237961, ACTIVE 1 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 4 lock struct(s), heap size 1128, 2 row lock(s), undo log entries 1
+MySQL thread id 31, OS thread handle 281453839298304, query id 971476 10.84.1.23 movie statistics
+SELECT status FROM screening_seats WHERE screening_id='1' AND seat_no='F-18' FOR UPDATE
+
+*** (2) HOLDS THE LOCK(S):
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 237961 lock_mode X locks rec but not gap
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a189; asc       ;;
+ 2: len 7; hex 02000002372f66; asc     7/f;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+
+*** (2) WAITING FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 4 page no 11 n bits 288 index PRIMARY of table `movie_seats`.`screening_seats` trx id 237961 lock_mode X locks rec but not gap waiting
+Record lock, heap no 3 PHYSICAL RECORD: n_fields 7; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 4; hex 462d3138; asc F-18;;
+ 2: len 6; hex 00000003a213; asc       ;;
+ 3: len 7; hex 020000017a2961; asc     z)a;;
+ 4: len 9; hex 415641494c41424c45; asc AVAILABLE;;
+ 5: SQL NULL;
+ 6: SQL NULL;
+
+*** WE ROLL BACK TRANSACTION (2)
+------------
+TRANSACTIONS
+------------
+Trx id counter 238310
+Purge done for trx's n:o < 238085 undo n:o < 0 state: running but idle
+History list length 202
+LIST OF TRANSACTIONS FOR EACH SESSION:
+---TRANSACTION 562948379104592, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562948379093280, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562948379071464, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562948379023792, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562948379022984, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 238308, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 16, OS thread handle 281458672254720, query id 972130 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238294, sees < 238111
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238308 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238307, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 36, OS thread handle 281449010814720, query id 972128 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238300, sees < 238118
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238307 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238304, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 114, OS thread handle 281445359333120, query id 972121 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-4
+WHERE id='1' AND remaining_seat_count>=4
+Trx read view will not see trx with id >= 238298, sees < 238113
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238304 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238303, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 158, OS thread handle 281445348151040, query id 972120 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238294, sees < 238111
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238303 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238302, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 163, OS thread handle 281445342560000, query id 972119 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238291, sees < 238109
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238302 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238301, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 102, OS thread handle 281445372751616, query id 972115 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238288, sees < 238107
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238301 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238297, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 160, OS thread handle 281445345914624, query id 972089 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238287, sees < 238106
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238297 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238296, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 18, OS thread handle 281456258572032, query id 972087 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238291, sees < 238109
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238296 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238294, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 155, OS thread handle 281445351505664, query id 972082 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-4
+WHERE id='1' AND remaining_seat_count>=4
+Trx read view will not see trx with id >= 238290, sees < 238108
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238294 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238291, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 83, OS thread handle 281446938435328, query id 972066 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-4
+WHERE id='1' AND remaining_seat_count>=4
+Trx read view will not see trx with id >= 238280, sees < 238103
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238291 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238289, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 106, OS thread handle 281445368278784, query id 972052 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238277, sees < 238099
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238289 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238285, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 168, OS thread handle 281445336968960, query id 972036 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-4
+WHERE id='1' AND remaining_seat_count>=4
+Trx read view will not see trx with id >= 238276, sees < 238099
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238285 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238284, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 167, OS thread handle 281445338087168, query id 972034 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238276, sees < 238099
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238284 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238282, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 86, OS thread handle 281446935080704, query id 972028 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238275, sees < 238098
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238282 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238281, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 17, OS thread handle 281458671136512, query id 972026 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-4
+WHERE id='1' AND remaining_seat_count>=4
+Trx read view will not see trx with id >= 238275, sees < 238098
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238281 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238280, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 97, OS thread handle 281445378342656, query id 972024 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238275, sees < 238098
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238280 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238278, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 34, OS thread handle 281451424497408, query id 972016 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238275, sees < 238098
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238278 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238276, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 112, OS thread handle 281445361569536, query id 972010 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238262, sees < 238078
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238276 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238273, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 154, OS thread handle 281445352623872, query id 971985 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238263, sees < 238078
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238273 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238272, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 165, OS thread handle 281445340323584, query id 971983 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-3
+WHERE id='1' AND remaining_seat_count>=3
+Trx read view will not see trx with id >= 238261, sees < 238078
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238272 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238269, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 104, OS thread handle 281445370515200, query id 971970 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-4
+WHERE id='1' AND remaining_seat_count>=4
+Trx read view will not see trx with id >= 238250, sees < 238072
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238269 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238268, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 175, OS thread handle 281445329141504, query id 971969 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238253, sees < 238073
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238268 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238266, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 96, OS thread handle 281445379460864, query id 971964 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238255, sees < 238073
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238266 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238264, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 185, OS thread handle 281445320195840, query id 971961 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238252, sees < 238072
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238264 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238262, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 110, OS thread handle 281445363805952, query id 971953 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238253, sees < 238073
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238262 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238261, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 113, OS thread handle 281445360451328, query id 971950 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238255, sees < 238073
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238261 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238260, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 109, OS thread handle 281445364924160, query id 971940 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-4
+WHERE id='1' AND remaining_seat_count>=4
+Trx read view will not see trx with id >= 238244, sees < 238065
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238260 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238259, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 87, OS thread handle 281446933962496, query id 971938 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238242, sees < 238063
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238259 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238257, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 172, OS thread handle 281445332496128, query id 971934 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238244, sees < 238065
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238257 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238254, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 176, OS thread handle 281445328023296, query id 971922 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238240, sees < 238061
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238254 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238253, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 93, OS thread handle 281446927253248, query id 971916 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-3
+WHERE id='1' AND remaining_seat_count>=3
+Trx read view will not see trx with id >= 238234, sees < 238053
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238253 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238251, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 177, OS thread handle 281445326905088, query id 971908 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238237, sees < 238059
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238251 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238250, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 164, OS thread handle 281445341441792, query id 971907 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-4
+WHERE id='1' AND remaining_seat_count>=4
+Trx read view will not see trx with id >= 238240, sees < 238061
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238250 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238246, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 90, OS thread handle 281446930607872, query id 971889 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238237, sees < 238059
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238246 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238244, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 14, OS thread handle 281458674491136, query id 971883 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238234, sees < 238053
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238244 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238243, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 105, OS thread handle 281445369396992, query id 971877 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238229, sees < 238043
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238243 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238241, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 37, OS thread handle 281449009696512, query id 971870 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238228, sees < 238040
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238241 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238238, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 181, OS thread handle 281445324668672, query id 971852 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238230, sees < 238044
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238238 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238234, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 117, OS thread handle 281445355978496, query id 971835 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-3
+WHERE id='1' AND remaining_seat_count>=3
+Trx read view will not see trx with id >= 238222, sees < 238038
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238234 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238233, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 173, OS thread handle 281445331377920, query id 971829 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-3
+WHERE id='1' AND remaining_seat_count>=3
+Trx read view will not see trx with id >= 238215, sees < 238035
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238233 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238230, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 78, OS thread handle 281449007460096, query id 971814 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238219, sees < 238037
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238230 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238226, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 22, OS thread handle 281453842652928, query id 971800 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238210, sees < 238033
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238226 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238225, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 162, OS thread handle 281445343678208, query id 971798 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238209, sees < 238033
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238225 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238223, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 81, OS thread handle 281447329046272, query id 971794 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238206, sees < 238029
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238223 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238222, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 116, OS thread handle 281445357096704, query id 971791 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238209, sees < 238033
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238222 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238220, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 35, OS thread handle 281451423379200, query id 971788 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238209, sees < 238033
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238220 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238219, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 183, OS thread handle 281445322432256, query id 971781 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238209, sees < 238033
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238219 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238217, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 89, OS thread handle 281446931726080, query id 971776 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238209, sees < 238033
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238217 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238216, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 30, OS thread handle 281453840416512, query id 971775 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238207, sees < 238030
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238216 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238215, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 92, OS thread handle 281446928371456, query id 971770 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238209, sees < 238033
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238215 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238213, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 95, OS thread handle 281445380579072, query id 971761 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238201, sees < 238023
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238213 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238211, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 174, OS thread handle 281445330259712, query id 971757 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238201, sees < 238023
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238211 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238210, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 119, OS thread handle 281445353742080, query id 971755 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238201, sees < 238023
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238210 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238209, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 118, OS thread handle 281445354860288, query id 971747 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-4
+WHERE id='1' AND remaining_seat_count>=4
+Trx read view will not see trx with id >= 238201, sees < 238023
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238209 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238207, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 19, OS thread handle 281456257453824, query id 971729 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238190, sees < 238015
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238207 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238205, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 157, OS thread handle 281445349269248, query id 971712 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-4
+WHERE id='1' AND remaining_seat_count>=4
+Trx read view will not see trx with id >= 238192, sees < 238015
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238205 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238199, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 169, OS thread handle 281445335850752, query id 971689 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238183, sees < 238006
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238199 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238196, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 166, OS thread handle 281445339205376, query id 971676 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238182, sees < 238004
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238196 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238195, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 80, OS thread handle 281447330164480, query id 971673 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-4
+WHERE id='1' AND remaining_seat_count>=4
+Trx read view will not see trx with id >= 238174, sees < 237992
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238195 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238192, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 184, OS thread handle 281445321314048, query id 971667 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238183, sees < 238006
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238192 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238191, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 182, OS thread handle 281445323550464, query id 971663 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238182, sees < 238004
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238191 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238190, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 29, OS thread handle 281453841534720, query id 971661 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238177, sees < 237994
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238190 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238189, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 191, OS thread handle 281445246361344, query id 971659 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238181, sees < 238001
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238189 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238188, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 91, OS thread handle 281446929489664, query id 971657 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238177, sees < 237994
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238188 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238185, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 88, OS thread handle 281446932844288, query id 971648 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-3
+WHERE id='1' AND remaining_seat_count>=3
+Trx read view will not see trx with id >= 238174, sees < 237992
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238185 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238183, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 32, OS thread handle 281451426733824, query id 971642 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238172, sees < 237991
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238183 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238176, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 171, OS thread handle 281445333614336, query id 971602 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-3
+WHERE id='1' AND remaining_seat_count>=3
+Trx read view will not see trx with id >= 238167, sees < 237978
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238176 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238174, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 20, OS thread handle 281456256335616, query id 971595 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238166, sees < 237976
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238174 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238172, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 190, OS thread handle 281445247479552, query id 971585 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238159, sees < 237973
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238172 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238171, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 15, OS thread handle 281458673372928, query id 971581 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238160, sees < 237974
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238171 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238170, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 12, OS thread handle 281461088177920, query id 971579 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238162, sees < 237974
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238170 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238168, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 100, OS thread handle 281445374988032, query id 971573 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238164, sees < 237975
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238168 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238165, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 156, OS thread handle 281445350387456, query id 971563 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238159, sees < 237973
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238165 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238162, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 187, OS thread handle 281445317959424, query id 971543 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238153, sees < 237969
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238162 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238161, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 21, OS thread handle 281456255217408, query id 971540 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238154, sees < 237969
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238161 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238160, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 31, OS thread handle 281453839298304, query id 971539 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238149, sees < 237963
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238160 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238154, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 107, OS thread handle 281445367160576, query id 971512 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238147, sees < 237961
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238154 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238153, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 13, OS thread handle 281461087059712, query id 971507 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-3
+WHERE id='1' AND remaining_seat_count>=3
+Trx read view will not see trx with id >= 238144, sees < 237956
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238153 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238151, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 99, OS thread handle 281445376106240, query id 971498 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-3
+WHERE id='1' AND remaining_seat_count>=3
+Trx read view will not see trx with id >= 238147, sees < 237961
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238151 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238150, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 82, OS thread handle 281446939553536, query id 971496 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-4
+WHERE id='1' AND remaining_seat_count>=4
+Trx read view will not see trx with id >= 238147, sees < 237961
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238150 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238147, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 79, OS thread handle 281447597948672, query id 971486 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-3
+WHERE id='1' AND remaining_seat_count>=3
+Trx read view will not see trx with id >= 238142, sees < 237954
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238147 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238146, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 189, OS thread handle 281445315723008, query id 971473 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-3
+WHERE id='1' AND remaining_seat_count>=3
+Trx read view will not see trx with id >= 238139, sees < 237952
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238146 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238142, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 33, OS thread handle 281451425615616, query id 971461 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238138, sees < 237952
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238142 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238140, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 77, OS thread handle 281449008578304, query id 971452 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238134, sees < 237951
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238140 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238138, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 108, OS thread handle 281445366042368, query id 971445 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-4
+WHERE id='1' AND remaining_seat_count>=4
+Trx read view will not see trx with id >= 238124, sees < 237943
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238138 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238137, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 159, OS thread handle 281445347032832, query id 971439 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-3
+WHERE id='1' AND remaining_seat_count>=3
+Trx read view will not see trx with id >= 238129, sees < 237948
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238137 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238136, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 103, OS thread handle 281445371633408, query id 971437 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238124, sees < 237943
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238136 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238134, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 94, OS thread handle 281445381697280, query id 971435 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238123, sees < 237942
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238134 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238133, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 161, OS thread handle 281445344796416, query id 971425 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1
+WHERE id='1' AND remaining_seat_count>=1
+Trx read view will not see trx with id >= 238128, sees < 237948
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238133 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238132, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 170, OS thread handle 281445334732544, query id 971424 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238121, sees < 237940
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238132 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238130, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 85, OS thread handle 281446936198912, query id 971421 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-2
+WHERE id='1' AND remaining_seat_count>=2
+Trx read view will not see trx with id >= 238124, sees < 237943
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238130 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238128, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 2 lock struct(s), heap size 1128, 1 row lock(s)
+MySQL thread id 84, OS thread handle 281446937317120, query id 971412 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-3
+WHERE id='1' AND remaining_seat_count>=3
+Trx read view will not see trx with id >= 238123, sees < 237942
+------- TRX HAS BEEN WAITING 0 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 238128 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 00000003a22f; asc      /;;
+ 2: len 7; hex 020000011923fe; asc      # ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 80000046; asc    F;;
+ 7: len 8; hex 99bb5318d9049c5a; asc   S    Z;;
+
+------------------
+---TRANSACTION 238127, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+2 lock struct(s), heap size 1128, 1 row lock(s), undo log entries 1
+MySQL thread id 111, OS thread handle 281445362687744, query id 972137 10.84.1.23 movie statistics
+SELECT status FROM screening_seats WHERE screening_id='1' AND seat_no='F-19' FOR UPDATE
+Trx read view will not see trx with id >= 238117, sees < 237935
+--------
+FILE I/O
+--------
+I/O thread 0 state: waiting for completed aio requests (insert buffer thread)
+I/O thread 1 state: waiting for completed aio requests (read thread)
+I/O thread 2 state: waiting for completed aio requests (read thread)
+I/O thread 3 state: waiting for completed aio requests (read thread)
+I/O thread 4 state: waiting for completed aio requests (read thread)
+I/O thread 5 state: waiting for completed aio requests (write thread)
+I/O thread 6 state: waiting for completed aio requests (write thread)
+I/O thread 7 state: waiting for completed aio requests (write thread)
+I/O thread 8 state: waiting for completed aio requests (write thread)
+Pending normal aio reads: [0, 0, 0, 0] , aio writes: [0, 0, 0, 0] ,
+ ibuf aio reads:
+Pending flushes (fsync) log: 1; buffer pool: 0
+1019 OS file reads, 313315 OS file writes, 191784 OS fsyncs
+0.00 reads/s, 0 avg bytes/read, 822.83 writes/s, 495.49 fsyncs/s
+-------------------------------------
+INSERT BUFFER AND ADAPTIVE HASH INDEX
+-------------------------------------
+Ibuf: size 1, free list len 0, seg size 2, 0 merges
+merged operations:
+ insert 0, delete mark 0, delete 0
+discarded operations:
+ insert 0, delete mark 0, delete 0
+Hash table size 5843809, node heap has 0 buffer(s)
+Hash table size 5843809, node heap has 0 buffer(s)
+Hash table size 5843809, node heap has 0 buffer(s)
+Hash table size 5843809, node heap has 0 buffer(s)
+Hash table size 5843809, node heap has 0 buffer(s)
+Hash table size 5843809, node heap has 0 buffer(s)
+Hash table size 5843809, node heap has 0 buffer(s)
+Hash table size 5843809, node heap has 0 buffer(s)
+0.00 hash searches/s, 1109080.60 non-hash searches/s
+---
+LOG
+---
+Log capacity                 2147483648
+Log capacity used            2147483648
+Log sequence number          87590209
+Log buffer assigned up to    87590209
+Log buffer completed up to   87590209
+Log written up to            87590209
+Log flushed up to            87590088
+Added dirty pages up to      87590209
+Pages flushed up to          56624876
+Last checkpoint at           55729216
+Log minimum file id is       0
+Log maximum file id is       1
+309128 log i/o's done, 807.97 log i/o's/second
+----------------------
+BUFFER POOL AND MEMORY
+----------------------
+Total large memory allocated 0
+Dictionary memory allocated 598293
+Buffer pool size   1441667
+Free buffers       1439909
+Database pages     1758
+Old database pages 628
+Modified db pages  1078
+Pending reads      0
+Pending writes: LRU 0, flush list 0, single page 0
+Pages made young 0, not young 0
+0.00 youngs/s, 0.00 non-youngs/s
+Pages read 994, created 764, written 3505
+0.00 reads/s, 0.36 creates/s, 4.60 writes/s
+Buffer pool hit rate 1000 / 1000, young-making rate 0 / 1000 not 0 / 1000
+Pages read ahead 0.00/s, evicted without access 0.00/s, Random read ahead 0.00/s
+LRU len: 1758, unzip_LRU len: 0
+I/O sum[0]:cur[0], unzip sum[0]:cur[0]
+--------------
+ROW OPERATIONS
+--------------
+0 queries inside InnoDB, 0 queries in queue
+96 read views open inside InnoDB
+Process ID=1, Main thread ID=281447340715776 , state=sleeping
+Number of rows inserted 13162, updated 129904, deleted 0, read 294186543
+10.80 inserts/s, 359.99 updates/s, 0.00 deletes/s, 1178556.38 reads/s
+Number of system rows inserted 225, updated 837, deleted 8, read 6511
+0.00 inserts/s, 0.00 updates/s, 0.00 deletes/s, 0.00 reads/s
+----------------------------
+END OF INNODB MONITOR OUTPUT
+============================
+
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html

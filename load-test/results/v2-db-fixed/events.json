@@ -1,0 +1,62 @@
+[
+  {
+    "at": "2026-11-09T16:36:53.421296+00:00",
+    "endedAt": "2026-11-09T16:47:25.123627+00:00",
+    "event": "scenario-A",
+    "run": "20261109T163341Z-a1",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-09T16:49:48.023666+00:00",
+    "event": "v2-completion",
+    "snapshot": "../../../docs/evidence/v2-db-fixed/20261109T163341Z-a1-v2-completion.json"
+  },
+  {
+    "at": "2026-11-09T16:52:59.907934+00:00",
+    "endedAt": "2026-11-09T17:03:30.614182+00:00",
+    "event": "scenario-A",
+    "run": "20261109T163341Z-a2",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-09T17:05:54.857876+00:00",
+    "event": "v2-completion",
+    "snapshot": "../../../docs/evidence/v2-db-fixed/20261109T163341Z-a2-v2-completion.json"
+  },
+  {
+    "at": "2026-11-09T17:09:05.636957+00:00",
+    "endedAt": "2026-11-09T17:19:37.160251+00:00",
+    "event": "scenario-A",
+    "run": "20261109T163341Z-a3",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-09T17:22:00.382060+00:00",
+    "event": "v2-completion",
+    "snapshot": "../../../docs/evidence/v2-db-fixed/20261109T163341Z-a3-v2-completion.json"
+  },
+  {
+    "at": "2026-11-09T17:25:24.620849+00:00",
+    "endedAt": "2026-11-09T17:31:38.563241+00:00",
+    "event": "scenario-B",
+    "run": "20261109T163341Z-b1",
+    "exitCode": 99
+  },
+  {
+    "at": "2026-11-09T17:30:41.078951+00:00",
+    "event": "throughput-ceiling",
+    "snapshot": "../../../docs/evidence/v2-db-fixed/20261109T163341Z-b1-throughput-ceiling.json"
+  },
+  {
+    "at": "2026-11-09T17:34:11.916381+00:00",
+    "event": "v2-after-locks",
+    "snapshot": "../../../docs/evidence/v2-db-fixed/20261109T163341Z-b1-v2-after-locks.json"
+  },
+  {
+    "at": "2026-11-09T17:38:02.948984+00:00",
+    "endedAt": "2026-11-09T17:44:23.757122+00:00",
+    "event": "vt-off-scenario-B",
+    "run": "vt-off/20261109T163341Z-b1",
+    "exitCode": 99
+  }
+]

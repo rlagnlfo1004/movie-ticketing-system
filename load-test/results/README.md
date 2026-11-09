@@ -1,6 +1,6 @@
 # 좌석 예매 측정 방법과 원본
 
-문서 생성 시각(UTC): 2026-11-09T16:32:46.137571+00:00
+문서 생성 시각(UTC): 2026-11-09T17:47:48.560844+00:00
 
 ## 환경
 
@@ -89,6 +89,50 @@
 - 2026-11-09T16:21:34.174961+00:00 · scenario-B · 종료 2026-11-09T16:27:43.990276+00:00 · 종료 코드 99
 - 2026-11-09T16:26:53.548442+00:00 · hold-contention · [스냅샷](../../docs/evidence/v1-db/20261109T153003Z-b1-hold-contention.json)
 
+### v2-db-fixed
+
+- 실행 시작(UTC): 2026-11-09T16:33:41.222646+00:00
+- 실행 명령: `./load-test/run-stage.sh v2`
+- 성격: 정식 측정
+- 코드: `v2-db-fixed`
+
+| 설정 | 값 |
+| --- | --- |
+| REDIS_CONFIG | `./infra/tuning/redis-v1.conf` |
+| REDIS_APPENDONLY | `no` |
+| REDIS_APPENDFSYNC | `everysec` |
+| HOLD_DURATION | `30s` |
+| PAYMENT_MODE | `mock` |
+| ACTIVE_CHECK_MODE | `http` |
+| SPRING_THREADS_VIRTUAL_ENABLED | `true` |
+
+| 실행 | 선점 성공 | 평균 성공 TPS | 선점 p95/p99(ms) | 확정 | deadlock 증가 | 웹훅 p95(s) | Stream lag 최대 |
+| --- | ---: | ---: | --- | ---: | ---: | ---: | ---: |
+| [20261109T163341Z-a1](v2-db-fixed/20261109T163341Z-a1/README.md) | 407.00 | 0.65 | 584.90 / 662.28 | 322.00 | 18.0 | — | — |
+| [20261109T163341Z-a2](v2-db-fixed/20261109T163341Z-a2/README.md) | 463.00 | 0.75 | 1231.46 / 1903.16 | 363.00 | 18.0 | — | — |
+| [20261109T163341Z-a3](v2-db-fixed/20261109T163341Z-a3/README.md) | 429.00 | 0.69 | 787.48 / 923.27 | 345.00 | 25.0 | — | — |
+| [20261109T163341Z-b1](v2-db-fixed/20261109T163341Z-b1/README.md) | 2923.00 | 8.04 | 3471.49 / 3795.92 | — | 46.0 | — | — |
+
+실행별 원본:
+
+- 20261109T163341Z-a1: [대시보드](v2-db-fixed/20261109T163341Z-a1/dashboard.png) · [패널 PNG](v2-db-fixed/20261109T163341Z-a1/panels/) · [Prometheus JSON](v2-db-fixed/20261109T163341Z-a1/prometheus/) · [k6 원본](v2-db-fixed/20261109T163341Z-a1/summary.json)
+- 20261109T163341Z-a2: [대시보드](v2-db-fixed/20261109T163341Z-a2/dashboard.png) · [패널 PNG](v2-db-fixed/20261109T163341Z-a2/panels/) · [Prometheus JSON](v2-db-fixed/20261109T163341Z-a2/prometheus/) · [k6 원본](v2-db-fixed/20261109T163341Z-a2/summary.json)
+- 20261109T163341Z-a3: [대시보드](v2-db-fixed/20261109T163341Z-a3/dashboard.png) · [패널 PNG](v2-db-fixed/20261109T163341Z-a3/panels/) · [Prometheus JSON](v2-db-fixed/20261109T163341Z-a3/prometheus/) · [k6 원본](v2-db-fixed/20261109T163341Z-a3/summary.json)
+- 20261109T163341Z-b1: [대시보드](v2-db-fixed/20261109T163341Z-b1/dashboard.png) · [패널 PNG](v2-db-fixed/20261109T163341Z-b1/panels/) · [Prometheus JSON](v2-db-fixed/20261109T163341Z-b1/prometheus/) · [k6 원본](v2-db-fixed/20261109T163341Z-b1/summary.json)
+
+장애 주입과 상태 스냅샷(UTC, 시간순):
+
+- 2026-11-09T16:36:53.421296+00:00 · scenario-A · 종료 2026-11-09T16:47:25.123627+00:00 · 종료 코드 0
+- 2026-11-09T16:49:48.023666+00:00 · v2-completion · [스냅샷](../../docs/evidence/v2-db-fixed/20261109T163341Z-a1-v2-completion.json) · Redis 확정 0석 / MySQL 668석 / PG 승인·예매 없음 0건
+- 2026-11-09T16:52:59.907934+00:00 · scenario-A · 종료 2026-11-09T17:03:30.614182+00:00 · 종료 코드 0
+- 2026-11-09T17:05:54.857876+00:00 · v2-completion · [스냅샷](../../docs/evidence/v2-db-fixed/20261109T163341Z-a2-v2-completion.json) · Redis 확정 0석 / MySQL 767석 / PG 승인·예매 없음 0건
+- 2026-11-09T17:09:05.636957+00:00 · scenario-A · 종료 2026-11-09T17:19:37.160251+00:00 · 종료 코드 0
+- 2026-11-09T17:22:00.382060+00:00 · v2-completion · [스냅샷](../../docs/evidence/v2-db-fixed/20261109T163341Z-a3-v2-completion.json) · Redis 확정 0석 / MySQL 746석 / PG 승인·예매 없음 0건
+- 2026-11-09T17:25:24.620849+00:00 · scenario-B · 종료 2026-11-09T17:31:38.563241+00:00 · 종료 코드 99
+- 2026-11-09T17:30:41.078951+00:00 · throughput-ceiling · [스냅샷](../../docs/evidence/v2-db-fixed/20261109T163341Z-b1-throughput-ceiling.json)
+- 2026-11-09T17:34:11.916381+00:00 · v2-after-locks · [스냅샷](../../docs/evidence/v2-db-fixed/20261109T163341Z-b1-v2-after-locks.json)
+- 2026-11-09T17:38:02.948984+00:00 · vt-off-scenario-B · 종료 2026-11-09T17:44:23.757122+00:00 · 종료 코드 99
+
 ## MySQL 중단 뒤 확정 상태
 
 - MySQL 중단 실행 원본이 아직 없다.
@@ -99,17 +143,20 @@
 
 ## 가상 스레드 켬 vs 끔
 
-값의 순서는 켬 / 끔이다. CPU는 reservation-api 프로세스 사용률이다.
+값의 순서는 켬 / 끔이다. CPU는 reservation-api 프로세스 사용률이다. 가상 스레드에서 Tomcat busy 값이 -1이면 측정 불가로 표시한다.
 
 | 단계 | 가설 | 켬 선점 TPS | 끔 선점 TPS | p95·p99(ms) | Tomcat/JVM 스레드 | Hikari active/pending | pinning 건수 | CPU |
 | --- | --- | ---: | ---: | --- | --- | --- | --- | --- |
-| v2-db-fixed | 락 병목으로 차이 없음 (정식 측정 대기) | — | — | — | — | — | — | — |
-| v4-streams | HTTP 동기 호출 구간에서 켬이 유리 (정식 측정 대기) | — | — | — | — | — | — | — |
+| [v2-db-fixed 켬](v2-db-fixed/20261109T163341Z-b1/README.md) / [끔](v2-db-fixed/vt-off/20261109T163341Z-b1/README.md) | 상영 행 락 병목에서 켬/끔 차이 확인 | 2.67 | 2.57 | 3471.49 / 10000.48 · 3795.92 / 10000.85 | 측정 불가 / 200.00 · 62.00 / 240.00 | 100.00 / 100.00 · 6301.00 / 101.00 | 0 / 0 | 68.00% / 49.00% |
+| v4-streams | HTTP 동기 호출 구간에서 켬/끔 차이 확인 (정식 측정 대기) | — | — | — | — | — | — | — |
+
+- v2-db-fixed on: [JFR](../../docs/evidence/v2-db-fixed/20261109T163341Z-vt-on.jfr) · [pinning 원본](../../docs/evidence/v2-db-fixed/20261109T163341Z-vt-on-pinning.txt)
+- v2-db-fixed off: [JFR](../../docs/evidence/v2-db-fixed/20261109T163341Z-vt-off.jfr) · [pinning 원본](../../docs/evidence/v2-db-fixed/20261109T163341Z-vt-off-pinning.txt)
 
 ## DB 단독 기준과 V2 선점 상한
 
 - [DB 단독 원본](db-baseline/20261109T134320Z/README.md): fsync p50 2.867ms, p99 3.097ms; hot row 최대 259.00 TPS. 정식 측정값이다.
-- V2 B 선점: — TPS. 두 값의 차이는 앱 처리·네트워크·대기열 조건을 포함한다.
+- V2 B 선점: 8.04 TPS. 두 값의 차이는 앱 처리·네트워크·대기열 조건을 포함한다.
 
 ## V6 AOF 설정 비교
 
