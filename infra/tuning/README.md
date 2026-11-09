@@ -17,6 +17,8 @@
 - `network_mode: host`: AWS 측정에서 Docker NAT 오버헤드를 없앤다. 로컬 Docker Desktop에는 적용하지 않는다.
 - Docker `json-file` 로그 `20m×3`: 로그가 디스크를 채우지 않도록 상한을 둔다. CPU·메모리 제한은 두지 않는다.
 - 문제: 측정일 Amazon Linux 2023 AMI의 `curl-minimal`과 `curl`이 충돌해 user-data가 Docker 설치 전에 중단됐다. 해결: 기존 `curl-minimal`을 그대로 사용하고 `dnf install -y docker`만 실행하도록 수정했다. 실행 중인 일곱 호스트에서도 수정한 초기화 스크립트를 이어 실행해 Docker Compose, node_exporter, 시간 동기화와 MySQL 별도 볼륨 마운트를 확인했다.
+- 문제: Amazon Linux의 기본 Docker Buildx 0.12.2는 Compose 5.6.0의 이미지 빌드 요구 버전(0.17 이상)보다 낮아 모의 PG 이미지 빌드가 중단됐다. 해결: Buildx 0.38.2 arm64 바이너리를 SHA-256 검증 후 설치하도록 user-data에 고정했다.
+- 문제: 부하 발생기의 k6 컨테이너 계정이 호스트에 만든 결과 디렉터리에 `summary.json`을 쓸 수 없었다. 해결: 실행별 결과 디렉터리만 컨테이너가 쓸 수 있게 연 뒤 요약 원본을 수집한다.
 
 ## Nginx와 JVM
 

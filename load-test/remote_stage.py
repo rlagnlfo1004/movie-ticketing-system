@@ -187,7 +187,9 @@ def measure(hosts, key, env, stage, profile, run_id, scenario, smoke, fault=None
                    cwd=ROOT, env=env, check=True)
     if jfr_name:
         jfr_start(hosts, key)
-    remote(hosts, key, "lg", "mkdir", "-p", REMOTE_ROOT + f"/results/{stage}/{run_id}")
+    result_path = REMOTE_ROOT + f"/results/{stage}/{run_id}"
+    remote(hosts, key, "lg", "mkdir", "-p", result_path)
+    remote(hosts, key, "lg", "chmod", "0777", result_path)
     command = ["docker", "compose", "-f", REMOTE_ROOT + "/compose.json", "--profile", "load-test",
                "run", "--rm", "--no-deps", "-v", REMOTE_ROOT + f"/results/{stage}/{run_id}:/results",
                "k6", "run", "-o", "experimental-prometheus-rw", "-e", f"SCENARIO={scenario}",
