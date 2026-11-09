@@ -24,11 +24,6 @@ import org.testcontainers.mysql.MySQLContainer;
 @Testcontainers
 class StorageContractIntegrationTest {
 
-    @Test
-    void ciFailureProbe() {
-        assertThat(true).isFalse();
-    }
-
     @Container
     static final MySQLContainer mysql = new MySQLContainer("mysql:8.4");
 
