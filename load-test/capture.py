@@ -95,10 +95,28 @@ def capture(directory, start, end):
         query = urllib.parse.urlencode({"query": name, "start": start, "end": end, "step": 1})
         k6_metrics[name] = json.loads(get(f"{PROMETHEUS}/api/v1/query_range?{query}"))
     (metrics / "k6-holds.json").write_text(json.dumps(k6_metrics, indent=2) + "\n")
+    hosts_file = os.environ.get("MEASUREMENT_HOSTS_ENV")
+    if hosts_file:
+        hosts = dict(line.split("=", 1) for line in Path(hosts_file).read_text().splitlines() if "=" in line)
+        host_cpu = {}
+        for role in ("LG", "EDGE", "APP_WAITING", "APP_RESERVATION", "REDIS", "MYSQL", "MON"):
+            instance = hosts[f"{role}_PRIVATE_IP"] + ":9100"
+            expression = f'100 * (1 - avg(rate(node_cpu_seconds_total{{mode="idle",instance="{instance}"}}[30s])))'
+            query = urllib.parse.urlencode({"query": expression, "start": start, "end": end, "step": 5})
+            host_cpu[role.lower()] = json.loads(get(f"{PROMETHEUS}/api/v1/query_range?{query}"))
+        (metrics / "host-cpu.json").write_text(json.dumps(host_cpu, indent=2) + "\n")
+        waiting_instance = hosts["APP_WAITING_PRIVATE_IP"] + ":9100"
+        listen = {}
+        for metric in ("node_netstat_TcpExt_ListenOverflows", "node_netstat_TcpExt_ListenDrops"):
+            expression = f'{metric}{{instance="{waiting_instance}"}}'
+            query = urllib.parse.urlencode({"query": expression, "start": start, "end": end, "step": 5})
+            listen[metric] = json.loads(get(f"{PROMETHEUS}/api/v1/query_range?{query}"))
+        (metrics / "waiting-listen.json").write_text(json.dumps(listen, indent=2) + "\n")
     (directory / "README.md").write_text(
         f"# Measurement capture\n\nWindow: {start} to {end} (Unix seconds).\n\n"
         "`dashboard.png`, `panels/`, `prometheus/`, before/after MySQL and Redis snapshots, "
-        "counter deltas and `summary.json` are the raw evidence.\n\n"
+        "counter deltas and `summary.json` are the raw evidence. "
+        "AWS runs also include `prometheus/host-cpu.json` and `prometheus/waiting-listen.json`.\n\n"
         "No series in this run: " + (", ".join(empty) if empty else "none") + ".\n"
     )
     print(directory)
