@@ -1,0 +1,7 @@
+[
+  {
+    "at": "2026-11-09T17:30:41.078951+00:00",
+    "event": "throughput-ceiling",
+    "snapshot": "../../../docs/evidence/v2-db-fixed/20261109T163341Z-b1-throughput-ceiling.json"
+  }
+]

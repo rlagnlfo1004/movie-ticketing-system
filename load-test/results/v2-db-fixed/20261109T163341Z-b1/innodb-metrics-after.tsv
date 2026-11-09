@@ -1,0 +1,25 @@
+lock_deadlocks	46
+lock_deadlock_false_positives	0
+lock_deadlock_rounds	392552
+lock_rec_grant_attempts	83116
+lock_rec_locks	0
+lock_rec_lock_created	0
+lock_rec_lock_removed	0
+lock_rec_lock_requests	0
+lock_rec_lock_waits	0
+lock_rec_release_attempts	227439
+lock_row_lock_current_waits	0
+lock_row_lock_time	17240276
+lock_row_lock_time_avg	207
+lock_row_lock_time_max	1771
+lock_row_lock_waits	83159
+lock_schedule_refreshes	392552
+lock_table_locks	0
+lock_table_lock_created	0
+lock_table_lock_removed	0
+lock_table_lock_waits	0
+lock_threads_waiting	0
+lock_timeouts	0
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
