@@ -19,12 +19,13 @@
 - 문제: 측정일 Amazon Linux 2023 AMI의 `curl-minimal`과 `curl`이 충돌해 user-data가 Docker 설치 전에 중단됐다. 해결: 기존 `curl-minimal`을 그대로 사용하고 `dnf install -y docker`만 실행하도록 수정했다. 실행 중인 일곱 호스트에서도 수정한 초기화 스크립트를 이어 실행해 Docker Compose, node_exporter, 시간 동기화와 MySQL 별도 볼륨 마운트를 확인했다.
 - 문제: Amazon Linux의 기본 Docker Buildx 0.12.2는 Compose 5.6.0의 이미지 빌드 요구 버전(0.17 이상)보다 낮아 모의 PG 이미지 빌드가 중단됐다. 해결: Buildx 0.38.2 arm64 바이너리를 SHA-256 검증 후 설치하도록 user-data에 고정했다.
 - 문제: 부하 발생기의 k6 컨테이너 계정이 호스트에 만든 결과 디렉터리에 `summary.json`을 쓸 수 없었다. 해결: 실행별 결과 디렉터리만 컨테이너가 쓸 수 있게 연 뒤 요약 원본을 수집한다.
+- 문제: [첫 정식 A 시도](../../load-test/results/v1-db/20261109T141642Z-a1/README.md)에서 실행 중 VU 확장이 10초의 요청 등록 속도를 따라가지 못해 반복이 누락됐다. 해결: `lg`를 8 vCPU·16GiB로 늘리고 비스모크 A의 30,000 VU를 시작 전에 확보한다. 이 시도는 비교에서 제외한다.
 
 ## Nginx와 JVM
 
 - `worker_processes auto`: edge 호스트의 vCPU 수에 맞춰 worker를 띄운다.
 - `worker_connections=65535`와 `worker_rlimit_nofile=65535`: 접속 수가 파일 한도에 먼저 걸리지 않게 한다.
-- 문제: 3만 요청을 10초에 시작한 첫 정식 A 시도에서 Nginx 양쪽 worker가 `10240 worker_connections are not enough`를 기록했고, 대기열 등록 연결이 실패했다. 해결: worker당 연결 한도를 65,535로 높여 같은 부하 조건에서 다시 확인한다. 이 시도는 유효한 단계 비교에서 제외한다.
+- 문제: [VU 확장 후 정식 A 시도](../../load-test/results/v1-db/20261109T142741Z-a1/README.md)에서 Nginx 양쪽 worker가 `10240 worker_connections are not enough`를 기록했고, 대기열 등록 연결이 실패했다. 해결: worker당 연결 한도를 65,535로 높여 같은 부하 조건에서 다시 확인한다. 이 시도는 유효한 단계 비교에서 제외한다.
 - upstream `keepalive` 100/32, `proxy_http_version 1.1`, 빈 `Connection` 헤더: 앱으로 향하는 연결을 재사용한다.
 - `listen reuseport`: worker별 수신 소켓으로 accept 경합을 줄인다.
 - `access_log off`: 측정 중 요청별 파일 쓰기 비용을 제외한다.
