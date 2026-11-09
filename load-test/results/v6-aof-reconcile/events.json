@@ -72,5 +72,44 @@
     "event": "appendfsync-always-scenario-B",
     "run": "always/20261109T212410Z-b1",
     "exitCode": 0
+  },
+  {
+    "at": "2026-11-09T22:58:35.858870+00:00",
+    "endedAt": "2026-11-09T23:09:08.626214+00:00",
+    "event": "fault-redis-kill",
+    "run": "20261109T212410Z-redis-kill-retry-225513",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-09T22:59:08.790787+00:00",
+    "event": "redis-before-kill",
+    "snapshot": "../../../docs/evidence/v6-aof-reconcile/20261109T212410Z-redis-kill-retry-225513-redis-before-kill.json"
+  },
+  {
+    "at": "2026-11-09T22:59:09.124676+00:00",
+    "event": "Redis SIGKILL"
+  },
+  {
+    "at": "2026-11-09T22:59:09.489831+00:00",
+    "event": "Redis restarted"
+  },
+  {
+    "at": "2026-11-09T22:59:17.018820+00:00",
+    "event": "redis-after-restart",
+    "snapshot": "../../../docs/evidence/v6-aof-reconcile/20261109T212410Z-redis-kill-retry-225513-redis-after-restart.json"
+  },
+  {
+    "at": "2026-11-09T22:59:17.040373+00:00",
+    "event": "reconciliation called"
+  },
+  {
+    "at": "2026-11-09T22:59:24.319571+00:00",
+    "event": "redis-after-reconcile",
+    "snapshot": "../../../docs/evidence/v6-aof-reconcile/20261109T212410Z-redis-kill-retry-225513-redis-after-reconcile.json"
+  },
+  {
+    "at": "2026-11-09T23:11:33.768541+00:00",
+    "event": "final-balance",
+    "snapshot": "../../../docs/evidence/v6-aof-reconcile/20261109T212410Z-redis-kill-retry-225513-final-balance.json"
   }
 ]

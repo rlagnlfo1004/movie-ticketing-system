@@ -1,6 +1,6 @@
 # 좌석 예매 측정 방법과 원본
 
-문서 생성 시각(UTC): 2026-11-09T22:53:55.395802+00:00
+문서 생성 시각(UTC): 2026-11-09T23:11:33.816051+00:00
 
 ## 환경
 
@@ -313,6 +313,7 @@
 | [20261109T212410Z-a3](v6-aof-reconcile/20261109T212410Z-a3/README.md) | 494.00 | 0.80 | 113.20 / 144.68 | 374.00 | 0.0 | 0.22 | 2.00 |
 | [20261109T212410Z-b1](v6-aof-reconcile/20261109T212410Z-b1/README.md) | 6984.00 | 19.40 | 3.73 / 6.26 | — | 0.0 | — | 0.00 |
 | [20261109T212410Z-redis-kill](v6-aof-reconcile/20261109T212410Z-redis-kill/README.md) | 419.00 | 0.67 | 61.15 / 79.96 | 336.00 | 0.0 | 0.08 | 9.00 |
+| [20261109T212410Z-redis-kill-retry-225513](v6-aof-reconcile/20261109T212410Z-redis-kill-retry-225513/README.md) | 421.00 | 0.68 | 38.69 / 64.60 | 341.00 | 0.0 | 0.05 | 1.00 |
 
 실행별 원본:
 
@@ -321,6 +322,7 @@
 - 20261109T212410Z-a3: [대시보드](v6-aof-reconcile/20261109T212410Z-a3/dashboard.png) · [패널 PNG](v6-aof-reconcile/20261109T212410Z-a3/panels/) · [Prometheus JSON](v6-aof-reconcile/20261109T212410Z-a3/prometheus/) · [k6 원본](v6-aof-reconcile/20261109T212410Z-a3/summary.json)
 - 20261109T212410Z-b1: [대시보드](v6-aof-reconcile/20261109T212410Z-b1/dashboard.png) · [패널 PNG](v6-aof-reconcile/20261109T212410Z-b1/panels/) · [Prometheus JSON](v6-aof-reconcile/20261109T212410Z-b1/prometheus/) · [k6 원본](v6-aof-reconcile/20261109T212410Z-b1/summary.json)
 - 20261109T212410Z-redis-kill: [대시보드](v6-aof-reconcile/20261109T212410Z-redis-kill/dashboard.png) · [패널 PNG](v6-aof-reconcile/20261109T212410Z-redis-kill/panels/) · [Prometheus JSON](v6-aof-reconcile/20261109T212410Z-redis-kill/prometheus/) · [k6 원본](v6-aof-reconcile/20261109T212410Z-redis-kill/summary.json)
+- 20261109T212410Z-redis-kill-retry-225513: [대시보드](v6-aof-reconcile/20261109T212410Z-redis-kill-retry-225513/dashboard.png) · [패널 PNG](v6-aof-reconcile/20261109T212410Z-redis-kill-retry-225513/panels/) · [Prometheus JSON](v6-aof-reconcile/20261109T212410Z-redis-kill-retry-225513/prometheus/) · [k6 원본](v6-aof-reconcile/20261109T212410Z-redis-kill-retry-225513/summary.json)
 
 장애 주입과 상태 스냅샷(UTC, 시간순):
 
@@ -337,6 +339,14 @@
 - 2026-11-09T22:28:39.684787+00:00 · redis-after-reconcile · [스냅샷](../../docs/evidence/v6-aof-reconcile/20261109T212410Z-redis-kill-redis-after-reconcile.json) · Redis 확정 11석 / MySQL 13석 / PG 승인·예매 없음 0건
 - 2026-11-09T22:41:09.636301+00:00 · final-balance · [스냅샷](../../docs/evidence/v6-aof-reconcile/20261109T212410Z-redis-kill-final-balance.json) · Redis 확정 687석 / MySQL 687석 / PG 승인·예매 없음 0건
 - 2026-11-09T22:45:23.006711+00:00 · appendfsync-always-scenario-B · 종료 2026-11-09T22:51:29.559950+00:00 · 종료 코드 0
+- 2026-11-09T22:58:35.858870+00:00 · fault-redis-kill · 종료 2026-11-09T23:09:08.626214+00:00 · 종료 코드 0
+- 2026-11-09T22:59:08.790787+00:00 · redis-before-kill · [스냅샷](../../docs/evidence/v6-aof-reconcile/20261109T212410Z-redis-kill-retry-225513-redis-before-kill.json) · Redis 확정 189석 / MySQL 291석 / PG 승인·예매 없음 0건
+- 2026-11-09T22:59:09.124676+00:00 · Redis SIGKILL
+- 2026-11-09T22:59:09.489831+00:00 · Redis restarted
+- 2026-11-09T22:59:17.018820+00:00 · redis-after-restart · [스냅샷](../../docs/evidence/v6-aof-reconcile/20261109T212410Z-redis-kill-retry-225513-redis-after-restart.json) · Redis 확정 452석 / MySQL 452석 / PG 승인·예매 없음 0건
+- 2026-11-09T22:59:17.040373+00:00 · reconciliation called
+- 2026-11-09T22:59:24.319571+00:00 · redis-after-reconcile · [스냅샷](../../docs/evidence/v6-aof-reconcile/20261109T212410Z-redis-kill-retry-225513-redis-after-reconcile.json) · Redis 확정 452석 / MySQL 452석 / PG 승인·예매 없음 0건
+- 2026-11-09T23:11:33.768541+00:00 · final-balance · [스냅샷](../../docs/evidence/v6-aof-reconcile/20261109T212410Z-redis-kill-retry-225513-final-balance.json) · Redis 확정 693석 / MySQL 693석 / PG 승인·예매 없음 0건
 
 ## MySQL 중단 뒤 확정 상태
 
