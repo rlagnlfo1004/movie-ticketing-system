@@ -210,13 +210,17 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("stage", choices=[f"v{n}" for n in range(1, 7)])
     parser.add_argument("--smoke", action="store_true", help="Short local plumbing check; never a performance result")
+    parser.add_argument("--skip-a", action="store_true", help="Run B and fault cases without three baseline A runs")
     parser.add_argument("--hosts-env", help="Terraform hosts.env; deploy to the seven AWS hosts")
     parser.add_argument("--ssh-key", default=str(Path.home() / ".ssh/id_ed25519"))
     args = parser.parse_args()
     if args.hosts_env:
         from remote_stage import run_remote
-        run_remote(args.stage, Path(args.hosts_env).resolve(), Path(args.ssh_key).expanduser().resolve(), args.smoke)
+        run_remote(args.stage, Path(args.hosts_env).resolve(), Path(args.ssh_key).expanduser().resolve(),
+                   args.smoke, args.skip_a)
         return
+    if args.skip_a:
+        parser.error("--skip-a requires --hosts-env")
     settings = stage_settings(args.stage)
     stage_number = int(args.stage[1:])
     stage = settings["STAGE_CODE_TAG"]

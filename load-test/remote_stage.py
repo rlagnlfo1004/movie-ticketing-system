@@ -255,7 +255,7 @@ def measure(hosts, key, env, stage, profile, run_id, scenario, smoke, fault=None
             "event": f"scenario-{scenario}", "run": run_id, "exitCode": status}, fault_events
 
 
-def run_remote(profile, hosts_file, key, smoke):
+def run_remote(profile, hosts_file, key, smoke, skip_a=False):
     if not key.is_file():
         raise RuntimeError("SSH key is missing")
     identity = subprocess.check_output(["aws", "sts", "get-caller-identity", "--profile", "movie-loadtest",
@@ -293,10 +293,12 @@ def run_remote(profile, hosts_file, key, smoke):
     directory = ROOT / "load-test/results" / tag
     directory.mkdir(parents=True, exist_ok=True)
     (directory / "batch.json").write_text(json.dumps({"batch": batch, "tag": tag,
-        "profile": profile, "smoke": smoke, "startedAt": datetime.now(timezone.utc).isoformat()}, indent=2) + "\n")
+        "profile": profile, "smoke": smoke, "skipA": skip_a,
+        "startedAt": datetime.now(timezone.utc).isoformat()}, indent=2) + "\n")
     events = []
     try:
-        for scenario, count in (("A", 3), ("B", 1)):
+        scenarios = (("B", 1),) if skip_a else (("A", 3), ("B", 1))
+        for scenario, count in scenarios:
             for index in range(1, count + 1):
                 run_id = f"{batch}-{scenario.lower()}{index}"
                 reset(hosts, key)

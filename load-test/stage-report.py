@@ -178,7 +178,7 @@ def stage_section(tag):
     settings = dict(line.split("=", 1) for line in stage_env.read_text().splitlines()
                     if line and "=" in line and not line.startswith("#"))
     rows = [f"### {tag}", "", f"- 실행 시작(UTC): {manifest['startedAt']}",
-            f"- 실행 명령: `./load-test/run-stage.sh {profile}{' --smoke' if manifest['smoke'] else ''}`",
+            f"- 실행 명령: `./load-test/run-stage.sh {profile}{' --smoke' if manifest['smoke'] else ''}{' --skip-a' if manifest.get('skipA') else ''}`",
             f"- 성격: {'로컬 연결 검증. 성능 비교에서 제외.' if manifest['smoke'] else '정식 측정'}",
             "- 코드: `" + manifest["tag"] + "`", "",
             "| 설정 | 값 |", "| --- | --- |"]
@@ -254,7 +254,8 @@ def main():
             rows.append(f"| [{Path(relative).name}](../../{relative}) | `{key.strip()}` | `{value.strip()}` |")
     rows += ["", "## 절차", "",
              "각 단계의 git 태그에서 JAR를 빌드한다. 각 실행 전에 MySQL·Redis 데이터를 초기화하고 "
-             "2분 워밍업을 거친다. A는 전체 흐름 3회, B는 선점 처리량 상한 1회 실행한다. "
+             "2분 워밍업을 거친다. A 전체 흐름 3회는 V1·V2·V4·V6에 적용하고, "
+             "B 선점 처리량 상한 1회는 V1~V6 모두 실행한다. 단계별 장애 실행과 추가 비교는 유지한다. "
              "로컬 `--smoke` 검증은 워밍업 1초, B 구간당 1초로 줄인다.", "",
              "- A: 상영 1개·1,000석·사용자 3만 명. 좌석 선택의 70%는 가운데 30%에 몰린다. "
              "첫 대기 조회를 등록 뒤 2~10초에 분산하고, 대기 중 5초 권장 간격에 ±20% 지터를 준다. "

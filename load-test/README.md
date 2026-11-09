@@ -12,7 +12,9 @@ A의 대기 상태 첫 조회는 등록 후 2~10초 사이에 분산하고, 이�
 ./load-test/report.sh --all
 ```
 
-`run-stage.sh`는 태그의 JAR와 모의 PG를 임시 worktree에서 빌드해 로컬 Compose에 배포한다. 각 실행 전 전용 MySQL·Redis 데이터를 초기화하고, 정식 측정에서는 2분 워밍업 뒤 A 3회와 B 1회, 단계별 장애 실행을 진행한다. `--smoke`는 워밍업과 부하 시간을 줄여 연결을 확인한다. 이 결과는 성능 비교에 쓰지 않는다. B의 k6 임계값이 실패해도 원본과 종료 코드를 남긴다. 캡처 파일 누락이나 좌석 중복은 실행 오류로 처리한다.
+`run-stage.sh`는 태그의 JAR와 모의 PG를 임시 worktree에서 빌드해 로컬 Compose에 배포한다. 각 실행 전 전용 MySQL·Redis 데이터를 초기화하고, 정식 측정에서는 2분 워밍업 뒤 A 3회와 B 1회, 단계별 장애 실행을 진행한다. `--skip-a`를 주면 A 3회를 생략한다. `--smoke`는 워밍업과 부하 시간을 줄여 연결을 확인한다. 이 결과는 성능 비교에 쓰지 않는다. B의 k6 임계값이 실패해도 원본과 종료 코드를 남긴다. 캡처 파일 누락이나 좌석 중복은 실행 오류로 처리한다.
+
+측정일 범위(2026-11-10 변경): A 3회는 V1·V2·V4·V6에서 실행한다. V3·V5에는 `--skip-a`를 붙여 B 1회와 해당 단계 장애 실행만 수행한다. V2·V4의 가상 스레드 비교와 V6의 AOF 비교는 그대로 실행한다. 모든 단계의 B는 같은 부하 구간을 사용한다.
 
 Terraform `apply` 이후 AWS 호스트가 준비되면 같은 명령에 `--hosts-env infra/aws/hosts.env --ssh-key ~/.ssh/id_ed25519`를 붙인다. 이 명령은 Terraform을 실행하지 않는다. 일곱 호스트에 단계별 JAR·Compose·env를 배포하고, 서비스 간 주소에는 `hosts.env`의 사설 IP만 사용한다. Grafana와 Prometheus 캡처는 SSH 터널을 통해 로컬로 가져온다. 측정일의 DB 단독 기준은 앱 기동 전에 `./load-test/db-baseline.sh --hosts-env infra/aws/hosts.env --ssh-key ~/.ssh/id_ed25519`로 실행한다.
 
