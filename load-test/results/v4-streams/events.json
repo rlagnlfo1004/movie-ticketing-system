@@ -93,5 +93,40 @@
     "event": "vt-off-scenario-B",
     "run": "vt-off/20261109T181840Z-b1",
     "exitCode": 0
+  },
+  {
+    "at": "2026-11-09T20:09:04.216137+00:00",
+    "endedAt": "2026-11-09T20:19:36.655767+00:00",
+    "event": "fault-worker-kill",
+    "run": "20261109T181840Z-worker-kill-retry-200542",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-09T20:09:37.320848+00:00",
+    "event": "stream-before-kill",
+    "snapshot": "../../../docs/evidence/v4-streams/20261109T181840Z-worker-kill-retry-200542-stream-before-kill.json"
+  },
+  {
+    "at": "2026-11-09T20:09:37.730453+00:00",
+    "event": "reservation-worker SIGKILL"
+  },
+  {
+    "at": "2026-11-09T20:09:44.823794+00:00",
+    "event": "stream-after-kill",
+    "snapshot": "../../../docs/evidence/v4-streams/20261109T181840Z-worker-kill-retry-200542-stream-after-kill.json"
+  },
+  {
+    "at": "2026-11-09T20:10:22.223379+00:00",
+    "event": "stream-during-outage",
+    "snapshot": "../../../docs/evidence/v4-streams/20261109T181840Z-worker-kill-retry-200542-stream-during-outage.json"
+  },
+  {
+    "at": "2026-11-09T20:10:22.641041+00:00",
+    "event": "reservation-worker restarted"
+  },
+  {
+    "at": "2026-11-09T20:10:40.643790+00:00",
+    "event": "stream-after-recovery",
+    "snapshot": "../../../docs/evidence/v4-streams/20261109T181840Z-worker-kill-retry-200542-stream-after-recovery.json"
   }
 ]
