@@ -1,0 +1,29 @@
+[
+  {
+    "at": "2026-11-09T22:28:24.743188+00:00",
+    "event": "redis-before-kill",
+    "snapshot": "../../../docs/evidence/v6-aof-reconcile/20261109T212410Z-redis-kill-redis-before-kill.json"
+  },
+  {
+    "at": "2026-11-09T22:28:25.102886+00:00",
+    "event": "Redis SIGKILL"
+  },
+  {
+    "at": "2026-11-09T22:28:25.458376+00:00",
+    "event": "Redis restarted"
+  },
+  {
+    "at": "2026-11-09T22:28:32.704853+00:00",
+    "event": "redis-after-restart",
+    "snapshot": "../../../docs/evidence/v6-aof-reconcile/20261109T212410Z-redis-kill-redis-after-restart.json"
+  },
+  {
+    "at": "2026-11-09T22:28:32.724396+00:00",
+    "event": "reconciliation called"
+  },
+  {
+    "at": "2026-11-09T22:28:39.684787+00:00",
+    "event": "redis-after-reconcile",
+    "snapshot": "../../../docs/evidence/v6-aof-reconcile/20261109T212410Z-redis-kill-redis-after-reconcile.json"
+  }
+]

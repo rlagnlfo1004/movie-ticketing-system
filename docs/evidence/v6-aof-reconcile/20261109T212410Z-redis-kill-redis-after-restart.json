@@ -1,0 +1,196 @@
+{
+  "capturedAt": "2026-11-09T22:28:30.855838+00:00",
+  "moment": "20261109T212410Z-redis-kill-redis-after-restart",
+  "queries": {
+    "locks": "SELECT JSON_OBJECT('transactionId',ENGINE_TRANSACTION_ID,'table',OBJECT_NAME,\n          'index',INDEX_NAME,'type',LOCK_TYPE,'mode',LOCK_MODE,'status',LOCK_STATUS,'data',LOCK_DATA)\n        FROM performance_schema.data_locks WHERE OBJECT_SCHEMA='movie_seats'",
+    "waits": "SELECT JSON_OBJECT('requesting',REQUESTING_ENGINE_TRANSACTION_ID,\n          'blocking',BLOCKING_ENGINE_TRANSACTION_ID,'requestingLock',REQUESTING_ENGINE_LOCK_ID,\n          'blockingLock',BLOCKING_ENGINE_LOCK_ID)\n        FROM performance_schema.data_lock_waits",
+    "paidWithoutReservation": "SELECT JSON_OBJECT('paymentId',p.payment_id,'localStatus',p.status,'amount',p.amount)\n        FROM payments p LEFT JOIN reservations r ON r.payment_id=p.payment_id\n        WHERE p.status='PAID' AND r.reservation_id IS NULL",
+    "unconfirmedLocal": "SELECT JSON_OBJECT('paymentId',p.payment_id,'localStatus',p.status,'amount',p.amount)\n        FROM payments p LEFT JOIN reservations r ON r.payment_id=p.payment_id\n        WHERE r.reservation_id IS NULL",
+    "deadlock": "SHOW ENGINE INNODB STATUS\\G",
+    "pg": "GET /test/payments",
+    "deadlockCount": "SELECT count FROM information_schema.innodb_metrics WHERE name='lock_deadlocks'",
+    "innodbCounters": "SELECT JSON_OBJECT('name',name,'count',count)\n        FROM information_schema.innodb_metrics WHERE name LIKE 'lock_row_lock_%'",
+    "hikariPending": "hikaricp_connections_pending",
+    "hikariPendingLive": "GET /actuator/metrics/hikaricp.connections.pending",
+    "recentPayments": "SELECT JSON_OBJECT('paymentId',payment_id,'status',status,'amount',amount)\n        FROM payments ORDER BY updated_at DESC LIMIT 30"
+  },
+  "locks": [],
+  "waits": [],
+  "latestDeadlock": "",
+  "deadlockCount": 0,
+  "innodbCounters": [
+    {
+      "name": "lock_row_lock_current_waits",
+      "count": 0
+    },
+    {
+      "name": "lock_row_lock_time",
+      "count": 0
+    },
+    {
+      "name": "lock_row_lock_time_max",
+      "count": 0
+    },
+    {
+      "name": "lock_row_lock_waits",
+      "count": 0
+    },
+    {
+      "name": "lock_row_lock_time_avg",
+      "count": 0
+    }
+  ],
+  "hikariPending": [
+    {
+      "metric": {
+        "__name__": "hikaricp_connections_pending",
+        "instance": "10.84.1.23:8081",
+        "job": "reservation-api",
+        "pool": "HikariPool-1"
+      },
+      "value": [
+        1794263306.634,
+        "0"
+      ]
+    }
+  ],
+  "hikariPendingLive": {
+    "availableTags": [
+      {
+        "tag": "pool",
+        "values": [
+          "HikariPool-1"
+        ]
+      }
+    ],
+    "description": "Pending threads",
+    "measurements": [
+      {
+        "statistic": "VALUE",
+        "value": 0.0
+      }
+    ],
+    "name": "hikaricp.connections.pending"
+  },
+  "recentPayments": [
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "74540f83-9b19-447a-9288-91fe8959618d"
+    },
+    {
+      "amount": 60000,
+      "status": "PAID",
+      "paymentId": "cdd30759-0c01-4c9c-8fbb-e588fb7448d7"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "33c8f8e6-dc9c-4b91-918d-67f2ba634e92"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "12171b29-98b5-4b6d-b7c9-d147fe21dc33"
+    },
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "0792c995-6a86-4cfe-a068-e647bcd9eaa6"
+    }
+  ],
+  "paidWithoutReservation": [],
+  "pgPaidWithoutReservation": [],
+  "redisReservedSeats": [
+    "G-4",
+    "G-5",
+    "H-38"
+  ],
+  "activeKeyCount": 7,
+  "seatHoldKeyCount": 6,
+  "mysqlReservationSeats": [
+    "G-4",
+    "G-5",
+    "H-38",
+    "K-4",
+    "K-5"
+  ],
+  "missingMysqlSeats": [],
+  "mysqlAvailable": true,
+  "streamLength": 4,
+  "streamGroups": [
+    {
+      "name": "workers",
+      "consumers": 1,
+      "pending": 0,
+      "last-delivered-id": "1794263308925-0",
+      "entries-read": 4,
+      "lag": 0
+    }
+  ],
+  "streamPending": [
+    0,
+    null,
+    null,
+    null
+  ],
+  "deadLetterEntries": [],
+  "redisAofConfig": {
+    "appendfsync": "everysec",
+    "appendonly": "yes"
+  },
+  "redisPersistence": {
+    "loading": "0",
+    "async_loading": "0",
+    "current_cow_peak": "0",
+    "current_cow_size": "0",
+    "current_cow_size_age": "0",
+    "current_fork_perc": "0.00",
+    "current_save_keys_processed": "0",
+    "current_save_keys_total": "0",
+    "rdb_changes_since_last_save": "31650",
+    "rdb_bgsave_in_progress": "0",
+    "rdb_last_save_time": "1794263106",
+    "rdb_last_bgsave_status": "ok",
+    "rdb_last_bgsave_time_sec": "-1",
+    "rdb_current_bgsave_time_sec": "-1",
+    "rdb_saves": "0",
+    "rdb_last_cow_size": "0",
+    "rdb_last_load_keys_expired": "0",
+    "rdb_last_load_keys_loaded": "0",
+    "aof_enabled": "1",
+    "aof_rewrite_in_progress": "0",
+    "aof_rewrite_scheduled": "0",
+    "aof_last_rewrite_time_sec": "-1",
+    "aof_current_rewrite_time_sec": "-1",
+    "aof_last_bgrewrite_status": "ok",
+    "aof_rewrites": "0",
+    "aof_rewrites_consecutive_failures": "0",
+    "aof_last_write_status": "ok",
+    "aof_last_cow_size": "0",
+    "module_fork_in_progress": "0",
+    "module_fork_last_cow_size": "0",
+    "aof_current_size": "3724215",
+    "aof_base_size": "0",
+    "aof_pending_rewrite": "0",
+    "aof_buffer_length": "0",
+    "aof_pending_bio_fsync": "0",
+    "aof_delayed_fsync": "0"
+  },
+  "reconciliationResult": {
+    "confirmedPayments": [],
+    "cancelledPayments": [],
+    "restoredDbSeats": 0,
+    "redisRunId": "4e05f08fca078801f33342e5dab297ebb8085a06"
+  },
+  "approvedPgPayments": [
+    "0792c995-6a86-4cfe-a068-e647bcd9eaa6",
+    "12171b29-98b5-4b6d-b7c9-d147fe21dc33"
+  ],
+  "confirmedPgPayments": [
+    "0792c995-6a86-4cfe-a068-e647bcd9eaa6",
+    "12171b29-98b5-4b6d-b7c9-d147fe21dc33"
+  ],
+  "cancelledPgPayments": [],
+  "unresolvedPgPayments": []
+}

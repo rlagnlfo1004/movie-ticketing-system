@@ -1,0 +1,496 @@
+{
+  "capturedAt": "2026-11-09T22:28:37.934561+00:00",
+  "moment": "20261109T212410Z-redis-kill-redis-after-reconcile",
+  "queries": {
+    "locks": "SELECT JSON_OBJECT('transactionId',ENGINE_TRANSACTION_ID,'table',OBJECT_NAME,\n          'index',INDEX_NAME,'type',LOCK_TYPE,'mode',LOCK_MODE,'status',LOCK_STATUS,'data',LOCK_DATA)\n        FROM performance_schema.data_locks WHERE OBJECT_SCHEMA='movie_seats'",
+    "waits": "SELECT JSON_OBJECT('requesting',REQUESTING_ENGINE_TRANSACTION_ID,\n          'blocking',BLOCKING_ENGINE_TRANSACTION_ID,'requestingLock',REQUESTING_ENGINE_LOCK_ID,\n          'blockingLock',BLOCKING_ENGINE_LOCK_ID)\n        FROM performance_schema.data_lock_waits",
+    "paidWithoutReservation": "SELECT JSON_OBJECT('paymentId',p.payment_id,'localStatus',p.status,'amount',p.amount)\n        FROM payments p LEFT JOIN reservations r ON r.payment_id=p.payment_id\n        WHERE p.status='PAID' AND r.reservation_id IS NULL",
+    "unconfirmedLocal": "SELECT JSON_OBJECT('paymentId',p.payment_id,'localStatus',p.status,'amount',p.amount)\n        FROM payments p LEFT JOIN reservations r ON r.payment_id=p.payment_id\n        WHERE r.reservation_id IS NULL",
+    "deadlock": "SHOW ENGINE INNODB STATUS\\G",
+    "pg": "GET /test/payments",
+    "deadlockCount": "SELECT count FROM information_schema.innodb_metrics WHERE name='lock_deadlocks'",
+    "innodbCounters": "SELECT JSON_OBJECT('name',name,'count',count)\n        FROM information_schema.innodb_metrics WHERE name LIKE 'lock_row_lock_%'",
+    "hikariPending": "hikaricp_connections_pending",
+    "hikariPendingLive": "GET /actuator/metrics/hikaricp.connections.pending",
+    "recentPayments": "SELECT JSON_OBJECT('paymentId',payment_id,'status',status,'amount',amount)\n        FROM payments ORDER BY updated_at DESC LIMIT 30"
+  },
+  "locks": [
+    {
+      "data": null,
+      "mode": "IX",
+      "type": "TABLE",
+      "index": null,
+      "table": "payments",
+      "status": "GRANTED",
+      "transactionId": 2927
+    },
+    {
+      "data": null,
+      "mode": "IX",
+      "type": "TABLE",
+      "index": null,
+      "table": "seat_holds",
+      "status": "GRANTED",
+      "transactionId": 2927
+    },
+    {
+      "data": null,
+      "mode": "IS",
+      "type": "TABLE",
+      "index": null,
+      "table": "screenings",
+      "status": "GRANTED",
+      "transactionId": 2927
+    },
+    {
+      "data": "'a8c5ce58-6172-4795-aa82-919821c4def5'",
+      "mode": "X,REC_NOT_GAP",
+      "type": "RECORD",
+      "index": "PRIMARY",
+      "table": "seat_holds",
+      "status": "GRANTED",
+      "transactionId": 2927
+    },
+    {
+      "data": "'aec40f12-e122-4b46-8e88-dbbd2e30463a'",
+      "mode": "X,REC_NOT_GAP",
+      "type": "RECORD",
+      "index": "PRIMARY",
+      "table": "seat_holds",
+      "status": "GRANTED",
+      "transactionId": 2927
+    },
+    {
+      "data": "'c185f902-f160-4958-9196-c8702c652c47'",
+      "mode": "X,REC_NOT_GAP",
+      "type": "RECORD",
+      "index": "PRIMARY",
+      "table": "seat_holds",
+      "status": "GRANTED",
+      "transactionId": 2927
+    },
+    {
+      "data": "'a18dc954-944a-4ed3-b615-423354154341'",
+      "mode": "X,REC_NOT_GAP",
+      "type": "RECORD",
+      "index": "PRIMARY",
+      "table": "seat_holds",
+      "status": "GRANTED",
+      "transactionId": 2927
+    },
+    {
+      "data": "'0086e45d-9ba4-4ad8-b21f-ef45dae73dab'",
+      "mode": "X,REC_NOT_GAP",
+      "type": "RECORD",
+      "index": "PRIMARY",
+      "table": "seat_holds",
+      "status": "GRANTED",
+      "transactionId": 2927
+    },
+    {
+      "data": "'7b9b118e-de3a-4210-8429-68ad563cc188'",
+      "mode": "X,REC_NOT_GAP",
+      "type": "RECORD",
+      "index": "PRIMARY",
+      "table": "seat_holds",
+      "status": "GRANTED",
+      "transactionId": 2927
+    },
+    {
+      "data": "'426153cc-349f-4dcd-9cf6-d724671a900a'",
+      "mode": "X,REC_NOT_GAP",
+      "type": "RECORD",
+      "index": "PRIMARY",
+      "table": "seat_holds",
+      "status": "GRANTED",
+      "transactionId": 2927
+    },
+    {
+      "data": "'32174275-ac75-491a-b962-954f8f854d6d'",
+      "mode": "X,REC_NOT_GAP",
+      "type": "RECORD",
+      "index": "PRIMARY",
+      "table": "seat_holds",
+      "status": "GRANTED",
+      "transactionId": 2927
+    },
+    {
+      "data": "'85f7183c-da6e-45e9-a846-be5b6f7af33d'",
+      "mode": "X,REC_NOT_GAP",
+      "type": "RECORD",
+      "index": "PRIMARY",
+      "table": "seat_holds",
+      "status": "GRANTED",
+      "transactionId": 2927
+    },
+    {
+      "data": "'38a9e6f0-3094-48d6-afec-7ee09238938c'",
+      "mode": "X,REC_NOT_GAP",
+      "type": "RECORD",
+      "index": "PRIMARY",
+      "table": "seat_holds",
+      "status": "GRANTED",
+      "transactionId": 2927
+    },
+    {
+      "data": "'73fbe4cc-158f-4798-9b91-db13af02bcf4'",
+      "mode": "X,REC_NOT_GAP",
+      "type": "RECORD",
+      "index": "PRIMARY",
+      "table": "seat_holds",
+      "status": "GRANTED",
+      "transactionId": 2927
+    },
+    {
+      "data": "'1'",
+      "mode": "S,REC_NOT_GAP",
+      "type": "RECORD",
+      "index": "PRIMARY",
+      "table": "screenings",
+      "status": "GRANTED",
+      "transactionId": 2927
+    }
+  ],
+  "waits": [],
+  "latestDeadlock": "",
+  "deadlockCount": 0,
+  "innodbCounters": [
+    {
+      "name": "lock_row_lock_current_waits",
+      "count": 0
+    },
+    {
+      "name": "lock_row_lock_time",
+      "count": 0
+    },
+    {
+      "name": "lock_row_lock_time_max",
+      "count": 0
+    },
+    {
+      "name": "lock_row_lock_waits",
+      "count": 0
+    },
+    {
+      "name": "lock_row_lock_time_avg",
+      "count": 0
+    }
+  ],
+  "hikariPending": [
+    {
+      "metric": {
+        "__name__": "hikaricp_connections_pending",
+        "instance": "10.84.1.23:8081",
+        "job": "reservation-api",
+        "pool": "HikariPool-1"
+      },
+      "value": [
+        1794263313.537,
+        "0"
+      ]
+    },
+    {
+      "metric": {
+        "__name__": "hikaricp_connections_pending",
+        "instance": "10.84.1.23:8084",
+        "job": "reservation-worker",
+        "pool": "HikariPool-1"
+      },
+      "value": [
+        1794263313.537,
+        "0"
+      ]
+    }
+  ],
+  "hikariPendingLive": {
+    "availableTags": [
+      {
+        "tag": "pool",
+        "values": [
+          "HikariPool-1"
+        ]
+      }
+    ],
+    "description": "Pending threads",
+    "measurements": [
+      {
+        "statistic": "VALUE",
+        "value": 0.0
+      }
+    ],
+    "name": "hikaricp.connections.pending"
+  },
+  "recentPayments": [
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "a78bc839-d3e5-456c-ac27-7b656c9e1d3f"
+    },
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "37148423-51b4-4d8b-88c3-0c0ba77af67d"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "5c061f45-46af-4a03-9676-0bb88a6da510"
+    },
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "987a1b0e-5a61-462f-88d3-99a49684cd2f"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "b15b2bbc-968e-41b1-8c6f-b017ec250d2b"
+    },
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "1b88ecd9-0d8e-4b44-a710-527508b3f370"
+    },
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "7a1e25bf-cc97-4f00-8c48-13b9ba44a090"
+    },
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "4d9024d1-d566-4087-b5fc-0234f81070ca"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "613870cb-12cc-4114-8c45-7487d76b0fb0"
+    },
+    {
+      "amount": 60000,
+      "status": "PAID",
+      "paymentId": "f0e27f3b-3376-425b-a615-db5c88a7ed1b"
+    },
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "c7cbeceb-2241-4d88-9532-7d0317a8d9fe"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "c7713e6d-4933-46fc-9462-9f41ddb24e3c"
+    },
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "efee47bc-9706-44a7-8ea6-ae9105b5bce8"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "f99c360a-d134-41d0-b80d-ac228a895c62"
+    },
+    {
+      "amount": 45000,
+      "status": "PAID",
+      "paymentId": "97e0dd9d-f83d-4b57-a50e-8c7f12ca30cf"
+    },
+    {
+      "amount": 60000,
+      "status": "PAID",
+      "paymentId": "b3dbab18-aec6-4060-9a81-b69f55d75c79"
+    },
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "503beda4-7710-4f44-a01e-0c787d022cc7"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "37e2e1c1-737b-4b4b-9063-80ef9f4e5d61"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "ca13cf84-4859-44e7-89ae-fa23c1ebac97"
+    },
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "bb98ffd3-e3fb-48be-a04b-c8d11e8906c2"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "c66a4f3d-b610-46f1-89a3-f0bfdafb1b52"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "73e04f4e-b91d-4c5e-a278-8ff111f5de7e"
+    },
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "22861ffd-9deb-40dd-aeb3-f0c1b80c6d9c"
+    },
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "5b78637c-a20d-4a85-b5d6-e2c51f53d80a"
+    },
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "871dbb53-e3d2-42b9-af4c-ef65db5f954f"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "7a2c4296-25dd-4f4a-a6fb-230d5eca008a"
+    },
+    {
+      "amount": 45000,
+      "status": "PAID",
+      "paymentId": "7c388f4d-d4f3-4d23-abe0-3dc89faf4e60"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "42f8617a-0832-4bf0-9543-fb66f7f88ac1"
+    },
+    {
+      "amount": 30000,
+      "status": "PAID",
+      "paymentId": "0ddbf973-0691-4a32-b5d2-7765e0cad2da"
+    },
+    {
+      "amount": 15000,
+      "status": "PAID",
+      "paymentId": "1fdd1b4a-b637-4420-9f4e-33e395b7774e"
+    }
+  ],
+  "paidWithoutReservation": [],
+  "pgPaidWithoutReservation": [],
+  "redisReservedSeats": [
+    "G-4",
+    "G-5",
+    "H-38",
+    "K-14",
+    "K-15",
+    "K-4",
+    "K-5",
+    "P-26",
+    "P-27",
+    "P-28",
+    "P-29"
+  ],
+  "activeKeyCount": 29,
+  "seatHoldKeyCount": 10,
+  "mysqlReservationSeats": [
+    "G-4",
+    "G-5",
+    "H-38",
+    "K-14",
+    "K-15",
+    "K-4",
+    "K-5",
+    "M-3",
+    "M-4",
+    "P-26",
+    "P-27",
+    "P-28",
+    "P-29"
+  ],
+  "missingMysqlSeats": [],
+  "mysqlAvailable": true,
+  "streamLength": 11,
+  "streamGroups": [
+    {
+      "name": "workers",
+      "consumers": 1,
+      "pending": 2,
+      "last-delivered-id": "1794263316372-0",
+      "entries-read": 19,
+      "lag": 0
+    }
+  ],
+  "streamPending": [
+    12,
+    "1794263316620-0",
+    "1794263316745-0",
+    [
+      [
+        "worker-c4de859f-1696-439d-bca6-82e2c466730b",
+        "12"
+      ]
+    ]
+  ],
+  "deadLetterEntries": [],
+  "redisAofConfig": {
+    "appendfsync": "everysec",
+    "appendonly": "yes"
+  },
+  "redisPersistence": {
+    "loading": "0",
+    "async_loading": "0",
+    "current_cow_peak": "0",
+    "current_cow_size": "0",
+    "current_cow_size_age": "0",
+    "current_fork_perc": "0.00",
+    "current_save_keys_processed": "0",
+    "current_save_keys_total": "0",
+    "rdb_changes_since_last_save": "40025",
+    "rdb_bgsave_in_progress": "0",
+    "rdb_last_save_time": "1794263106",
+    "rdb_last_bgsave_status": "ok",
+    "rdb_last_bgsave_time_sec": "-1",
+    "rdb_current_bgsave_time_sec": "-1",
+    "rdb_saves": "0",
+    "rdb_last_cow_size": "0",
+    "rdb_last_load_keys_expired": "0",
+    "rdb_last_load_keys_loaded": "0",
+    "aof_enabled": "1",
+    "aof_rewrite_in_progress": "0",
+    "aof_rewrite_scheduled": "0",
+    "aof_last_rewrite_time_sec": "-1",
+    "aof_current_rewrite_time_sec": "-1",
+    "aof_last_bgrewrite_status": "ok",
+    "aof_rewrites": "0",
+    "aof_rewrites_consecutive_failures": "0",
+    "aof_last_write_status": "ok",
+    "aof_last_cow_size": "0",
+    "module_fork_in_progress": "0",
+    "module_fork_last_cow_size": "0",
+    "aof_current_size": "4696163",
+    "aof_base_size": "0",
+    "aof_pending_rewrite": "0",
+    "aof_buffer_length": "0",
+    "aof_pending_bio_fsync": "0",
+    "aof_delayed_fsync": "0"
+  },
+  "reconciliationResult": {
+    "confirmedPayments": [],
+    "cancelledPayments": [],
+    "restoredDbSeats": 0,
+    "redisRunId": "4e05f08fca078801f33342e5dab297ebb8085a06"
+  },
+  "approvedPgPayments": [
+    "0792c995-6a86-4cfe-a068-e647bcd9eaa6",
+    "12171b29-98b5-4b6d-b7c9-d147fe21dc33",
+    "33c8f8e6-dc9c-4b91-918d-67f2ba634e92",
+    "74540f83-9b19-447a-9288-91fe8959618d",
+    "cdd30759-0c01-4c9c-8fbb-e588fb7448d7"
+  ],
+  "confirmedPgPayments": [
+    "0792c995-6a86-4cfe-a068-e647bcd9eaa6",
+    "12171b29-98b5-4b6d-b7c9-d147fe21dc33",
+    "33c8f8e6-dc9c-4b91-918d-67f2ba634e92",
+    "74540f83-9b19-447a-9288-91fe8959618d",
+    "cdd30759-0c01-4c9c-8fbb-e588fb7448d7"
+  ],
+  "cancelledPgPayments": [],
+  "unresolvedPgPayments": []
+}
