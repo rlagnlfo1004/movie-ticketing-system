@@ -1,0 +1,390 @@
+*************************** 1. row ***************************
+InnoDB
+
+
+=====================================
+2026-11-09 16:27:44 281444866088704 INNODB MONITOR OUTPUT
+=====================================
+Per second averages calculated from the last 16 seconds
+-----------------
+BACKGROUND THREAD
+-----------------
+srv_master_thread loops: 376 srv_active, 0 srv_shutdown, 163 srv_idle
+srv_master_thread log flush and writes: 0
+----------
+SEMAPHORES
+----------
+OS WAIT ARRAY INFO: reservation count 55294
+OS WAIT ARRAY INFO: signal count 20245
+RW-shared spins 0, rounds 0, OS waits 0
+RW-excl spins 0, rounds 0, OS waits 0
+RW-sx spins 0, rounds 0, OS waits 0
+Spin rounds per wait: 0.00 RW-shared, 0.00 RW-excl, 0.00 RW-sx
+------------------------
+LATEST DETECTED DEADLOCK
+------------------------
+2026-11-09 16:25:52 281446892056320
+*** (1) TRANSACTION:
+TRANSACTION 86942, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 8 lock struct(s), heap size 1128, 4 row lock(s), undo log entries 2
+MySQL thread id 172, OS thread handle 281444888452864, query id 575174 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1 WHERE id='1'
+
+*** (1) HOLDS THE LOCK(S):
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 86942 lock mode S locks rec but not gap
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 000000015300; asc     S ;;
+ 2: len 7; hex 01000001900582; asc        ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 8000001c; asc     ;;
+ 7: len 8; hex 99bb5304bb0b8d88; asc   S     ;;
+
+
+*** (1) WAITING FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 86942 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 000000015300; asc     S ;;
+ 2: len 7; hex 01000001900582; asc        ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 8000001c; asc     ;;
+ 7: len 8; hex 99bb5304bb0b8d88; asc   S     ;;
+
+
+*** (2) TRANSACTION:
+TRANSACTION 86974, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 8 lock struct(s), heap size 1128, 4 row lock(s), undo log entries 2
+MySQL thread id 169, OS thread handle 281444891807488, query id 575299 10.84.1.23 movie updating
+UPDATE screenings SET remaining_seat_count=remaining_seat_count-1 WHERE id='1'
+
+*** (2) HOLDS THE LOCK(S):
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 86974 lock mode S locks rec but not gap
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 000000015300; asc     S ;;
+ 2: len 7; hex 01000001900582; asc        ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 8000001c; asc     ;;
+ 7: len 8; hex 99bb5304bb0b8d88; asc   S     ;;
+
+
+*** (2) WAITING FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `movie_seats`.`screenings` trx id 86974 lock_mode X locks rec but not gap waiting
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 8; compact format; info bits 0
+ 0: len 1; hex 31; asc 1;;
+ 1: len 6; hex 000000015300; asc     S ;;
+ 2: len 7; hex 01000001900582; asc        ;;
+ 3: len 24; hex 4d6f766965204b696d2044656d6f2053637265656e696e67; asc Movie Kim Demo Screening;;
+ 4: len 8; hex 99b9d8a000000000; asc         ;;
+ 5: len 4; hex 800003e8; asc     ;;
+ 6: len 4; hex 8000001c; asc     ;;
+ 7: len 8; hex 99bb5304bb0b8d88; asc   S     ;;
+
+*** WE ROLL BACK TRANSACTION (2)
+------------
+TRANSACTIONS
+------------
+Trx id counter 126051
+Purge done for trx's n:o < 126051 undo n:o < 0 state: running but idle
+History list length 24
+LIST OF TRANSACTIONS FOR EACH SESSION:
+---TRANSACTION 562947941803344, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941802536, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941801728, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941800920, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941800112, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941799304, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941798496, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941797688, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941796880, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941796072, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941795264, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941794456, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941793648, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941792840, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941792032, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941791224, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941790416, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941789608, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941788800, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941787992, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941787184, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941786376, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941785568, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941784760, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941783952, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941783144, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941782336, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941781528, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941780720, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941779912, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941779104, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941778296, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941777488, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941776680, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941775872, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941775064, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941774256, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941773448, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941772640, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941771832, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941771024, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941770216, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941769408, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941768600, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941767792, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941766984, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941766176, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941765368, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941764560, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941763752, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941762944, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941762136, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941761328, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941760520, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941759712, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941758904, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941758096, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941757288, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941756480, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941755672, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941754864, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941754056, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941753248, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941752440, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941751632, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941750824, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941750016, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941749208, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941748400, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941747592, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941746784, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941745976, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941745168, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941744360, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941743552, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941741936, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941742744, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941741128, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941740320, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941739512, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941738704, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941737896, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941737088, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941736280, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941735472, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941734664, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941733856, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941733048, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941732240, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941731432, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941730624, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941729816, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941729008, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941728200, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941727392, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941726584, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941725776, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941724968, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941724160, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941723352, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941722544, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+---TRANSACTION 562947941721736, not started
+0 lock struct(s), heap size 1128, 0 row lock(s)
+--------
+FILE I/O
+--------
+I/O thread 0 state: waiting for completed aio requests (insert buffer thread)
+I/O thread 1 state: waiting for completed aio requests (read thread)
+I/O thread 2 state: waiting for completed aio requests (read thread)
+I/O thread 3 state: waiting for completed aio requests (read thread)
+I/O thread 4 state: waiting for completed aio requests (read thread)
+I/O thread 5 state: waiting for completed aio requests (write thread)
+I/O thread 6 state: waiting for completed aio requests (write thread)
+I/O thread 7 state: waiting for completed aio requests (write thread)
+I/O thread 8 state: waiting for completed aio requests (write thread)
+Pending normal aio reads: [0, 0, 0, 0] , aio writes: [0, 0, 0, 0] ,
+ ibuf aio reads:
+Pending flushes (fsync) log: 0; buffer pool: 0
+1015 OS file reads, 46392 OS file writes, 30745 OS fsyncs
+0.00 reads/s, 0 avg bytes/read, 274.07 writes/s, 176.80 fsyncs/s
+-------------------------------------
+INSERT BUFFER AND ADAPTIVE HASH INDEX
+-------------------------------------
+Ibuf: size 1, free list len 0, seg size 2, 0 merges
+merged operations:
+ insert 0, delete mark 0, delete 0
+discarded operations:
+ insert 0, delete mark 0, delete 0
+Hash table size 5843809, node heap has 0 buffer(s)
+Hash table size 5843809, node heap has 0 buffer(s)
+Hash table size 5843809, node heap has 0 buffer(s)
+Hash table size 5843809, node heap has 0 buffer(s)
+Hash table size 5843809, node heap has 0 buffer(s)
+Hash table size 5843809, node heap has 0 buffer(s)
+Hash table size 5843809, node heap has 0 buffer(s)
+Hash table size 5843809, node heap has 0 buffer(s)
+0.00 hash searches/s, 380652.96 non-hash searches/s
+---
+LOG
+---
+Log capacity                 2147483648
+Log capacity used            2147483648
+Log sequence number          43523558
+Log buffer assigned up to    43523558
+Log buffer completed up to   43523558
+Log written up to            43523351
+Log flushed up to            43523351
+Added dirty pages up to      43523558
+Pages flushed up to          35439634
+Last checkpoint at           35439634
+Log minimum file id is       0
+Log maximum file id is       0
+43112 log i/o's done, 276.50 log i/o's/second
+----------------------
+BUFFER POOL AND MEMORY
+----------------------
+Total large memory allocated 0
+Dictionary memory allocated 584315
+Buffer pool size   1441668
+Free buffers       1440016
+Database pages     1652
+Old database pages 590
+Modified db pages  892
+Pending reads      0
+Pending writes: LRU 0, flush list 0, single page 0
+Pages made young 1, not young 0
+0.00 youngs/s, 0.00 non-youngs/s
+Pages read 990, created 662, written 2724
+0.00 reads/s, 2.60 creates/s, 0.00 writes/s
+Buffer pool hit rate 1000 / 1000, young-making rate 0 / 1000 not 0 / 1000
+Pages read ahead 0.00/s, evicted without access 0.00/s, Random read ahead 0.00/s
+LRU len: 1652, unzip_LRU len: 0
+I/O sum[0]:cur[0], unzip sum[0]:cur[0]
+--------------
+ROW OPERATIONS
+--------------
+0 queries inside InnoDB, 0 queries in queue
+0 read views open inside InnoDB
+Process ID=1, Main thread ID=281446881505024 , state=sleeping
+Number of rows inserted 7051, updated 18224, deleted 0, read 278317166
+0.12 inserts/s, 142.99 updates/s, 0.00 deletes/s, 530088.49 reads/s
+Number of system rows inserted 200, updated 756, deleted 8, read 6211
+0.00 inserts/s, 0.00 updates/s, 0.00 deletes/s, 0.00 reads/s
+----------------------------
+END OF INNODB MONITOR OUTPUT
+============================
+
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html

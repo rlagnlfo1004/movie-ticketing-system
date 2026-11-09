@@ -1,0 +1,50 @@
+[
+  {
+    "at": "2026-11-09T15:33:02.322650+00:00",
+    "endedAt": "2026-11-09T15:43:33.541718+00:00",
+    "event": "scenario-A",
+    "run": "20261109T153003Z-a1",
+    "exitCode": 99
+  },
+  {
+    "at": "2026-11-09T15:45:56.021500+00:00",
+    "event": "app-closed",
+    "snapshot": "../../../docs/evidence/v1-db/20261109T153003Z-a1-app-closed.json"
+  },
+  {
+    "at": "2026-11-09T15:49:08.700647+00:00",
+    "endedAt": "2026-11-09T15:59:40.074382+00:00",
+    "event": "scenario-A",
+    "run": "20261109T153003Z-a2",
+    "exitCode": 99
+  },
+  {
+    "at": "2026-11-09T16:02:05.676350+00:00",
+    "event": "app-closed",
+    "snapshot": "../../../docs/evidence/v1-db/20261109T153003Z-a2-app-closed.json"
+  },
+  {
+    "at": "2026-11-09T16:05:17.129456+00:00",
+    "endedAt": "2026-11-09T16:15:49.722771+00:00",
+    "event": "scenario-A",
+    "run": "20261109T153003Z-a3",
+    "exitCode": 99
+  },
+  {
+    "at": "2026-11-09T16:18:12.544821+00:00",
+    "event": "app-closed",
+    "snapshot": "../../../docs/evidence/v1-db/20261109T153003Z-a3-app-closed.json"
+  },
+  {
+    "at": "2026-11-09T16:21:34.174961+00:00",
+    "endedAt": "2026-11-09T16:27:43.990276+00:00",
+    "event": "scenario-B",
+    "run": "20261109T153003Z-b1",
+    "exitCode": 99
+  },
+  {
+    "at": "2026-11-09T16:26:53.548442+00:00",
+    "event": "hold-contention",
+    "snapshot": "../../../docs/evidence/v1-db/20261109T153003Z-b1-hold-contention.json"
+  }
+]
