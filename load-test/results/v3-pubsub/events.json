@@ -1,0 +1,39 @@
+[
+  {
+    "at": "2026-11-09T17:52:30.695597+00:00",
+    "endedAt": "2026-11-09T17:58:37.231814+00:00",
+    "event": "scenario-B",
+    "run": "20261109T174849Z-b1",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-09T18:04:25.787381+00:00",
+    "endedAt": "2026-11-09T18:14:57.014822+00:00",
+    "event": "fault-worker-kill",
+    "run": "20261109T174849Z-worker-kill",
+    "exitCode": 0
+  },
+  {
+    "at": "2026-11-09T18:04:37.790270+00:00",
+    "event": "worker-before-kill",
+    "snapshot": "../../../docs/evidence/v3-pubsub/20261109T174849Z-worker-kill-worker-before-kill.json"
+  },
+  {
+    "at": "2026-11-09T18:04:38.201324+00:00",
+    "event": "reservation-worker SIGKILL"
+  },
+  {
+    "at": "2026-11-09T18:04:45.138313+00:00",
+    "event": "worker-after-kill",
+    "snapshot": "../../../docs/evidence/v3-pubsub/20261109T174849Z-worker-kill-worker-after-kill.json"
+  },
+  {
+    "at": "2026-11-09T18:04:45.562355+00:00",
+    "event": "reservation-worker restarted"
+  },
+  {
+    "at": "2026-11-09T18:05:04.221796+00:00",
+    "event": "worker-after-restart",
+    "snapshot": "../../../docs/evidence/v3-pubsub/20261109T174849Z-worker-kill-worker-after-restart.json"
+  }
+]
