@@ -1,0 +1,8 @@
+{
+  "batch": "20261109T163341Z",
+  "tag": "v2-db-fixed",
+  "profile": "v2",
+  "smoke": false,
+  "skipA": false,
+  "startedAt": "2026-11-09T16:33:41.222646+00:00"
+}
