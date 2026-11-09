@@ -93,7 +93,20 @@ def inject(hosts, key, env, stage, run_id, kind, smoke):
         for service in ("waiting-api-1", "waiting-api-2", "waiting-api-3"):
             wait_healthy(hosts, key, "app-waiting", service)
     else:
+        if not smoke:
+            for _ in range(90):
+                result = compose(hosts, key, "redis", "exec", "-T", "redis", "redis-cli",
+                                 "SCARD", "seat:{1}:reserved", check=False, capture=True)
+                if result.returncode == 0 and int(result.stdout.strip() or b"0") >= 20:
+                    break
+                time.sleep(1)
+            else:
+                raise RuntimeError("No confirmed seats before Redis fault injection")
         events.append(snapshot(env, stage, run_id, moments[0]))
+        if not smoke:
+            before = json.loads((ROOT / "docs/evidence" / stage / f"{run_id}-{moments[0]}.json").read_text())
+            if not before.get("redisReservedSeats"):
+                raise RuntimeError("Redis fault snapshot has no confirmed seats")
         from remote_stage import remote
         remote(hosts, key, "redis", "docker", "compose", "-f", "/home/ec2-user/movie-ticketing/compose.json",
                "exec", "-T", "redis", "sh", "-c", "kill -9 1", check=False)

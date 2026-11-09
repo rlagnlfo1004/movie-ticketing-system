@@ -38,6 +38,8 @@ AWS의 정식 worker 종료 실험은 부하 시작 5초 뒤 worker를 SIGKILL�
 
 V6에서는 선점 응답의 `customData`를 모의 결제 승인 요청에도 전달한다. 모의 PG의 `GET /payments`는 페이지 조회와 `customData` 반환을 지원한다. `v6-reconcile-smoke.py`는 결제 컨텍스트 Redis 키를 골라 지우고 PG 내역으로 확정·취소한 뒤 Redis SIGKILL/AOF 재시작을 확인한다. `v6-stream-fallback-smoke.py`는 이전 단계처럼 `customData`가 없는 결제를 Stream 이벤트로 복원한다.
 
+AWS의 V6 Redis 종료 실험은 Redis 확정 좌석 20석 이상을 확인한 뒤 종료 직전 스냅샷을 남기고 SIGKILL한다. 너무 이른 종료로 확정 데이터가 없는 실험은 복구 근거로 쓰지 않는다. 기존 V6 배치의 Redis 장애만 재검증하려면 `run-stage.sh v6 --fault-only redis-kill --hosts-env infra/aws/hosts.env --ssh-key ~/.ssh/id_ed25519`를 실행한다.
+
 좌석 API가 구현되기 전에는 로컬 계약 스텁으로 k6 호출 흐름만 확인한다. 이 실행의 수치는 성능 결과로 사용하지 않는다.
 
 ```bash
