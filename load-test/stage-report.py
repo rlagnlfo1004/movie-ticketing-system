@@ -187,6 +187,7 @@ def stage_section(tag):
         rows.append(f"| {key} | `{settings.get(key, '—')}` |")
     rows += ["", "| 실행 | 선점 성공 | 평균 성공 TPS | 선점 p95/p99(ms) | 확정 | deadlock 증가 | 웹훅 p95(s) | Stream lag 최대 |",
              "| --- | ---: | ---: | --- | ---: | ---: | ---: | ---: |"]
+    run_links = []
     for run in sorted(directory.iterdir()):
         if not run.is_dir() or not run.name.startswith(manifest["batch"] + "-"):
             continue
@@ -203,10 +204,12 @@ def stage_section(tag):
                     f"{metric(summary, 'reservations_confirmed', 'count')} | "
                     f"{deadlocks} | {panel_peak(run, 'Webhook response p95')} | "
                     f"{panel_peak(run, 'Redis stream lag')} |")
-        rows.append(f"\n  [대시보드]({tag}/{run.name}/dashboard.png) · "
-                    f"[패널 PNG]({tag}/{run.name}/panels/) · "
-                    f"[Prometheus JSON]({tag}/{run.name}/prometheus/) · "
-                    f"[k6 원본]({tag}/{run.name}/summary.json)")
+        run_links.append(f"- {run.name}: [대시보드]({tag}/{run.name}/dashboard.png) · "
+                         f"[패널 PNG]({tag}/{run.name}/panels/) · "
+                         f"[Prometheus JSON]({tag}/{run.name}/prometheus/) · "
+                         f"[k6 원본]({tag}/{run.name}/summary.json)")
+    if run_links:
+        rows += ["", "실행별 원본:", "", *run_links]
     events = load(directory / "events.json") or []
     if events:
         rows += ["", "장애 주입과 상태 스냅샷(UTC, 시간순):", ""]
