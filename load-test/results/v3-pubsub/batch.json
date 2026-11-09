@@ -1,0 +1,8 @@
+{
+  "batch": "20261109T174849Z",
+  "tag": "v3-pubsub",
+  "profile": "v3",
+  "smoke": false,
+  "skipA": true,
+  "startedAt": "2026-11-09T17:48:49.650218+00:00"
+}
