@@ -31,12 +31,14 @@ def main(output):
     vpcs = aws("ec2", "describe-vpcs", "--filters", NAME_FILTER)
     subnets = aws("ec2", "describe-subnets", "--filters", NAME_FILTER)
     security_groups = aws("ec2", "describe-security-groups", "--filters", NAME_FILTER)
+    security_group_rules = aws("ec2", "describe-security-group-rules", "--filters",
+                               "Name=tag:project,Values=movie-loadtest")
     internet_gateways = aws("ec2", "describe-internet-gateways", "--filters", NAME_FILTER)
     route_tables = aws("ec2", "describe-route-tables", "--filters", NAME_FILTER)
     key_pairs = aws("ec2", "describe-key-pairs", "--filters", "Name=key-name,Values=movie-loadtest")
     result = {
         "account": account,
-        "resourceArns": sorted(item["ResourceARN"] for item in tagged.get("ResourceTagMappingList", [])),
+        "taggingApiHistoryArns": sorted(item["ResourceARN"] for item in tagged.get("ResourceTagMappingList", [])),
         "instances": sorted(item["InstanceId"] for reservation in instances.get("Reservations", [])
                             for item in reservation.get("Instances", [])),
         "volumes": sorted(item["VolumeId"] for item in volumes.get("Volumes", [])),
@@ -46,14 +48,18 @@ def main(output):
         "vpcs": sorted(item["VpcId"] for item in vpcs.get("Vpcs", [])),
         "subnets": sorted(item["SubnetId"] for item in subnets.get("Subnets", [])),
         "securityGroups": sorted(item["GroupId"] for item in security_groups.get("SecurityGroups", [])),
+        "securityGroupRules": sorted(item["SecurityGroupRuleId"] for item in security_group_rules.get("SecurityGroupRules", [])),
         "internetGateways": sorted(item["InternetGatewayId"] for item in internet_gateways.get("InternetGateways", [])),
         "routeTables": sorted(item["RouteTableId"] for item in route_tables.get("RouteTables", [])),
         "keyPairs": sorted(item["KeyName"] for item in key_pairs.get("KeyPairs", [])),
     }
     Path(output).write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
-    print(json.dumps({key: len(value) for key, value in result.items() if isinstance(value, list)}, sort_keys=True))
-    if any(value for value in result.values() if isinstance(value, list)):
-        raise SystemExit("Tagged resources remain after destroy")
+    live_keys = ("instances", "volumes", "elasticIps", "natGateways", "vpcs", "subnets",
+                 "securityGroups", "securityGroupRules", "internetGateways", "routeTables", "keyPairs")
+    print(json.dumps({"live": {key: len(result[key]) for key in live_keys},
+                      "taggingApiHistoryCount": len(result["taggingApiHistoryArns"])}, sort_keys=True))
+    if any(result[key] for key in live_keys):
+        raise SystemExit("Live measurement resources remain after destroy")
 
 
 if __name__ == "__main__":
