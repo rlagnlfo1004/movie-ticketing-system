@@ -1,6 +1,6 @@
 # 좌석 예매 측정 방법과 원본
 
-문서 생성 시각(UTC): 2026-11-09T20:21:54.387818+00:00
+문서 생성 시각(UTC): 2026-11-09T20:39:19.631854+00:00
 
 ## 환경
 
@@ -196,6 +196,7 @@
 | [20261109T181840Z-mysql-stop](v4-streams/20261109T181840Z-mysql-stop/README.md) | 384.00 | 0.62 | 46.42 / 880.42 | 287.00 | 0.0 | 0.02 | 238.00 |
 | [20261109T181840Z-worker-kill](v4-streams/20261109T181840Z-worker-kill/README.md) | 344.00 | 0.55 | 205.05 / 370.79 | 267.00 | 0.0 | 0.09 | 131.00 |
 | [20261109T181840Z-worker-kill-retry-200542](v4-streams/20261109T181840Z-worker-kill-retry-200542/README.md) | 466.00 | 0.75 | 56.87 / 92.65 | 341.00 | 0.0 | 0.03 | 6.00 |
+| [20261109T181840Z-worker-kill-retry-202308](v4-streams/20261109T181840Z-worker-kill-retry-202308/README.md) | 418.00 | 0.67 | 106.46 / 585.15 | 323.00 | 0.0 | 0.01 | 194.00 |
 
 실행별 원본:
 
@@ -206,6 +207,7 @@
 - 20261109T181840Z-mysql-stop: [대시보드](v4-streams/20261109T181840Z-mysql-stop/dashboard.png) · [패널 PNG](v4-streams/20261109T181840Z-mysql-stop/panels/) · [Prometheus JSON](v4-streams/20261109T181840Z-mysql-stop/prometheus/) · [k6 원본](v4-streams/20261109T181840Z-mysql-stop/summary.json)
 - 20261109T181840Z-worker-kill: [대시보드](v4-streams/20261109T181840Z-worker-kill/dashboard.png) · [패널 PNG](v4-streams/20261109T181840Z-worker-kill/panels/) · [Prometheus JSON](v4-streams/20261109T181840Z-worker-kill/prometheus/) · [k6 원본](v4-streams/20261109T181840Z-worker-kill/summary.json)
 - 20261109T181840Z-worker-kill-retry-200542: [대시보드](v4-streams/20261109T181840Z-worker-kill-retry-200542/dashboard.png) · [패널 PNG](v4-streams/20261109T181840Z-worker-kill-retry-200542/panels/) · [Prometheus JSON](v4-streams/20261109T181840Z-worker-kill-retry-200542/prometheus/) · [k6 원본](v4-streams/20261109T181840Z-worker-kill-retry-200542/summary.json)
+- 20261109T181840Z-worker-kill-retry-202308: [대시보드](v4-streams/20261109T181840Z-worker-kill-retry-202308/dashboard.png) · [패널 PNG](v4-streams/20261109T181840Z-worker-kill-retry-202308/panels/) · [Prometheus JSON](v4-streams/20261109T181840Z-worker-kill-retry-202308/prometheus/) · [k6 원본](v4-streams/20261109T181840Z-worker-kill-retry-202308/summary.json)
 
 장애 주입과 상태 스냅샷(UTC, 시간순):
 
@@ -233,6 +235,13 @@
 - 2026-11-09T20:10:22.223379+00:00 · stream-during-outage · [스냅샷](../../docs/evidence/v4-streams/20261109T181840Z-worker-kill-retry-200542-stream-during-outage.json) · Redis 확정 465석 / MySQL 465석 / PG 승인·예매 없음 0건
 - 2026-11-09T20:10:22.641041+00:00 · reservation-worker restarted
 - 2026-11-09T20:10:40.643790+00:00 · stream-after-recovery · [스냅샷](../../docs/evidence/v4-streams/20261109T181840Z-worker-kill-retry-200542-stream-after-recovery.json) · Redis 확정 465석 / MySQL 465석 / PG 승인·예매 없음 0건
+- 2026-11-09T20:26:31.364843+00:00 · fault-worker-kill · 종료 2026-11-09T20:37:03.174293+00:00 · 종료 코드 0
+- 2026-11-09T20:26:36.373331+00:00 · worker initial state · [스냅샷](../../docs/evidence/v4-streams/20261109T181840Z-worker-kill-retry-202308-before.json) · Redis 확정 0석 / MySQL 0석 / PG 승인·예매 없음 0건
+- 2026-11-09T20:26:36.816193+00:00 · reservation-worker SIGKILL
+- 2026-11-09T20:26:43.957211+00:00 · stream-after-kill · [스냅샷](../../docs/evidence/v4-streams/20261109T181840Z-worker-kill-retry-202308-stream-after-kill.json) · Redis 확정 0석 / MySQL 0석 / PG 승인·예매 없음 0건
+- 2026-11-09T20:27:21.303290+00:00 · stream-during-outage · [스냅샷](../../docs/evidence/v4-streams/20261109T181840Z-worker-kill-retry-202308-stream-during-outage.json) · Redis 확정 382석 / MySQL 0석 / PG 승인·예매 없음 194건
+- 2026-11-09T20:27:21.843591+00:00 · reservation-worker restarted
+- 2026-11-09T20:27:39.940437+00:00 · stream-after-recovery · [스냅샷](../../docs/evidence/v4-streams/20261109T181840Z-worker-kill-retry-202308-stream-after-recovery.json) · Redis 확정 382석 / MySQL 382석 / PG 승인·예매 없음 0건
 
 ## MySQL 중단 뒤 확정 상태
 

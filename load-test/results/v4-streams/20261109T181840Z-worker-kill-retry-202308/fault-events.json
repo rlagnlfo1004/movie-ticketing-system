@@ -1,0 +1,30 @@
+[
+  {
+    "at": "2026-11-09T20:26:36.373331+00:00",
+    "event": "worker initial state",
+    "snapshot": "../../../docs/evidence/v4-streams/20261109T181840Z-worker-kill-retry-202308-before.json"
+  },
+  {
+    "at": "2026-11-09T20:26:36.816193+00:00",
+    "event": "reservation-worker SIGKILL"
+  },
+  {
+    "at": "2026-11-09T20:26:43.957211+00:00",
+    "event": "stream-after-kill",
+    "snapshot": "../../../docs/evidence/v4-streams/20261109T181840Z-worker-kill-retry-202308-stream-after-kill.json"
+  },
+  {
+    "at": "2026-11-09T20:27:21.303290+00:00",
+    "event": "stream-during-outage",
+    "snapshot": "../../../docs/evidence/v4-streams/20261109T181840Z-worker-kill-retry-202308-stream-during-outage.json"
+  },
+  {
+    "at": "2026-11-09T20:27:21.843591+00:00",
+    "event": "reservation-worker restarted"
+  },
+  {
+    "at": "2026-11-09T20:27:39.940437+00:00",
+    "event": "stream-after-recovery",
+    "snapshot": "../../../docs/evidence/v4-streams/20261109T181840Z-worker-kill-retry-202308-stream-after-recovery.json"
+  }
+]
