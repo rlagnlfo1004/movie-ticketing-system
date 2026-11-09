@@ -1,0 +1,25 @@
+[
+  {
+    "at": "2026-11-09T21:14:30.795062+00:00",
+    "event": "waiting-down-before",
+    "snapshot": "../../../docs/evidence/v5-lua-active/20261109T205834Z-waiting-stop-waiting-down-before.json"
+  },
+  {
+    "at": "2026-11-09T21:14:31.554811+00:00",
+    "event": "all waiting-api stopped"
+  },
+  {
+    "at": "2026-11-09T21:14:42.901506+00:00",
+    "event": "waiting-down-after",
+    "snapshot": "../../../docs/evidence/v5-lua-active/20261109T205834Z-waiting-stop-waiting-down-after.json"
+  },
+  {
+    "at": "2026-11-09T21:15:13.691914+00:00",
+    "event": "all waiting-api started"
+  },
+  {
+    "at": "2026-11-09T21:15:48.179199+00:00",
+    "event": "waiting-down-recovered",
+    "snapshot": "../../../docs/evidence/v5-lua-active/20261109T205834Z-waiting-stop-waiting-down-recovered.json"
+  }
+]

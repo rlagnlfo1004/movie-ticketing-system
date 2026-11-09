@@ -1,6 +1,6 @@
 # 좌석 예매 측정 방법과 원본
 
-문서 생성 시각(UTC): 2026-11-09T20:57:12.223617+00:00
+문서 생성 시각(UTC): 2026-11-09T21:22:43.856551+00:00
 
 ## 환경
 
@@ -252,13 +252,50 @@
 - 2026-11-09T20:27:21.843591+00:00 · reservation-worker restarted
 - 2026-11-09T20:27:39.940437+00:00 · stream-after-recovery · [스냅샷](../../docs/evidence/v4-streams/20261109T181840Z-worker-kill-retry-202308-stream-after-recovery.json) · Redis 확정 382석 / MySQL 382석 / PG 승인·예매 없음 0건
 
+### v5-lua-active
+
+- 실행 시작(UTC): 2026-11-09T20:58:34.554729+00:00
+- 실행 명령: `./load-test/run-stage.sh v5 --skip-a`
+- 성격: 정식 측정
+- 코드: `v5-lua-active`
+
+| 설정 | 값 |
+| --- | --- |
+| REDIS_CONFIG | `./infra/tuning/redis-v1.conf` |
+| REDIS_APPENDONLY | `no` |
+| REDIS_APPENDFSYNC | `everysec` |
+| HOLD_DURATION | `30s` |
+| PAYMENT_MODE | `mock` |
+| ACTIVE_CHECK_MODE | `lua` |
+| SPRING_THREADS_VIRTUAL_ENABLED | `true` |
+
+| 실행 | 선점 성공 | 평균 성공 TPS | 선점 p95/p99(ms) | 확정 | deadlock 증가 | 웹훅 p95(s) | Stream lag 최대 |
+| --- | ---: | ---: | --- | ---: | ---: | ---: | ---: |
+| [20261109T205834Z-b1](v5-lua-active/20261109T205834Z-b1/README.md) | 6942.00 | 19.28 | 2.72 / 4.40 | — | 0.0 | — | 0.00 |
+| [20261109T205834Z-waiting-stop](v5-lua-active/20261109T205834Z-waiting-stop/README.md) | 6938.00 | 19.27 | 2.76 / 4.48 | — | 0.0 | — | 0.00 |
+
+실행별 원본:
+
+- 20261109T205834Z-b1: [대시보드](v5-lua-active/20261109T205834Z-b1/dashboard.png) · [패널 PNG](v5-lua-active/20261109T205834Z-b1/panels/) · [Prometheus JSON](v5-lua-active/20261109T205834Z-b1/prometheus/) · [k6 원본](v5-lua-active/20261109T205834Z-b1/summary.json)
+- 20261109T205834Z-waiting-stop: [대시보드](v5-lua-active/20261109T205834Z-waiting-stop/dashboard.png) · [패널 PNG](v5-lua-active/20261109T205834Z-waiting-stop/panels/) · [Prometheus JSON](v5-lua-active/20261109T205834Z-waiting-stop/prometheus/) · [k6 원본](v5-lua-active/20261109T205834Z-waiting-stop/summary.json)
+
+장애 주입과 상태 스냅샷(UTC, 시간순):
+
+- 2026-11-09T21:02:09.979697+00:00 · scenario-B · 종료 2026-11-09T21:08:16.524745+00:00 · 종료 코드 0
+- 2026-11-09T21:14:14.274907+00:00 · fault-waiting-stop · 종료 2026-11-09T21:20:20.821529+00:00 · 종료 코드 0
+- 2026-11-09T21:14:30.795062+00:00 · waiting-down-before · [스냅샷](../../docs/evidence/v5-lua-active/20261109T205834Z-waiting-stop-waiting-down-before.json) · Redis 확정 0석 / MySQL 0석 / PG 승인·예매 없음 0건
+- 2026-11-09T21:14:31.554811+00:00 · all waiting-api stopped
+- 2026-11-09T21:14:42.901506+00:00 · waiting-down-after · [스냅샷](../../docs/evidence/v5-lua-active/20261109T205834Z-waiting-stop-waiting-down-after.json) · Redis 확정 0석 / MySQL 0석 / PG 승인·예매 없음 0건
+- 2026-11-09T21:15:13.691914+00:00 · all waiting-api started
+- 2026-11-09T21:15:48.179199+00:00 · waiting-down-recovered · [스냅샷](../../docs/evidence/v5-lua-active/20261109T205834Z-waiting-stop-waiting-down-recovered.json) · Redis 확정 0석 / MySQL 0석 / PG 승인·예매 없음 0건
+
 ## MySQL 중단 뒤 확정 상태
 
 - [MySQL 중단 실행](v4-streams/20261109T181840Z-mysql-stop/README.md): 2026-11-09T19:39:10.660223+00:00 ~ 2026-11-09T19:39:46.392409+00:00. 복구 뒤 결제 승인 대비 확정 239/239 (100.00%), 중단 창의 웹훅 p95 최대 0.02초, Stream lag 최대 238.00건. 분자·분모는 [복구 스냅샷](../../docs/evidence/v4-streams/20261109T181840Z-mysql-stop-mysql-recovered.json)에서 확인한다.
 
 ## waiting-api 중단 중 active 선점
 
-- waiting-api 중단 실행 원본이 아직 없다.
+- [waiting-api 중단 실행](v5-lua-active/20261109T205834Z-waiting-stop/README.md): 2026-11-09T21:14:31.554811+00:00 ~ 2026-11-09T21:15:13.691914+00:00 사이에 active 토큰 선점 성공 411건 / 시도 3995건 (10.29%). 좌석 경합으로 인한 실패도 분모에 포함한다. [계측 원본](v5-lua-active/20261109T205834Z-waiting-stop/prometheus/k6-holds.json)
 
 ## 가상 스레드 켬 vs 끔
 
