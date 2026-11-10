@@ -51,6 +51,8 @@ class SentinelEpochProviderTest {
             server = new ServerSocket(0);
             executor.submit(() -> {
                 try (var client = server.accept()) {
+                    String request = "*3\r\n$8\r\nSENTINEL\r\n$6\r\nMASTER\r\n$13\r\nmovie-primary\r\n";
+                    client.getInputStream().readNBytes(request.getBytes(StandardCharsets.US_ASCII).length);
                     String[] values = {"ip", primary, "port", Integer.toString(port),
                             "flags", "master", "config-epoch", Long.toString(epoch)};
                     StringBuilder response = new StringBuilder("*8\r\n");

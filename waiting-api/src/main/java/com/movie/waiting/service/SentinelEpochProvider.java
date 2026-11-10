@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SentinelEpochProvider implements FencingEpochProvider {
 
-    private static final int TIMEOUT_MILLIS = 500;
+    private static final int TIMEOUT_MILLIS = 2_000;
 
     private final List<InetSocketAddress> sentinels;
     private final String masterName;
