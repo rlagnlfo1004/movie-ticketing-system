@@ -25,12 +25,16 @@ def route(args):
         index += 2 if items[index] == "-e" else 1
     if index >= len(items):
         raise ValueError("Compose exec service is missing")
-    role = SERVICE_ROLE.get(items[index])
+    service = items[index]
+    role = (os.environ.get("MEASUREMENT_REDIS_ROLE", "REDIS") if service == "redis"
+            else SERVICE_ROLE.get(service))
     if not role:
         raise ValueError(f"No remote host for service {items[index]}")
     address = hosts()[f"{role}_PUBLIC_IP"]
     key = os.environ["MEASUREMENT_SSH_KEY"]
     user = os.environ.get("MEASUREMENT_SSH_USER", "ec2-user")
+    if service == "redis" and role != "REDIS":
+        items[index] = role.lower().replace("_", "-")
     remote = ["docker", "compose", "-f", f"{REMOTE_ROOT}/compose.json", "exec", *items[3:]]
     return ["ssh", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=accept-new",
             "-i", key, f"{user}@{address}", shlex.join(remote)]

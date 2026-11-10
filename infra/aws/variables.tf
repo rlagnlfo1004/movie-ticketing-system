@@ -19,3 +19,9 @@ variable "availability_zone" {
   type        = string
   default     = ""
 }
+
+variable "enable_redis_ha" {
+  description = "V7 측정에서 Redis replica 두 호스트를 추가한다."
+  type        = bool
+  default     = false
+}

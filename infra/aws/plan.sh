@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
+if [[ "${1:-}" == "--v7" ]]; then
+  export TF_VAR_enable_redis_ha=true
+elif [[ "$#" -ne 0 ]]; then
+  echo "usage: plan.sh [--v7]" >&2
+  exit 2
+fi
 ACCOUNT="$(aws sts get-caller-identity --profile movie-loadtest --region ap-northeast-2 --query Account --output text)"
 if [[ "$ACCOUNT" != 976071095824 ]]; then
   echo "Unexpected AWS account: $ACCOUNT" >&2

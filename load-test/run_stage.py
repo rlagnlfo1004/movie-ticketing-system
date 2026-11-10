@@ -208,10 +208,11 @@ def jfr_save(stage, name):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("stage", choices=[f"v{n}" for n in range(1, 7)])
+    parser.add_argument("stage", choices=[f"v{n}" for n in range(1, 8)])
     parser.add_argument("--smoke", action="store_true", help="Short local plumbing check; never a performance result")
     parser.add_argument("--skip-a", action="store_true", help="Run B and fault cases without three baseline A runs")
-    parser.add_argument("--fault-only", choices=("worker-kill", "mysql-stop", "waiting-stop", "redis-kill"),
+    parser.add_argument("--fault-only", choices=("worker-kill", "mysql-stop", "waiting-stop", "redis-kill",
+                                                "sentinel-failover"),
                         help="Repeat one fault in the current remote batch")
     parser.add_argument("--hosts-env", help="Terraform hosts.env; deploy to the seven AWS hosts")
     parser.add_argument("--ssh-key", default=str(Path.home() / ".ssh/id_ed25519"))
@@ -221,6 +222,8 @@ def main():
         run_remote(args.stage, Path(args.hosts_env).resolve(), Path(args.ssh_key).expanduser().resolve(),
                    args.smoke, args.skip_a, args.fault_only)
         return
+    if args.stage == "v7":
+        parser.error("V7 local verification uses docker-compose.v7.yml and load-test/v7-local-smoke.py")
     if args.skip_a or args.fault_only:
         parser.error("--skip-a and --fault-only require --hosts-env")
     settings = stage_settings(args.stage)

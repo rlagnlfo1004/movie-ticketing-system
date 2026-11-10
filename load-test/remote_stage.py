@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deploy a stage to seven hosts and collect each run before any teardown."""
+"""Deploy a stage to its measurement hosts and collect each run before teardown."""
 from datetime import datetime, timezone
 import base64
 import json
@@ -8,7 +8,7 @@ from pathlib import Path
 import shlex
 import subprocess
 import time
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 from run_stage import ROOT, build_tag, stage_settings, verify_run, verify_payment_balance, verify_artifact_secrets
 from local_env import get as local_env
@@ -16,6 +16,7 @@ from local_env import get as local_env
 REMOTE_ROOT = "/home/ec2-user/movie-ticketing"
 ORDER = ("redis", "mysql", "app-waiting", "app-reservation", "edge", "mon")
 ROLES = ("lg", "edge", "app-waiting", "app-reservation", "redis", "mysql", "mon")
+HA_ROLES = ("redis-replica-1", "redis-replica-2")
 
 
 def read_env(path):
@@ -101,7 +102,7 @@ def deploy(hosts_file, hosts, key, profile, output, virtual_off=False):
                     str(output), str(key)], cwd=ROOT, env=environment, check=True)
     subprocess.run(["python3", str(ROOT / "infra/aws/build-stage-bundles.py"),
                     str(hosts_file), profile, str(output)], cwd=ROOT, env=environment, check=True)
-    for role in ROLES:
+    for role in ROLES + (HA_ROLES if profile == "v7" else ()):
         target = f"ec2-user@{public(hosts, role)}:{REMOTE_ROOT}/stage.tar.gz"
         subprocess.run(["scp", "-q", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=accept-new",
                         "-i", str(key), str(output / f"{role}.tar.gz"), target], cwd=ROOT, check=True)
@@ -112,7 +113,9 @@ def deploy(hosts_file, hosts, key, profile, output, virtual_off=False):
     remote(hosts, key, "mysql", "mountpoint", "-q", "/mnt/movie-mysql")
 
 
-def reset(hosts, key):
+def reset(hosts, key, profile="v6"):
+    if profile == "v7":
+        return reset_ha(hosts, key)
     for role in reversed(ORDER):
         compose(hosts, key, role, "down", "--volumes", "--remove-orphans", check=False)
     remote(hosts, key, "mysql", "sudo", "find", "/mnt/movie-mysql", "-mindepth", "1",
@@ -142,6 +145,61 @@ def reset(hosts, key):
                 time.sleep(1)
             else:
                 raise RuntimeError("Remote Redis FLUSHALL failed")
+    wait_url("http://127.0.0.1:13000/api/health")
+    wait_url("http://127.0.0.1:19090/-/ready")
+    verify_grafana_datasource()
+
+
+def reset_ha(hosts, key):
+    roles = ROLES + HA_ROLES
+    for role in reversed(roles):
+        compose(hosts, key, role, "down", "--volumes", "--remove-orphans", check=False)
+    remote(hosts, key, "mysql", "sudo", "find", "/mnt/movie-mysql", "-mindepth", "1",
+           "-maxdepth", "1", "-exec", "rm", "-rf", "{}", "+")
+    for role, service in (("redis", "redis"), ("redis-replica-1", "redis-replica-1"),
+                          ("redis-replica-2", "redis-replica-2")):
+        compose(hosts, key, role, "up", "-d", "--no-deps", service)
+    for _ in range(90):
+        status = compose(hosts, key, "redis", "exec", "-T", "redis", "redis-cli", "INFO",
+                         "replication", check=False, capture=True)
+        if b"connected_slaves:2" in status.stdout:
+            break
+        time.sleep(1)
+    else:
+        raise RuntimeError("V7 replicas did not synchronize before starting Sentinel")
+    compose(hosts, key, "mysql", "up", "-d", "--no-deps", "mysql")
+    wait_healthy(hosts, key, "mysql", "mysql")
+    compose(hosts, key, "mysql", "up", "-d", "--no-deps", "mysqld-exporter")
+    for role, service in (("edge", "sentinel-1"), ("app-waiting", "sentinel-2"),
+                          ("app-reservation", "sentinel-3")):
+        compose(hosts, key, role, "up", "-d", "--no-deps", service)
+    for _ in range(90):
+        status = compose(hosts, key, "edge", "exec", "-T", "sentinel-1", "redis-cli", "-p",
+                         "26379", "--raw", "SENTINEL", "master", "movie-primary",
+                         check=False, capture=True)
+        fields = status.stdout.decode(errors="replace").splitlines()
+        info = dict(zip(fields[::2], fields[1::2]))
+        if (info.get("num-slaves") == "2" and info.get("num-other-sentinels") == "2"
+                and info.get("flags") == "master"):
+            break
+        time.sleep(1)
+    else:
+        raise RuntimeError("V7 Sentinel quorum did not discover two replicas")
+    compose(hosts, key, "app-waiting", "up", "-d", "--no-deps",
+            "waiting-api-1", "waiting-api-2", "waiting-api-3")
+    for service in ("waiting-api-1", "waiting-api-2", "waiting-api-3"):
+        wait_healthy(hosts, key, "app-waiting", service)
+    compose(hosts, key, "app-reservation", "up", "-d", "--build", "--no-deps", "mock-pg")
+    wait_healthy(hosts, key, "app-reservation", "mock-pg")
+    compose(hosts, key, "app-reservation", "up", "-d", "--no-deps", "reservation-worker")
+    wait_healthy(hosts, key, "app-reservation", "reservation-worker")
+    compose(hosts, key, "app-reservation", "up", "-d", "--no-deps", "reservation-api")
+    wait_url("http://127.0.0.1:18081/actuator/health/readiness")
+    compose(hosts, key, "edge", "up", "-d", "--no-deps", "nginx", "nginx-exporter")
+    compose(hosts, key, "redis", "up", "-d", "--no-deps", "redis-exporter")
+    for role in HA_ROLES:
+        compose(hosts, key, role, "up", "-d", "--no-deps", "redis-exporter")
+    compose(hosts, key, "mon", "up", "-d", "--no-deps")
     wait_url("http://127.0.0.1:13000/api/health")
     wait_url("http://127.0.0.1:19090/-/ready")
     verify_grafana_datasource()
@@ -328,11 +386,12 @@ def run_remote(profile, hosts_file, key, smoke, skip_a=False, fault_only=None):
             "startedAt": datetime.now(timezone.utc).isoformat()}, indent=2) + "\n")
         events = []
     try:
-        scenarios = () if fault_only else ((("B", 1),) if skip_a else (("A", 3), ("B", 1)))
+        scenarios = () if fault_only else ((("B", 1),) if skip_a or profile == "v7"
+                                        else (("A", 3), ("B", 1)))
         for scenario, count in scenarios:
             for index in range(1, count + 1):
                 run_id = f"{batch}-{scenario.lower()}{index}"
-                reset(hosts, key)
+                reset(hosts, key, profile)
                 time.sleep(1 if smoke else 120)
                 jfr_name = f"{batch}-vt-on" if int(profile[1:]) in (2, 4) and scenario == "B" else None
                 event, faults = measure(hosts, key, env, tag, profile, run_id, scenario, smoke,
@@ -342,7 +401,8 @@ def run_remote(profile, hosts_file, key, smoke, skip_a=False, fault_only=None):
         fault_plan = {3: [("worker-kill", "A")],
                       4: [("worker-kill", "A"), ("mysql-stop", "A")],
                       5: [("waiting-stop", "B")],
-                      6: [("redis-kill", "A")]}.get(int(profile[1:]), [])
+                      6: [("redis-kill", "A")],
+                      7: [("sentinel-failover", "A")]}.get(int(profile[1:]), [])
         if fault_only:
             fault_plan = [item for item in fault_plan if item[0] == fault_only]
             if not fault_plan:
@@ -350,14 +410,15 @@ def run_remote(profile, hosts_file, key, smoke, skip_a=False, fault_only=None):
         for fault, scenario in fault_plan:
             run_id = f"{batch}-{fault}" if not fault_only else (
                 f"{batch}-{fault}-retry-{datetime.now(timezone.utc).strftime('%H%M%S')}")
-            reset(hosts, key)
+            reset(hosts, key, profile)
             time.sleep(1 if smoke else 120)
             event, fault_events = measure(hosts, key, env, tag, profile, run_id, scenario, smoke, fault=fault)
             event["event"] = f"fault-{fault}"
             events.append(event)
             events.extend(fault_events)
-            if fault == "redis-kill":
-                with urlopen(env["RESERVATION_API_URL"] + "/admin/reconcile", timeout=30) as response:
+            if fault in ("redis-kill", "sentinel-failover"):
+                with urlopen(Request(env["RESERVATION_API_URL"] + "/admin/reconcile", data=b"",
+                                     method="POST"), timeout=30) as response:
                     response.read()
                 moment = f"{run_id}-final-balance"
                 subprocess.run([str(ROOT / "load-test/snapshot.sh"), tag, moment],
@@ -367,7 +428,7 @@ def run_remote(profile, hosts_file, key, smoke, skip_a=False, fault_only=None):
                                "snapshot": f"../../../docs/evidence/{tag}/{moment}.json"})
         if not fault_only and int(profile[1:]) in (2, 4):
             deploy(hosts_file, hosts, key, profile, output, virtual_off=True)
-            reset(hosts, key)
+            reset(hosts, key, profile)
             time.sleep(1 if smoke else 120)
             run_id = f"{batch}-b1"
             event, _ = measure(hosts, key, env, f"{tag}/vt-off", profile, run_id, "B", smoke,
@@ -377,7 +438,7 @@ def run_remote(profile, hosts_file, key, smoke, skip_a=False, fault_only=None):
             events.append(event)
         if not fault_only and profile == "v6":
             deploy(hosts_file, hosts, key, "v6-always", output)
-            reset(hosts, key)
+            reset(hosts, key, profile)
             time.sleep(1 if smoke else 120)
             run_id = f"{batch}-b1"
             event, _ = measure(hosts, key, env, f"{tag}/always", "v6-always", run_id, "B", smoke)

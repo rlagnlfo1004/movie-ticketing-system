@@ -14,7 +14,7 @@ HOSTS = [
     ("mon", "t4g.medium", 2),
 ]
 TAGS = ("v1-db", "v2-db-fixed", "v3-pubsub", "v4-streams",
-        "v5-lua-active", "v6-aof-reconcile")
+        "v5-lua-active", "v6-aof-reconcile", "v7-sentinel-fencing")
 DASHBOARD = json.loads((ROOT / "observability/grafana/provisioning/dashboards/json/seat.json").read_text())
 
 
@@ -222,7 +222,8 @@ def stage_section(tag):
             snapshot = event.get("snapshot", "").replace("../../../docs/", "../../docs/", 1)
             suffix = f" · [스냅샷]({snapshot})" if snapshot else ""
             if snapshot and any(word in event["event"] for word in
-                                ("app-closed", "completion", "worker", "stream", "mysql", "redis", "waiting", "balance")):
+                                ("app-closed", "completion", "worker", "stream", "mysql", "redis",
+                                 "waiting", "balance", "sentinel")):
                 state = load((RESULTS / snapshot).resolve())
                 if state:
                     redis_count = len(state.get("redisReservedSeats") or [])
@@ -231,6 +232,9 @@ def stage_section(tag):
                     suffix += f" · Redis 확정 {redis_count}석 / MySQL {mysql_count}석 / PG 승인·예매 없음 {missing}건"
             if event.get("run"):
                 suffix += f" · 종료 {event['endedAt']} · 종료 코드 {event['exitCode']}"
+            if event.get("promotionSeconds") is not None:
+                suffix += (f" · 승격 {event['promotionSeconds']}초 · Sentinel epoch "
+                           f"{event['configEpoch']} · 새 primary {event['role']}")
             rows.append(f"- {event['at']} · {event['event']}{suffix}")
     rows.append("")
     return rows
@@ -245,6 +249,10 @@ def main():
             "실행 사양과 다르면 측정 당시 인스턴스 정보를 별도로 기록해야 한다.", "",
             "| 호스트 | 인스턴스 | vCPU |", "| --- | --- | ---: |"]
     rows.extend(f"| {name} | {instance} | {cpu} |" for name, instance, cpu in HOSTS)
+    v7_manifest = load(RESULTS / "v7-sentinel-fencing" / "batch.json")
+    if v7_manifest and not v7_manifest.get("smoke"):
+        rows.extend(f"| {name} | r7g.large | 2 |" for name in
+                    ("redis-replica-1", "redis-replica-2"))
     rows += ["", "## 적용 튜닝", "", "아래 값은 배포 묶음에 포함한 설정 파일에서 읽었다.", "",
              "| 파일 | 설정 | 값 |", "| --- | --- | --- |"]
     for relative in ("infra/tuning/sysctl.conf", "infra/tuning/limits.conf",
@@ -263,7 +271,7 @@ def main():
     rows += ["", "## 절차", "",
              "각 단계의 git 태그에서 JAR를 빌드한다. 각 실행 전에 MySQL·Redis 데이터를 초기화하고 "
              "2분 워밍업을 거친다. A 전체 흐름 3회는 V1·V2·V4·V6에 적용하고, "
-             "B 선점 처리량 상한 1회는 V1~V6 모두 실행한다. 단계별 장애 실행과 추가 비교는 유지한다. "
+             "B 선점 처리량 상한 1회는 V1~V7 모두 실행한다. V7은 B 1회와 Sentinel primary 장애 1회를 추가한다. 단계별 장애 실행과 추가 비교는 유지한다. "
              "로컬 `--smoke` 검증은 워밍업 1초, B 구간당 1초로 줄인다.", "",
              "- A: 상영 1개·1,000석·사용자 3만 명. 좌석 선택의 70%는 가운데 30%에 몰린다. "
              "첫 대기 조회를 등록 뒤 2~10초에 분산하고, 대기 중 5초 권장 간격에 ±20% 지터를 준다. "
@@ -331,6 +339,25 @@ def main():
              f"{metric(always or {}, 'seat_hold_duration', 'p(95)')} | "
              f"{metric(always or {}, 'seat_hold_duration', 'p(99)')} | "
              f"{'[k6](' + str(always_path.relative_to(RESULTS)) + '/summary.json)' if always_path else '—'} |", ""]
+    v7 = load(RESULTS / "v7-sentinel-fencing" / "batch.json") or {}
+    if v7 and not v7.get("smoke"):
+        batch = v7["batch"]
+        events = load(RESULTS / "v7-sentinel-fencing" / "events.json") or []
+        promoted = next((item for item in events if item.get("event") == "Sentinel promoted replica"), None)
+        final = load(ROOT / "docs/evidence/v7-sentinel-fencing" /
+                     f"{batch}-sentinel-failover-final-balance.json") or {}
+        rows += ["## V7 Sentinel 승격과 fencing", "",
+                 (f"- 승격: {promoted['promotionSeconds']}초 · epoch {promoted['configEpoch']} · "
+                  f"새 primary {promoted['role']}." if promoted else "- Sentinel 승격 기록은 측정 전이다."),
+                 (f"- 최종 Redis {len(final.get('redisReservedSeats') or [])}석 = "
+                  f"MySQL {len(final.get('mysqlReservationSeats') or [])}석, "
+                  f"PG 승인 {len(final.get('approvedPgPayments') or [])}건 = "
+                  f"확정 {len(final.get('confirmedPgPayments') or [])}건 + "
+                  f"취소 {len(final.get('cancelledPgPayments') or [])}건. "
+                  f"[원본](../../docs/evidence/v7-sentinel-fencing/{batch}-sentinel-failover-final-balance.json)"
+                  if final else "- 최종 좌석·결제 균형 기록은 측정 전이다."),
+                 "- WAIT와 min-replicas-to-write는 ACK 손실 창을 줄이지만 강한 일관성 보장은 아니다. "
+                 "old primary READONLY와 새 primary 대사를 별도로 확인한다.", ""]
     (RESULTS / "README.md").write_text("\n".join(rows))
     print(RESULTS / "README.md")
 

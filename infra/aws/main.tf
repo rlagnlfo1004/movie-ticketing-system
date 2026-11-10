@@ -8,7 +8,7 @@ data "aws_ssm_parameter" "al2023_arm64" {
 
 locals {
   zone = var.availability_zone != "" ? var.availability_zone : data.aws_availability_zones.available.names[0]
-  hosts = {
+  base_hosts = {
     lg              = "c7g.2xlarge"
     edge            = "c7g.large"
     app-waiting     = "m7g.xlarge"
@@ -17,6 +17,10 @@ locals {
     mysql           = "r7g.xlarge"
     mon             = "t4g.medium"
   }
+  hosts = merge(local.base_hosts, var.enable_redis_ha ? {
+    redis-replica-1 = "r7g.large"
+    redis-replica-2 = "r7g.large"
+  } : {})
 }
 
 resource "aws_vpc" "measurement" {

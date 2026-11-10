@@ -26,10 +26,15 @@ read_host_value() {
 }
 
 python3 "$ROOT/infra/stages/build-host-env.py" "$HOSTS_FILE" "$PROFILE" "$OUTPUT_DIR" >/dev/null
-for spec in \
+specs=( \
   "lg:LG_PUBLIC_IP" "edge:EDGE_PUBLIC_IP" "app-waiting:APP_WAITING_PUBLIC_IP" \
   "app-reservation:APP_RESERVATION_PUBLIC_IP" "redis:REDIS_PUBLIC_IP" \
-  "mysql:MYSQL_PUBLIC_IP" "mon:MON_PUBLIC_IP"; do
+  "mysql:MYSQL_PUBLIC_IP" "mon:MON_PUBLIC_IP" )
+if [[ "$PROFILE" == v7 ]]; then
+  specs+=("redis-replica-1:REDIS_REPLICA_1_PUBLIC_IP"
+          "redis-replica-2:REDIS_REPLICA_2_PUBLIC_IP")
+fi
+for spec in "${specs[@]}"; do
   host="${spec%%:*}"
   key="${spec#*:}"
   ip="$(read_host_value "$key")"

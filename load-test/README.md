@@ -16,6 +16,8 @@ A의 대기 상태 첫 조회는 등록 후 2~10초 사이에 분산하고, 이�
 
 측정일 범위(2026-11-10 변경): A 3회는 V1·V2·V4·V6에서 실행한다. V3·V5에는 `--skip-a`를 붙여 B 1회와 해당 단계 장애 실행만 수행한다. V2·V4의 가상 스레드 비교와 V6의 AOF 비교는 그대로 실행한다. 모든 단계의 B는 같은 부하 구간을 사용한다.
 
+V7은 별도 AWS 재측정으로 B 1회와 Sentinel primary 장애 1회만 실행한다. 먼저 `python3 load-test/v7-local-smoke.py`로 로컬 3노드 Redis·3 Sentinel 승격, 결제 확정, 이전 primary 쓰기 거부, Redis/MySQL 좌석 일치를 확인한다. AWS에서는 `./infra/aws/plan.sh --v7`로 9대·30 vCPU 계획을 확인하고, `./load-test/run-stage.sh v7 --hosts-env infra/aws/hosts.env --ssh-key ~/.ssh/id_ed25519`를 사용한다. 측정 직후 결과 푸시와 destroy·잔존 0개·새 액세스 키 삭제를 끝낸다.
+
 Terraform `apply` 이후 AWS 호스트가 준비되면 같은 명령에 `--hosts-env infra/aws/hosts.env --ssh-key ~/.ssh/id_ed25519`를 붙인다. 이 명령은 Terraform을 실행하지 않는다. 일곱 호스트에 단계별 JAR·Compose·env를 배포하고, 서비스 간 주소에는 `hosts.env`의 사설 IP만 사용한다. Grafana와 Prometheus 캡처는 SSH 터널을 통해 로컬로 가져온다. 측정일의 DB 단독 기준은 앱 기동 전에 `./load-test/db-baseline.sh --hosts-env infra/aws/hosts.env --ssh-key ~/.ssh/id_ed25519`로 실행한다.
 
 `load-test/results/README.md`는 날짜·호스트 계획 사양·가정값·단계 설정·수치·PNG/JSON·스냅샷·장애 시각을 묶는다. 측정일에는 실제 인스턴스 종류와 `hosts.env`를 확인하고 결과 폴더를 명시적으로 `git add -f` 해야 한다. 저장소의 `.gitignore`가 결과 폴더를 기본적으로 제외한다.

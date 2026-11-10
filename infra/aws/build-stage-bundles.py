@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render seven host-local Compose bundles with private-only service addresses."""
+"""Render host-local Compose bundles with private-only service addresses."""
 import copy
 import json
 import os
@@ -19,6 +19,10 @@ ROLES = {
     "redis": ("redis", "redis-exporter"),
     "mysql": ("mysql", "mysqld-exporter"),
     "mon": ("prometheus", "grafana", "renderer"),
+}
+HA_ROLES = {
+    "redis-replica-1": ("redis-replica-1", "redis-exporter"),
+    "redis-replica-2": ("redis-replica-2", "redis-exporter"),
 }
 SECRET_KEYS = {"MYSQL_PASSWORD", "MYSQL_ROOT_PASSWORD", "SPRING_DATASOURCE_PASSWORD",
                "MOCK_PG_API_SECRET", "MOCK_PG_WEBHOOK_SECRET", "RESERVATION_MOCK_PG_API_SECRET",
@@ -47,12 +51,21 @@ def prepare_shared(hosts, stage, tag, bundle, role):
         "app-waiting": ("infra/tuning/jvm.env",),
         "app-reservation": ("infra/tuning/jvm.env",),
         "redis": ("infra/tuning/redis-v1.conf", "infra/tuning/redis-v6.conf",
-                  "infra/tuning/redis-v6-always.conf"),
+                  "infra/tuning/redis-v6-always.conf", "infra/tuning/redis-v7.conf"),
+        "redis-replica-1": ("infra/tuning/redis-v7.conf",),
+        "redis-replica-2": ("infra/tuning/redis-v7.conf",),
         "mysql": ("infra/tuning/mysql-stage.cnf",),
         "mon": ("observability/prometheus.yml",),
     }
     for rel in files[role]:
         copy_file(ROOT / rel, bundle / rel)
+    if role in ("edge", "app-waiting", "app-reservation") and stage.get("REDIS_HA") == "true":
+        write_text(bundle / "infra/tuning/sentinel-v7.conf",
+                   "port 26379\n"
+                   f"sentinel monitor movie-primary {hosts['REDIS_PRIVATE_IP']} 6379 2\n"
+                   "sentinel down-after-milliseconds movie-primary 3000\n"
+                   "sentinel failover-timeout movie-primary 15000\n"
+                   "sentinel parallel-syncs movie-primary 1\n")
     if role == "app-reservation":
         copy_file(ROOT / ".local/stage/mock-pg.mjs", bundle / "load-test/mock-pg.mjs")
         copy_file(ROOT / "load-test/mock-pg.Dockerfile", bundle / "load-test/mock-pg.Dockerfile")
@@ -96,15 +109,24 @@ def prepare_shared(hosts, stage, tag, bundle, role):
     }
     for old, new in replacements.items():
         prometheus = prometheus.replace(old, new)
-    nodes = ", ".join(hosts[key] + ":9100" for key in (
+    node_keys = [
         "LG_PRIVATE_IP", "EDGE_PRIVATE_IP", "APP_WAITING_PRIVATE_IP",
-        "APP_RESERVATION_PRIVATE_IP", "REDIS_PRIVATE_IP", "MYSQL_PRIVATE_IP", "MON_PRIVATE_IP"))
+        "APP_RESERVATION_PRIVATE_IP", "REDIS_PRIVATE_IP", "MYSQL_PRIVATE_IP", "MON_PRIVATE_IP"]
+    if stage.get("REDIS_HA") == "true":
+        node_keys += ["REDIS_REPLICA_1_PRIVATE_IP", "REDIS_REPLICA_2_PRIVATE_IP"]
+        prometheus = prometheus.replace("[" + hosts["REDIS_PRIVATE_IP"] + ":9121]",
+            "[" + ", ".join(hosts[key] + ":9121" for key in
+            ("REDIS_PRIVATE_IP", "REDIS_REPLICA_1_PRIVATE_IP", "REDIS_REPLICA_2_PRIVATE_IP")) + "]")
+    nodes = ", ".join(hosts[key] + ":9100" for key in node_keys)
     prometheus = prometheus.replace("[node-exporter:9100]", f"[{nodes}]")
     write_text(bundle / "observability/prometheus.yml", prometheus)
 
 
 def service_config(base, role, hosts, secrets, profile):
-    selected = ROLES[role]
+    selected = (ROLES | HA_ROLES)[role]
+    if profile == "v7":
+        selected += {"edge": ("sentinel-1",), "app-waiting": ("sentinel-2",),
+                     "app-reservation": ("sentinel-3",)}.get(role, ())
     if profile in ("v1", "v2"):
         selected = tuple(s for s in selected if s != "reservation-worker")
     services = {}
@@ -129,6 +151,21 @@ def service_config(base, role, hosts, secrets, profile):
             environment.update({key: val for key, val in secrets.items()
                                 if key.startswith("SPRING_") or key.startswith("RESERVATION_")})
             environment["SPRING_DATA_REDIS_HOST"] = hosts["REDIS_PRIVATE_IP"]
+        elif name.startswith("redis-replica-"):
+            value["command"] = ["redis-server", "/usr/local/etc/redis/redis.conf", "--replicaof",
+                                hosts["REDIS_PRIVATE_IP"], "6379"]
+            for volume in value.get("volumes", []):
+                if volume.get("type") == "volume":
+                    volume["source"] = "redis-data"
+        elif name.startswith("sentinel-"):
+            value["command"] = ["sh", "-c", "test -f /data/sentinel.conf || "
+                                "cp /etc/redis/sentinel.conf /data/sentinel.conf; "
+                                "exec redis-server /data/sentinel.conf --sentinel"]
+            value["volumes"] = [
+                {"type": "bind", "source": str(REMOTE_ROOT / "infra/tuning/sentinel-v7.conf"),
+                 "target": "/etc/redis/sentinel.conf", "read_only": True},
+                {"type": "volume", "source": "sentinel-data", "target": "/data"},
+            ]
         elif name == "k6":
             environment.update({"BASE_URL": "http://" + hosts["EDGE_PRIVATE_IP"],
                 "MOCK_PG_URL": "http://" + hosts["APP_RESERVATION_PRIVATE_IP"] + ":8082",
@@ -153,8 +190,12 @@ def service_config(base, role, hosts, secrets, profile):
         if name == "nginx-exporter":
             value["command"] = ["--nginx.scrape-uri=http://127.0.0.1/nginx_status"]
         services[name] = value
-    return {"name": "movie-measurement", "services": services,
-            "volumes": {"redis-data": {}} if role == "redis" else {}}
+    volumes = {}
+    if role == "redis" or role.startswith("redis-replica-"):
+        volumes["redis-data"] = {}
+    if profile == "v7" and role in ("edge", "app-waiting", "app-reservation"):
+        volumes["sentinel-data"] = {}
+    return {"name": "movie-measurement", "services": services, "volumes": volumes}
 
 
 def main(hosts_file, profile, destination):
@@ -166,7 +207,10 @@ def main(hosts_file, profile, destination):
     if os.environ.get("VIRTUAL_OFF") == "1":
         stage["SPRING_THREADS_VIRTUAL_ENABLED"] = "false"
     environment = {**os.environ, **stage}
-    rendered = subprocess.run(["docker", "compose", "-f", str(ROOT / "docker-compose.yml"),
+    compose_files = ["-f", str(ROOT / "docker-compose.yml")]
+    if profile == "v7":
+        compose_files += ["-f", str(ROOT / "docker-compose.v7.yml")]
+    rendered = subprocess.run(["docker", "compose", *compose_files,
                                "--profile", "load-test",
                                "config", "--format", "json"], cwd=ROOT, env=environment,
                               capture_output=True, text=True, check=True)
@@ -174,7 +218,7 @@ def main(hosts_file, profile, destination):
     output = Path(destination)
     output.mkdir(parents=True, exist_ok=True)
     output.chmod(0o700)
-    for role in ROLES:
+    for role in (ROLES | HA_ROLES if profile == "v7" else ROLES):
         bundle = output / role
         if bundle.exists():
             shutil.rmtree(bundle)

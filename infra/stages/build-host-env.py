@@ -4,7 +4,8 @@ from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[2]
-HOSTS = ("lg", "edge", "app-waiting", "app-reservation", "redis", "mysql", "mon")
+BASE_HOSTS = ("lg", "edge", "app-waiting", "app-reservation", "redis", "mysql", "mon")
+HA_HOSTS = ("redis-replica-1", "redis-replica-2")
 
 
 def read_env(path):
@@ -32,10 +33,15 @@ def main(hosts_path, profile, destination):
         raise SystemExit("AWS measurement accepts only the mock PG mode")
     private_keys = ("LG_PRIVATE_IP", "EDGE_PRIVATE_IP", "APP_WAITING_PRIVATE_IP",
                     "APP_RESERVATION_PRIVATE_IP", "REDIS_PRIVATE_IP", "MYSQL_PRIVATE_IP", "MON_PRIVATE_IP")
+    ha = profile == "v7"
+    if ha:
+        private_keys += ("REDIS_REPLICA_1_PRIVATE_IP", "REDIS_REPLICA_2_PRIVATE_IP")
     for key in private_keys:
         if not hosts.get(key):
             raise SystemExit(f"Missing {key} in hosts.env")
     common = {key: value for key, value in stage.items() if key != "STAGE_CODE_TAG"}
+    sentinel_nodes = ",".join(f"{hosts[key]}:26379" for key in
+                              ("EDGE_PRIVATE_IP", "APP_WAITING_PRIVATE_IP", "APP_RESERVATION_PRIVATE_IP")) if ha else ""
     db_url = f"jdbc:mysql://{hosts['MYSQL_PRIVATE_IP']}:3306/{local['SEAT_DB_NAME']}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
     data = {
         "lg": {**common, "BASE_URL": f"http://{hosts['EDGE_PRIVATE_IP']}"},
@@ -65,8 +71,22 @@ def main(hosts_path, profile, destination):
                 "APP_WAITING_PRIVATE_IP": hosts["APP_WAITING_PRIVATE_IP"],
                 "APP_RESERVATION_PRIVATE_IP": hosts["APP_RESERVATION_PRIVATE_IP"]},
     }
+    if ha:
+        data["redis-replica-1"] = {**common, "REDIS_PRIMARY_PRIVATE_IP": hosts["REDIS_PRIVATE_IP"]}
+        data["redis-replica-2"] = {**common, "REDIS_PRIMARY_PRIVATE_IP": hosts["REDIS_PRIVATE_IP"]}
+        for role in ("edge", "app-waiting", "app-reservation"):
+            data[role]["REDIS_PRIMARY_PRIVATE_IP"] = hosts["REDIS_PRIVATE_IP"]
+        for role in ("app-waiting", "app-reservation"):
+            data[role].update({"SPRING_DATA_REDIS_SENTINEL_MASTER": "movie-primary",
+                               "SPRING_DATA_REDIS_SENTINEL_NODES": sentinel_nodes})
+        data["app-waiting"].update({"WAITING_FENCING_SENTINELS": sentinel_nodes,
+                                    "WAITING_FENCING_MASTER": "movie-primary"})
+        data["app-reservation"].update({"RESERVATION_REPLICATION_WAIT_REPLICAS": "1",
+                                        "RESERVATION_REPLICATION_WAIT_MILLIS": "500"})
+        data["mon"].update({"REDIS_REPLICA_1_PRIVATE_IP": hosts["REDIS_REPLICA_1_PRIVATE_IP"],
+                            "REDIS_REPLICA_2_PRIVATE_IP": hosts["REDIS_REPLICA_2_PRIVATE_IP"]})
     output = Path(destination)
-    for host in HOSTS:
+    for host in BASE_HOSTS + (HA_HOSTS if ha else ()):
         path = output / f"{host}.secret.env"
         write_env(path, data[host])
         print(path)

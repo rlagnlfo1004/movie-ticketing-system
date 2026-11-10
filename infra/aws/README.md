@@ -48,3 +48,17 @@ done
 ```
 
 `db-baseline.sh`는 앱을 시작하기 전에 MySQL 호스트의 별도 EBS 볼륨에서 fio와 단일 행 UPDATE를 실행한다. `run-stage.sh`는 태그별 JAR·모의 PG·Compose를 일곱 호스트에 배포하고, 실행마다 데이터를 초기화해 원본·스냅샷을 로컬로 수집한다. V2·V4에서는 가상 스레드 끔 비교와 비밀 값이 제거된 JFR을 저장한다. 세부 측정 방법과 파일 검증 기준은 [부하 테스트 런북](../../load-test/README.md)에 있다. 측정 결과를 커밋·푸시한 뒤에만 `destroy`와 잔존 검사·액세스 키 삭제를 진행한다.
+
+## V7 재측정
+
+V1~V6 인프라는 이미 destroy했다. V7은 `enable_redis_ha=true`로 Redis replica 두 호스트를 추가한 **9대·30 vCPU** 구성이다. Sentinel은 edge, app-waiting, app-reservation 호스트에서 1개씩 실행한다. replica는 각각 별도 `r7g.large` 호스트다. 저장된 2026-11-08/09 가격 원본으로 재계산한 추정치는 **$1.576781/시간**이다(`python3 infra/aws/cost.py --v7`). 실제 청구액은 실행 시간과 AWS 과금에 따른다.
+
+```bash
+./infra/aws/plan.sh --v7
+# 계정·9대·30 vCPU·추가 리소스·SSH 범위를 확인한 뒤에만 apply
+TF_VAR_enable_redis_ha=true terraform -chdir=infra/aws apply -input=false
+./infra/aws/render-hosts-env.sh
+./load-test/run-stage.sh v7 --hosts-env infra/aws/hosts.env --ssh-key ~/.ssh/id_ed25519
+```
+
+V7 측정은 B 1회와 primary SIGKILL→Sentinel 승격 1회다. replica 2대 동기화와 Sentinel의 replica·peer 발견이 끝나기 전에는 장애를 주입하지 않는다. 결과·상태·Grafana 원본을 커밋·푸시한 직후 `TF_VAR_enable_redis_ha=true terraform -chdir=infra/aws destroy -input=false`를 실행하고 원생 API 잔존 0개와 측정용 IAM 키 삭제를 확인한다. `movie-loadtest` 프로필은 V6 직후 삭제된 키를 새로 발급해 설정해야 한다. 비밀 값은 저장소에 적지 않는다.

@@ -18,7 +18,7 @@ printf '%s' '${sysctl_base64}' | base64 -d > /etc/sysctl.d/99-movie-loadtest.con
 printf '%s' '${limits_base64}' | base64 -d > /etc/security/limits.d/99-movie-loadtest.conf
 sysctl --system
 
-%{ if role == "redis" ~}
+%{ if startswith(role, "redis") ~}
 printf '%s' '${thp_base64}' | base64 -d > /usr/local/bin/movie-disable-thp
 chmod 755 /usr/local/bin/movie-disable-thp
 cat > /etc/systemd/system/movie-disable-thp.service <<'UNIT'
