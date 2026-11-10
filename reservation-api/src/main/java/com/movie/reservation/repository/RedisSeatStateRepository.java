@@ -4,6 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.movie.storage.seat.SeatRedisKeys;
+import io.lettuce.core.codec.ByteArrayCodec;
+import io.lettuce.core.RedisAsyncCommandsImpl;
+import io.lettuce.core.api.StatefulRedisConnection;
+import io.lettuce.core.output.IntegerOutput;
+import io.lettuce.core.protocol.AsyncCommand;
+import io.lettuce.core.protocol.Command;
+import io.lettuce.core.protocol.CommandArgs;
+import io.lettuce.core.protocol.CommandType;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -11,13 +19,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Range;
 import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.RedisOperations;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -26,6 +39,12 @@ public class RedisSeatStateRepository {
 
     private final StringRedisTemplate redis;
     private final ObjectMapper mapper;
+
+    @Value("${reservation.replication.wait-replicas:0}")
+    private int waitReplicas;
+
+    @Value("${reservation.replication.wait-millis:500}")
+    private int waitMillis;
 
     private static DefaultRedisScript<Long> holdScript() {
         DefaultRedisScript<Long> script = new DefaultRedisScript<>();
@@ -54,7 +73,7 @@ public class RedisSeatStateRepository {
         keys.add(SeatRedisKeys.activeAdmission(sid, token));
         for (String seat : seats) keys.add(SeatRedisKeys.hold(sid, seat));
         try {
-            Long result = redis.execute(holdScript(), keys,
+            Long result = executeReplicated(holdScript(), keys,
                     holdId, paymentId, token, idempotencyKey, String.valueOf(amount),
                     String.valueOf(heldUntil.toEpochMilli()), String.valueOf(duration.toMillis()),
                     String.valueOf(duration.plusSeconds(60).toMillis()), mapper.writeValueAsString(seats), sid);
@@ -129,13 +148,13 @@ public class RedisSeatStateRepository {
     }
 
     public ConfirmationResult confirm(String sid, String paymentId, int amount, String transactionId) {
-        String raw = redis.execute(stringScript("lua/confirm-v4.lua"), List.of(SeatRedisKeys.payment(sid, paymentId)),
+        String raw = executeReplicated(stringScript("lua/confirm-v4.lua"), List.of(SeatRedisKeys.payment(sid, paymentId)),
                 sid, paymentId, String.valueOf(amount), transactionId, UUID.randomUUID().toString());
         return parseResult(raw);
     }
 
     public ConfirmationResult cancel(String sid, String paymentId) {
-        String raw = redis.execute(stringScript("lua/cancel-v3.lua"), List.of(SeatRedisKeys.payment(sid, paymentId)),
+        String raw = executeReplicated(stringScript("lua/cancel-v3.lua"), List.of(SeatRedisKeys.payment(sid, paymentId)),
                 sid, paymentId);
         return parseResult(raw);
     }
@@ -184,7 +203,7 @@ public class RedisSeatStateRepository {
 
     public ConfirmationResult recover(RecoveryIntent intent) {
         try {
-            String raw = redis.execute(stringScript("lua/recover-v6.lua"),
+            String raw = executeReplicated(stringScript("lua/recover-v6.lua"),
                     List.of(SeatRedisKeys.payment(intent.screeningId(), intent.paymentId())),
                     intent.screeningId(), intent.paymentId(), intent.holdId(), intent.queueToken(),
                     intent.idempotencyKey(), String.valueOf(intent.amount()), intent.transactionId(),
@@ -216,5 +235,40 @@ public class RedisSeatStateRepository {
             }
         }
         return null;
+    }
+
+    private <T> T executeReplicated(RedisScript<T> script, List<String> keys, Object... args) {
+        if (waitReplicas <= 0) return redis.execute(script, keys, args);
+        return redis.execute(new SessionCallback<>() {
+            @Override
+            @SuppressWarnings("unchecked")
+            public <K, V> T execute(RedisOperations<K, V> operations) {
+                RedisOperations<String, String> session = (RedisOperations<String, String>) operations;
+                T result = session.execute(script, keys, args);
+                Long acknowledged = session.execute((RedisCallback<Long>) connection -> {
+                    @SuppressWarnings("unchecked")
+                    RedisAsyncCommandsImpl<byte[], byte[]> commands =
+                            (RedisAsyncCommandsImpl<byte[], byte[]>) connection.getNativeConnection();
+                    StatefulRedisConnection<byte[], byte[]> nativeConnection = commands.getStatefulConnection();
+                    CommandArgs<byte[], byte[]> waitArgs = new CommandArgs<>(ByteArrayCodec.INSTANCE)
+                            .add(waitReplicas).add(waitMillis);
+                    AsyncCommand<byte[], byte[], Long> wait = new AsyncCommand<>(
+                            new Command<>(CommandType.WAIT, new IntegerOutput<>(ByteArrayCodec.INSTANCE), waitArgs));
+                    nativeConnection.dispatch(wait);
+                    try {
+                        return wait.get(waitMillis + 1000L, TimeUnit.MILLISECONDS);
+                    } catch (InterruptedException interrupted) {
+                        Thread.currentThread().interrupt();
+                        throw new IllegalStateException("Redis WAIT was interrupted", interrupted);
+                    } catch (java.util.concurrent.ExecutionException | java.util.concurrent.TimeoutException failure) {
+                        throw new IllegalStateException("Redis WAIT failed", failure);
+                    }
+                });
+                if (acknowledged == null || acknowledged < waitReplicas) {
+                    throw new IllegalStateException("Redis replica acknowledgement is uncertain");
+                }
+                return result;
+            }
+        });
     }
 }

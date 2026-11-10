@@ -19,6 +19,9 @@ public class MockPgClient {
     private final RestClient client;
     private final String baseUrl;
 
+    @Value("${reservation.pg-store-id:}")
+    private String storeId = "";
+
     public MockPgClient(@Value("${reservation.mock-pg-base-url}") String baseUrl,
                         @Value("${reservation.mock-pg-api-secret}") String apiSecret) {
         this.baseUrl = baseUrl;
@@ -51,8 +54,11 @@ public class MockPgClient {
     }
 
     public void preRegister(String paymentId, int amount) {
+        Map<String, Object> body = storeId.isBlank()
+                ? Map.of("totalAmount", amount)
+                : Map.of("storeId", storeId, "totalAmount", amount);
         client.post().uri("/payments/{id}/pre-register", paymentId)
-                .body(Map.of("totalAmount", amount))
+                .body(body)
                 .retrieve().toBodilessEntity();
     }
 

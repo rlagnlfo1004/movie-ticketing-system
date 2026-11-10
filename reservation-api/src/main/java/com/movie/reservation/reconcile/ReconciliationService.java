@@ -101,11 +101,17 @@ public class ReconciliationService implements ApplicationRunner {
             redis.seedCompleted(reservation.sid(), reservation.token(),
                     reservation.paymentId(), reservation.reservationId());
         }
+        Set<String> projectPayments = new HashSet<>(jdbc.query("SELECT payment_id FROM payments",
+                (rs, row) -> rs.getString(1)));
 
         List<String> confirmed = new ArrayList<>();
         List<String> cancelled = new ArrayList<>();
         for (Payment payment : pg.listPayments()) {
             if (!"PAID".equals(payment.status()) || storedPayments.contains(payment.id())) continue;
+            if (!projectPayments.contains(payment.id()) && !hasTicketingContext(payment)) {
+                // The PortOne test store can contain payments from another project.
+                continue;
+            }
             RecoveryIntent intent = recoveryIntent(payment);
             if (intent == null || payment.amount() == null || intent.amount() != payment.amount().total()
                     || !validIntent(intent)) {
@@ -128,6 +134,16 @@ public class ReconciliationService implements ApplicationRunner {
                 dbSeats.getOrDefault("1", List.of()).size(), runId);
         ready = true;
         return lastResult;
+    }
+
+    private boolean hasTicketingContext(Payment payment) {
+        if (payment.customData() == null) return false;
+        try {
+            String encrypted = mapper.readTree(payment.customData()).path("ticketingContext").asText();
+            return !encrypted.isBlank() && payment.id().equals(codec.decode(encrypted).paymentId());
+        } catch (Exception invalid) {
+            return false;
+        }
     }
 
     private RecoveryIntent recoveryIntent(Payment payment) {
