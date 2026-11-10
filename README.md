@@ -1,8 +1,8 @@
 # 좌석 지정 영화 예매 시스템
 
-[![Test](https://github.com/rlagnlfo1004/movie-ticketing-system/actions/workflows/test.yml/badge.svg?branch=feat%2Fseat-redesign)](https://github.com/rlagnlfo1004/movie-ticketing-system/actions/workflows/test.yml?query=branch%3Afeat%2Fseat-redesign)
+[![Test](https://github.com/rlagnlfo1004/movie-ticketing-system/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/rlagnlfo1004/movie-ticketing-system/actions/workflows/test.yml?query=branch%3Amain)
 
-한 상영의 1,000석을 여러 사용자가 동시에 고를 때 중복 예매를 막는 시스템이다. 대기열 입장 후 좌석을 선점하고, 결제 상태를 확인해 예매를 확정한다. 현재 구현 단계는 **V6: Redis AOF와 MySQL·PG 대사**까지 처리한다. 남은 정식 측정과 V7 결정은 [작업 지도](https://github.com/rlagnlfo1004/movie-ticketing-system/issues/2)에서 진행한다.
+한 상영의 1,000석을 여러 사용자가 동시에 고를 때 중복 예매를 막는 시스템이다. 대기열 입장 후 좌석을 선점하고, 결제 상태를 확인해 예매를 확정한다. **V1~V6은 AWS 정식 측정**, **V7 Sentinel failover·fencing은 로컬 장애 검증**까지 마쳤다. V7 AWS 측정과 PortOne 실채널 검증은 미완으로 남겼다. 단계별 결과와 한계는 [V0~V7 통합 리포트](docs/reports/seat-redesign-v0-v7.md)에서 확인한다.
 
 ## 현재 흐름
 
@@ -13,7 +13,7 @@
 5. 확정 이벤트는 Redis Stream에 같은 Lua 실행 안에서 기록된다. 별도 `reservation-worker`가 최대 100건씩 MySQL에 적재하고 커밋한 뒤 ACK한다. worker가 죽어도 PEL의 미확인 항목을 회수한다.
 6. Redis AOF는 `appendfsync everysec`으로 기록한다. Redis가 재시작되면 예매 API가 MySQL 확정 좌석을 복원하고 PG 승인 내역을 대사한 뒤에 선점을 받는다.
 
-V1은 MySQL 좌석 잠금에서 deadlock이 났고, V2는 잠금 순서를 고쳐 상영 행 직렬화가 남았다. V3는 좌석 상태를 Redis로 옮겼지만 Pub/Sub 이벤트가 worker 재기동 뒤 유실됐다. V4는 Streams의 PEL·ACK·XAUTOCLAIM으로 그 누락을 회수했다. V5는 waiting-api HTTP 확인을 선점 Lua의 active 키 검사로 옮겼다. V6는 AOF와 결제 대사로 Redis 재시작 때의 남은 차이를 다룬다. 단계별 원본은 [`docs/evidence/`](docs/evidence/)에 있다. 측정 전제와 가정은 [`infra/tuning/README.md`](infra/tuning/README.md)와 [`load-test/README.md`](load-test/README.md)에 적었다.
+V1은 MySQL 좌석 잠금에서 deadlock이 났고, V2는 잠금 순서를 고쳐 상영 행 직렬화가 남았다. V3는 좌석 상태를 Redis로 옮겼지만 Pub/Sub 이벤트가 worker 재기동 뒤 유실됐다. V4는 Streams의 PEL·ACK·XAUTOCLAIM으로 그 누락을 회수했다. V5는 waiting-api HTTP 확인을 선점 Lua의 active 키 검사로 옮겼다. V6는 AOF와 결제 대사로 Redis 재시작 때의 남은 차이를 다뤘다. V7은 Redis 3노드·Sentinel 3개, 승격 epoch fencing과 replica ACK를 구현하고 로컬 failover를 검증했다. 단계별 원본은 [`docs/evidence/`](docs/evidence/)에 있다. 측정 전제와 가정은 [`infra/tuning/README.md`](infra/tuning/README.md)와 [`load-test/README.md`](load-test/README.md)에 적었다.
 
 ## 서비스 화면 데모
 
