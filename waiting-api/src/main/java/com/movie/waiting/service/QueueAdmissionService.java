@@ -33,6 +33,8 @@ public class QueueAdmissionService {
     private final Counter failureCounter;
     private final Counter lockMissCounter;
     private final Counter capacityHitCounter;
+    private final Counter fenceRejectedCounter;
+    private final FencingEpochProvider fencingEpochProvider;
 
     @Autowired
     public QueueAdmissionService(
@@ -41,6 +43,7 @@ public class QueueAdmissionService {
             RedisQueueRepository queueRepository,
             RedisActiveAdmissionRepository activeAdmissionRepository,
             RedisAdmissionLockRepository lockRepository,
+            FencingEpochProvider fencingEpochProvider,
             MeterRegistry meterRegistry
     ) {
         this(
@@ -51,7 +54,8 @@ public class QueueAdmissionService {
                 lockRepository,
                 Clock.systemUTC(),
                 UUID.randomUUID().toString(),
-                meterRegistry
+                meterRegistry,
+                fencingEpochProvider
         );
     }
 
@@ -65,6 +69,21 @@ public class QueueAdmissionService {
             String instanceId,
             MeterRegistry meterRegistry
     ) {
+        this(properties, screeningRegistry, queueRepository, activeAdmissionRepository, lockRepository,
+                clock, instanceId, meterRegistry, FencingEpochProvider.disabled());
+    }
+
+    public QueueAdmissionService(
+            QueueAdmissionProperties properties,
+            ScreeningRegistry screeningRegistry,
+            RedisQueueRepository queueRepository,
+            RedisActiveAdmissionRepository activeAdmissionRepository,
+            RedisAdmissionLockRepository lockRepository,
+            Clock clock,
+            String instanceId,
+            MeterRegistry meterRegistry,
+            FencingEpochProvider fencingEpochProvider
+    ) {
         this.properties = properties;
         this.screeningRegistry = screeningRegistry;
         this.queueRepository = queueRepository;
@@ -77,6 +96,8 @@ public class QueueAdmissionService {
         this.failureCounter = meterRegistry.counter("waiting.admission.failure");
         this.lockMissCounter = meterRegistry.counter("waiting.admission.lock.miss");
         this.capacityHitCounter = meterRegistry.counter("waiting.admission.capacity.hit");
+        this.fenceRejectedCounter = meterRegistry.counter("waiting.admission.fence.rejected");
+        this.fencingEpochProvider = fencingEpochProvider;
     }
 
     public AdmissionRunResult admit(String screeningId) {
@@ -87,13 +108,37 @@ public class QueueAdmissionService {
             return result(screeningId, false, 0, 0, SkipReason.NO_VALID_SCREENING, startedAt);
         }
 
-        boolean lockAcquired = lockRepository.acquire(screeningId, instanceId, properties.getLockTtl());
+        long epoch = fencingEpochProvider.currentEpoch();
+        String lockOwner = fencingEpochProvider.enabled()
+                ? epoch + ":" + instanceId + ":" + UUID.randomUUID() : instanceId;
+        boolean lockAcquired = lockRepository.acquire(screeningId, lockOwner, properties.getLockTtl());
         if (!lockAcquired) {
             lockMissCounter.increment();
             return result(screeningId, false, 0, 0, SkipReason.LOCK_NOT_ACQUIRED, startedAt);
         }
 
         try {
+            if (fencingEpochProvider.enabled()) {
+                if (fencingEpochProvider.currentEpoch() != epoch) {
+                    fenceRejectedCounter.increment();
+                    return result(screeningId, true, 0, 0, SkipReason.LOCK_NOT_ACQUIRED, startedAt);
+                }
+                long admitted = queueRepository.admitFenced(screeningId, lockOwner, epoch, clock.millis(),
+                        properties.getMaxActiveUsers(), properties.getBatchSize(), properties.getActiveTtl());
+                if (admitted == -1 || admitted == -2) {
+                    fenceRejectedCounter.increment();
+                    return result(screeningId, true, 0, 0, SkipReason.LOCK_NOT_ACQUIRED, startedAt);
+                }
+                if (admitted == -3) {
+                    capacityHitCounter.increment();
+                    return result(screeningId, true, 0, 0, SkipReason.ACTIVE_CAPACITY_REACHED, startedAt);
+                }
+                if (admitted == -4) {
+                    return result(screeningId, true, 0, 0, SkipReason.QUEUE_EMPTY, startedAt);
+                }
+                successCounter.increment(admitted);
+                return result(screeningId, true, (int) admitted, 0, null, startedAt);
+            }
             AdmissionBatch batch = selectBatch(screeningId);
             if (batch.remainingCapacity() <= 0) {
                 capacityHitCounter.increment();
@@ -127,7 +172,7 @@ public class QueueAdmissionService {
 
             return result(screeningId, true, successCount, failureCount, null, startedAt);
         } finally {
-            lockRepository.release(screeningId, instanceId);
+            lockRepository.release(screeningId, lockOwner);
         }
     }
 

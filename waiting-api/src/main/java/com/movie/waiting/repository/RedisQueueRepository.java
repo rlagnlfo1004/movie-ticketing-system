@@ -6,13 +6,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import java.time.Duration;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class RedisQueueRepository {
+
+    private static final DefaultRedisScript<Long> ADMIT_FENCED_SCRIPT = new DefaultRedisScript<>();
+
+    static {
+        ADMIT_FENCED_SCRIPT.setLocation(new ClassPathResource("lua/admit-v7.lua"));
+        ADMIT_FENCED_SCRIPT.setResultType(Long.class);
+    }
 
     private final String redisKeyPrefix;
     private final QueueStore queueStore;
@@ -59,8 +69,33 @@ public class RedisQueueRepository {
                 .toList();
     }
 
+    public long admitFenced(String screeningId, String lockOwner, long epoch, long nowMillis,
+                            int maxActive, int batchSize, Duration activeTtl) {
+        Long result = queueStore.admitFenced(queueKey(screeningId), lockKey(screeningId),
+                activeIndexKey(screeningId), fenceKey(screeningId), lockOwner, epoch, nowMillis,
+                maxActive, batchSize, activeTtl.toMillis(), activeKeyPrefix(screeningId));
+        if (result == null) throw new IllegalStateException("No fenced admission result");
+        return result;
+    }
+
     public String queueKey(String screeningId) {
         return redisKeyPrefix + ":" + screeningId + ":queue";
+    }
+
+    private String lockKey(String screeningId) {
+        return redisKeyPrefix + ":" + screeningId + ":admission:lock";
+    }
+
+    private String activeIndexKey(String screeningId) {
+        return redisKeyPrefix + ":" + screeningId + ":active:index";
+    }
+
+    private String activeKeyPrefix(String screeningId) {
+        return redisKeyPrefix + ":" + screeningId + ":active:";
+    }
+
+    private String fenceKey(String screeningId) {
+        return redisKeyPrefix + ":" + screeningId + ":admission:fence";
     }
 
     public interface QueueStore {
@@ -73,6 +108,12 @@ public class RedisQueueRepository {
         Long cardinality(String key);
 
         Collection<ScoredMember> popMin(String key, long count);
+
+        default Long admitFenced(String queue, String lock, String activeIndex, String fence,
+                                 String lockOwner, long epoch, long nowMillis, int maxActive,
+                                 int batchSize, long activeTtlMillis, String activeKeyPrefix) {
+            throw new UnsupportedOperationException("Fenced admission is not configured");
+        }
     }
 
     public record ScoredMember(String value, Double score) {
@@ -117,6 +158,15 @@ public class RedisQueueRepository {
                 }
             }
             return members;
+        }
+
+        @Override
+        public Long admitFenced(String queue, String lock, String activeIndex, String fence,
+                                String lockOwner, long epoch, long nowMillis, int maxActive,
+                                int batchSize, long activeTtlMillis, String activeKeyPrefix) {
+            return redisTemplate.execute(ADMIT_FENCED_SCRIPT, List.of(queue, lock, activeIndex, fence),
+                    lockOwner, String.valueOf(epoch), String.valueOf(nowMillis), String.valueOf(maxActive),
+                    String.valueOf(batchSize), String.valueOf(activeTtlMillis), activeKeyPrefix);
         }
     }
 }

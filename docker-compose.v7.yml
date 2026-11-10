@@ -1,0 +1,91 @@
+services:
+  redis:
+    volumes:
+      - ./infra/tuning/redis-v7.conf:/usr/local/etc/redis/redis.conf:ro
+
+  redis-replica-1:
+    image: redis:7.2-alpine
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--replicaof", "redis", "6379"]
+    volumes:
+      - ./infra/tuning/redis-v7.conf:/usr/local/etc/redis/redis.conf:ro
+      - redis-replica-1-data:/data
+    ports:
+      - "6380:6379"
+    depends_on:
+      - redis
+
+  redis-replica-2:
+    image: redis:7.2-alpine
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--replicaof", "redis", "6379"]
+    volumes:
+      - ./infra/tuning/redis-v7.conf:/usr/local/etc/redis/redis.conf:ro
+      - redis-replica-2-data:/data
+    ports:
+      - "6381:6379"
+    depends_on:
+      - redis
+
+  sentinel-1: &sentinel
+    image: redis:7.2-alpine
+    command:
+      - /bin/sh
+      - -c
+      - |
+        REDIS_IP=$$(getent hosts redis | awk '{print $$1}')
+        test -n "$$REDIS_IP"
+        printf '%s\n' 'port 26379' "sentinel monitor movie-primary $$REDIS_IP 6379 2" \
+          'sentinel down-after-milliseconds movie-primary 3000' \
+          'sentinel failover-timeout movie-primary 15000' \
+          'sentinel parallel-syncs movie-primary 1' > /tmp/sentinel.conf
+        exec redis-server /tmp/sentinel.conf --sentinel
+    ports:
+      - "26379:26379"
+    depends_on:
+      - redis
+      - redis-replica-1
+      - redis-replica-2
+
+  sentinel-2:
+    <<: *sentinel
+    ports:
+      - "26380:26379"
+
+  sentinel-3:
+    <<: *sentinel
+    ports:
+      - "26381:26379"
+
+  waiting-api-1: &waiting-v7
+    environment:
+      SPRING_DATA_REDIS_SENTINEL_MASTER: movie-primary
+      SPRING_DATA_REDIS_SENTINEL_NODES: sentinel-1:26379,sentinel-2:26379,sentinel-3:26379
+      WAITING_FENCING_SENTINELS: sentinel-1:26379,sentinel-2:26379,sentinel-3:26379
+      WAITING_FENCING_MASTER: movie-primary
+    depends_on:
+      - sentinel-1
+      - sentinel-2
+      - sentinel-3
+
+  waiting-api-2:
+    <<: *waiting-v7
+
+  waiting-api-3:
+    <<: *waiting-v7
+
+  reservation-api: &reservation-v7
+    environment:
+      SPRING_DATA_REDIS_SENTINEL_MASTER: movie-primary
+      SPRING_DATA_REDIS_SENTINEL_NODES: sentinel-1:26379,sentinel-2:26379,sentinel-3:26379
+      RESERVATION_REPLICATION_WAIT_REPLICAS: 1
+      RESERVATION_REPLICATION_WAIT_MILLIS: 500
+    depends_on:
+      - sentinel-1
+      - sentinel-2
+      - sentinel-3
+
+  reservation-worker:
+    <<: *reservation-v7
+
+volumes:
+  redis-replica-1-data:
+  redis-replica-2-data:
